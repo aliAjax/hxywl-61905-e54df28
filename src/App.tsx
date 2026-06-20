@@ -266,16 +266,15 @@ function App() {
 
   const findMatchingRecipe = useCallback((): CombineRecipe | null => {
     for (const recipe of COMBINE_RECIPES) {
-      const hasAllInputs = recipe.inputs.every(
-        (inputId) =>
-          selectedForCombine.includes(inputId) ||
-          (hasItem(inputId) && !selectedForCombine.includes(inputId))
-      );
-      const hasAtLeastOneSelected = recipe.inputs.some((inputId) =>
+      const allInputsSelected = recipe.inputs.every((inputId) =>
         selectedForCombine.includes(inputId)
       );
+      const noExtraSelected = selectedForCombine.every((id) =>
+        recipe.inputs.includes(id)
+      );
+      const countsMatch = recipe.inputs.length === selectedForCombine.length;
       const notAlreadyHave = !hasItem(recipe.output);
-      if (hasAllInputs && hasAtLeastOneSelected && notAlreadyHave) {
+      if (allInputsSelected && noExtraSelected && countsMatch && notAlreadyHave) {
         return recipe;
       }
     }
@@ -302,24 +301,23 @@ function App() {
       return;
     }
 
-    if (recipe.consumesInputs) {
-      const newInventory = inventory.filter(
-        (id) => !recipe.inputs.includes(id)
-      );
-      newInventory.push(recipe.output);
-      setInventory(newInventory);
-    } else {
-      if (!hasItem(recipe.output)) {
-        setInventory((prev) => [...prev, recipe.output]);
+    setInventory((prev) => {
+      let next = prev;
+      if (recipe.consumesInputs) {
+        next = prev.filter((id) => !recipe.inputs.includes(id));
       }
-    }
+      if (!next.includes(recipe.output)) {
+        next = [...next, recipe.output];
+      }
+      return next;
+    });
 
     setJustCollected(recipe.output);
     setTimeout(() => setJustCollected(null), 600);
     showMsg(recipe.successMessage, "collect");
     setSelectedForCombine([]);
     setCombineMode(false);
-  }, [findMatchingRecipe, inventory, showMsg]);
+  }, [findMatchingRecipe, showMsg]);
 
   const toggleCombineMode = useCallback(() => {
     setCombineMode((prev) => !prev);
@@ -328,13 +326,14 @@ function App() {
 
   const collectItem = useCallback(
     (itemId: string) => {
-      if (!hasItem(itemId)) {
-        setInventory((prev) => [...prev, itemId]);
+      setInventory((prev) => {
+        if (prev.includes(itemId)) return prev;
         setJustCollected(itemId);
         setTimeout(() => setJustCollected(null), 600);
-      }
+        return [...prev, itemId];
+      });
     },
-    [inventory]
+    []
   );
 
   const getCellContent = useCallback(
@@ -685,18 +684,6 @@ function App() {
         setCurtainChecked(true);
       }
 
-      if (cell.label === "抽屉" && drawerUnlocked) {
-        if (!hasItem("screwdriver")) {
-          collectItem("screwdriver");
-        }
-        if (!hasItem("note_drawer")) {
-          collectItem("note_drawer");
-        }
-        if (!hasItem("battery")) {
-          collectItem("battery");
-        }
-      }
-
       if (content.itemId) {
         collectItem(content.itemId);
       }
@@ -738,19 +725,6 @@ function App() {
     [combineMode, toggleCombineSelect, flashlightActive, showMsg]
   );
 
-  const handleCombineKey = useCallback(() => {
-    if (fragmentCount < 3) return;
-    if (hasCompleteKey) return;
-    const newInventory = inventory.filter(
-      (id) => !(ITEMS[id]?.category === "key_fragment" && id !== "complete_key")
-    );
-    newInventory.push("complete_key");
-    setInventory(newInventory);
-    setJustCollected("complete_key");
-    setTimeout(() => setJustCollected(null), 600);
-    showMsg("🔑 三片碎片成功组合成完整钥匙！", "collect");
-  }, [fragmentCount, hasCompleteKey, inventory, showMsg]);
-
   const handleLockDigit = useCallback(
     (digit: string) => {
       const maxLen = lockTarget === "drawer" ? 3 : 4;
@@ -778,7 +752,8 @@ function App() {
         setLockTarget(null);
         collectItem("screwdriver");
         collectItem("note_drawer");
-        showMsg("🗄️ 抽屉打开了！获得了螺丝刀和纸条！", "collect");
+        collectItem("battery");
+        showMsg("🗄️ 抽屉打开了！获得了螺丝刀、纸条和电池！", "collect");
       } else {
         setLockError(true);
         setTimeout(() => setLockError(false), 600);
