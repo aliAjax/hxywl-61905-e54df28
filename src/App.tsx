@@ -216,6 +216,7 @@ function App() {
   const [filterTab, setFilterTab] = useState<FilterTab>("all");
   const [flashlightActive, setFlashlightActive] = useState(false);
   const [escaped, setEscaped] = useState(false);
+  const [escapeMethod, setEscapeMethod] = useState<"key" | "password" | null>(null);
   const [investigatedCells, setInvestigatedCells] = useState<Set<number>>(new Set());
   const [clueModalIndex, setClueModalIndex] = useState<number | null>(null);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
@@ -286,6 +287,7 @@ function App() {
   );
 
   const handleCombineKey = useCallback(() => {
+    setEscapeMethod("key");
     setEscaped(true);
   }, []);
 
@@ -307,6 +309,7 @@ function App() {
   const handlePasswordSubmit = useCallback(() => {
     const entered = passwordDigits.join("");
     if (entered === CORRECT_PASSWORD) {
+      setEscapeMethod("password");
       setEscaped(true);
     } else {
       setPasswordError(true);
@@ -332,10 +335,14 @@ function App() {
           <div className="victory-icon">🎉</div>
           <h2>成功逃脱！</h2>
           <p>
-            你收集了全部三枚钥匙碎片，组合成完整的钥匙，打开了密码锁，成功逃出了密室！
+            {escapeMethod === "key"
+              ? "你收集了全部三枚钥匙碎片，组合成完整的钥匙打开了门锁，成功逃出了密室！"
+              : fragmentCount === 3
+                ? "你凭借缜密的推理输入了正确的密码，打开了门锁，成功逃出了密室！虽然钥匙碎片已齐，但你选择了更聪明的方式。"
+                : `你凭借缜密的推理输入了正确的密码，打开了门锁，成功逃出了密室！钥匙碎片只收集了 ${fragmentCount}/3，但智慧弥补了不足。`}
           </p>
           <p className="victory-stats">
-            收集道具 {inventory.length} 件 · 线索纸条 {noteCount} 张
+            收集道具 {inventory.length} 件 · 线索纸条 {noteCount} 张 · 钥匙碎片 {fragmentCount}/3
           </p>
           <button className="action-btn victory-restart" onClick={() => window.location.reload()}>
             🔄 再来一次
