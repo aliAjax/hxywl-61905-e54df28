@@ -20,9 +20,6 @@ interface SaveData {
   lastHint: string;
   gameStartTime: number;
   combineCount: number;
-  hiddenCurtainChecked: boolean;
-  hiddenPaintingChecked: boolean;
-  hiddenLampChecked: boolean;
   endingType: EndingType;
 }
 
@@ -75,7 +72,7 @@ const ITEMS: Record<string, ItemDef> = {
     icon: "🗝️",
     description: "一把锈迹斑斑的钥匙残片，边缘呈锯齿状。",
     detail:
-      "这是钥匙的顶部，齿纹清晰可辨。上面刻着一个微小的符号「☉」，似乎暗示着某种机关。碎片边缘的锯齿恰好能与另一片吻合——也许还有更多碎片散落在房间里。",
+      "这是钥匙的顶部，齿纹清晰可辨。上面刻着一个微小的符号「\u2299」，似乎暗示着某种机关。碎片边缘的锯齿恰好能与另一片吻合——也许还有更多碎片散落在房间里。",
   },
   frag_b: {
     id: "frag_b",
@@ -144,7 +141,7 @@ const ITEMS: Record<string, ItemDef> = {
     id: "screwdriver",
     name: "螺丝刀",
     category: "tool",
-    icon: "🪛",
+    icon: "\uD83D\uDD27",
     description: "一把一字螺丝刀，刀柄略有磨损。",
     detail:
       "螺丝刀尺寸不大，但金属杆十分坚固。刀柄处有使用过的划痕，说明前主人常用它。\n\n提示：挂画的挂钩和箱子的封条似乎都能用它撬开。",
@@ -156,7 +153,7 @@ const ITEMS: Record<string, ItemDef> = {
     icon: "🔑",
     description: "三片碎片拼合而成的完整钥匙，散发着金属光泽。",
     detail:
-      "将三片碎片按「☉」符号、「右转两次」刻字、「三合一」提示的顺序组合，形成一把完整的钥匙。钥匙柄上有三道刻痕，提示着使用方法：向左三圈，再向右一圈。",
+      "将三片碎片按「\u2299」符号、「右转两次」刻字、「三合一」提示的顺序组合，形成一把完整的钥匙。钥匙柄上有三道刻痕，提示着使用方法：向左三圈，再向右一圈。",
   },
   battery: {
     id: "battery",
@@ -301,9 +298,6 @@ function App() {
   const [gameStartTime, setGameStartTime] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [combineCount, setCombineCount] = useState(0);
-  const [hiddenCurtainChecked, setHiddenCurtainChecked] = useState(false);
-  const [hiddenPaintingChecked, setHiddenPaintingChecked] = useState(false);
-  const [hiddenLampChecked, setHiddenLampChecked] = useState(false);
   const [endingType, setEndingType] = useState<EndingType>(null);
 
   const showMsg = useCallback(
@@ -331,10 +325,7 @@ function App() {
         data.paintingRemoved ||
         data.curtainChecked ||
         data.escaped ||
-        data.flashlightActive ||
-        data.hiddenCurtainChecked ||
-        data.hiddenPaintingChecked ||
-        data.hiddenLampChecked
+        data.flashlightActive
       );
     } catch {
       return false;
@@ -358,9 +349,6 @@ function App() {
         lastHint,
         gameStartTime,
         combineCount,
-        hiddenCurtainChecked,
-        hiddenPaintingChecked,
-        hiddenLampChecked,
         endingType,
       };
       localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
@@ -380,9 +368,6 @@ function App() {
     lastHint,
     gameStartTime,
     combineCount,
-    hiddenCurtainChecked,
-    hiddenPaintingChecked,
-    hiddenLampChecked,
     endingType,
   ]);
 
@@ -405,9 +390,6 @@ function App() {
       setLastHint(data.lastHint || "");
       setGameStartTime(data.gameStartTime || Date.now());
       setCombineCount(data.combineCount || 0);
-      setHiddenCurtainChecked(!!data.hiddenCurtainChecked);
-      setHiddenPaintingChecked(!!data.hiddenPaintingChecked);
-      setHiddenLampChecked(!!data.hiddenLampChecked);
       setEndingType(data.endingType || null);
       return true;
     } catch (e) {
@@ -448,9 +430,6 @@ function App() {
     setGameStartTime(0);
     setCurrentTime(0);
     setCombineCount(0);
-    setHiddenCurtainChecked(false);
-    setHiddenPaintingChecked(false);
-    setHiddenLampChecked(false);
     setEndingType(null);
   }, []);
 
@@ -495,9 +474,6 @@ function App() {
     flashlightActive,
     lastHint,
     combineCount,
-    hiddenCurtainChecked,
-    hiddenPaintingChecked,
-    hiddenLampChecked,
     endingType,
     saveGame,
   ]);
@@ -646,7 +622,7 @@ function App() {
               : "青花瓷瓶身上绘着缠枝莲纹，瓶底有「大明宣德年制」的落款。瓶口塞着一团皱巴巴的纸条？不对——伸手进去摸索，你触碰到一块冰凉的金属碎片。",
             nextHint: got
               ? "花瓶里的东西已经被你取走了。"
-              : "获得了一枚钥匙碎片！碎片上刻着符号「☉」。房间里应该还有其他碎片，继续寻找它们吧。也许书架上能找到更多线索？",
+              : "获得了一枚钥匙碎片！碎片上刻着符号「\u2299」。房间里应该还有其他碎片，继续寻找它们吧。也许书架上能找到更多线索？",
             itemId: got ? undefined : "frag_a",
             alreadyChecked: got,
           };
@@ -727,19 +703,15 @@ function App() {
                 alreadyChecked: false,
               };
             }
-            if (!hiddenPaintingChecked || !gotHidden) {
+            if (!gotHidden) {
               return {
-                description: gotHidden
-                  ? "画框背面已被你仔细检查过了。"
-                  : "靠在墙边的画框，背面似乎还有未被发现的细节。",
-                clueDetail: gotHidden
-                  ? "你已经将画框翻过来仔细检查过，在挂钩旁的隐秘角落里发现了刻着的数字「8」。这是隐藏密码的第二位。"
-                  : "再次将画框翻到背面，在靠近挂钩的一个隐秘角落里——你之前没注意到的地方——发现了被人用小刀刻下的痕迹。凑近看，是一个数字「8」！",
-                nextHint: gotHidden
-                  ? "挂画的隐藏线索已经收集完毕。"
-                  : "获得了隐藏线索！挂画暗码是「8」。窗帘、挂画、台灯——三处暗码集齐后可解出隐藏密码。",
-                itemId: gotHidden ? undefined : "note_hidden_painting",
-                alreadyChecked: gotHidden,
+                description: "靠在墙边的画框，背面似乎还有未被发现的细节。",
+                clueDetail:
+                  "再次将画框翻到背面，在靠近挂钩的一个隐秘角落里——你之前没注意到的地方——发现了被人用小刀刻下的痕迹。凑近看，是一个数字「8」！",
+                nextHint:
+                  "获得了隐藏线索！挂画暗码是「8」。窗帘、挂画、台灯——三处暗码集齐后可解出隐藏密码。",
+                itemId: "note_hidden_painting",
+                alreadyChecked: false,
               };
             }
             return {
@@ -797,19 +769,15 @@ function App() {
               alreadyChecked: false,
             };
           }
-          if (!hiddenLampChecked || !gotHidden) {
+          if (!gotHidden) {
             return {
-              description: gotHidden
-                ? "台灯底座已被你仔细检查过了。"
-                : "一盏复古台灯静静地立在那里，灯座下方似乎有些异样。",
-              clueDetail: gotHidden
-                ? "你已经将台灯抬起，在底座下方发现了贴着的微型标签，上面印着数字「2」。这是隐藏密码的第三位。"
-                : "再次仔细观察台灯，你注意到底座似乎微微翘起。小心地将台灯抬起——底座下方贴着一张几乎看不见的微型标签，上面用极小的字体印着一个数字「2」！",
-              nextHint: gotHidden
-                ? "台灯的隐藏线索已经收集完毕。"
-                : "获得了隐藏线索！台灯暗码是「2」。窗帘「4」、挂画「8」、台灯「2」——按此顺序排列，隐藏密码就是 4-8-2！",
-              itemId: gotHidden ? undefined : "note_hidden_lamp",
-              alreadyChecked: gotHidden,
+              description: "一盏复古台灯静静地立在那里，灯座下方似乎有些异样。",
+              clueDetail:
+                "再次仔细观察台灯，你注意到底座似乎微微翘起。小心地将台灯抬起——底座下方贴着一张几乎看不见的微型标签，上面用极小的字体印着一个数字「2」！",
+              nextHint:
+                "获得了隐藏线索！台灯暗码是「2」。窗帘「4」、挂画「8」、台灯「2」——按此顺序排列，隐藏密码就是 4-8-2！",
+              itemId: "note_hidden_lamp",
+              alreadyChecked: false,
             };
           }
           return {
@@ -926,19 +894,15 @@ function App() {
               alreadyChecked: false,
             };
           }
-          if (!hiddenCurtainChecked || !gotHidden) {
+          if (!gotHidden) {
             return {
-              description: gotHidden
-                ? "窗帘最深处的折痕已被你仔细检查过。"
-                : "厚重的深色窗帘半拉开着，最深处的折缝中似乎藏着什么。",
-              clueDetail: gotHidden
-                ? "你已经将窗帘完全展开，在最深处的折缝中发现了用针尖刻下的数字「4」。这是隐藏密码的第一位。"
-                : "将窗帘完全展开，在最深处的一道折缝中——你之前没有注意到的地方——发现了有人用针尖刻下的痕迹。凑近仔细辨认，是一个数字「4」！",
-              nextHint: gotHidden
-                ? "窗帘的隐藏线索已经收集完毕。"
-                : "获得了隐藏线索！窗帘暗码是「4」。继续寻找挂画和台灯的隐藏暗码，三处集齐后可解出隐藏密码。",
-              itemId: gotHidden ? undefined : "note_hidden_curtain",
-              alreadyChecked: gotHidden,
+              description: "厚重的深色窗帘半拉开着，最深处的折缝中似乎藏着什么。",
+              clueDetail:
+                "将窗帘完全展开，在最深处的一道折缝中——你之前没有注意到的地方——发现了有人用针尖刻下的痕迹。凑近仔细辨认，是一个数字「4」！",
+              nextHint:
+                "获得了隐藏线索！窗帘暗码是「4」。继续寻找挂画和台灯的隐藏暗码，三处集齐后可解出隐藏密码。",
+              itemId: "note_hidden_curtain",
+              alreadyChecked: false,
             };
           }
           return {
@@ -969,9 +933,6 @@ function App() {
       fragmentCount,
       hasCompleteKey,
       flashlightActive,
-      hiddenCurtainChecked,
-      hiddenPaintingChecked,
-      hiddenLampChecked,
     ]
   );
 
@@ -1019,34 +980,26 @@ function App() {
 
       if (cell.label === "挂画" && !paintingRemoved && hasScrewdriver) {
         setPaintingRemoved(true);
-        showMsg("🪛 用螺丝刀取下了挂画！", "collect");
+        showMsg("\uD83D\uDD27 用螺丝刀取下了挂画！", "collect");
       }
 
       if (cell.label === "箱子" && !boxOpened && hasScrewdriver) {
         setBoxOpened(true);
-        showMsg("🪛 用螺丝刀撬开了箱子封条！", "collect");
+        showMsg("\uD83D\uDD27 用螺丝刀撬开了箱子封条！", "collect");
       }
 
       if (cell.label === "窗帘" && !curtainChecked) {
         setCurtainChecked(true);
       }
 
-      if (cell.label === "窗帘" && curtainChecked && hasItem("note_curtain") && !hiddenCurtainChecked) {
-        setHiddenCurtainChecked(true);
-        showMsg("🔍 你将窗帘完全展开，仔细检查着每一道折缝……", "info");
-      }
-
-      if (cell.label === "挂画" && paintingRemoved && hasItem("frag_b") && !hiddenPaintingChecked) {
-        setHiddenPaintingChecked(true);
-        showMsg("🔍 你再次将画框翻到背面，仔细检查着每一个角落……", "info");
-      }
-
-      if (cell.label === "台灯" && hasItem("flashlight") && !hiddenLampChecked) {
-        setHiddenLampChecked(true);
-        showMsg("🔍 你小心地抬起台灯，仔细检查着底座下方……", "info");
-      }
-
       if (content.itemId) {
+        if (content.itemId === "note_hidden_curtain") {
+          showMsg("\uD83D\uDD0D 你将窗帘完全展开，仔细检查着每一道折缝……", "info");
+        } else if (content.itemId === "note_hidden_painting") {
+          showMsg("\uD83D\uDD0D 你再次将画框翻到背面，仔细检查着每一个角落……", "info");
+        } else if (content.itemId === "note_hidden_lamp") {
+          showMsg("\uD83D\uDD0D 你小心地抬起台灯，仔细检查着底座下方……", "info");
+        }
         collectItem(content.itemId);
       }
 
@@ -1065,9 +1018,6 @@ function App() {
       flashlightActive,
       collectItem,
       showMsg,
-      hiddenCurtainChecked,
-      hiddenPaintingChecked,
-      hiddenLampChecked,
     ]
   );
 
@@ -1250,7 +1200,7 @@ function App() {
         </section>
         <section className={`victory-panel ${isTrueEnding ? "true-ending" : "normal-ending"}`}>
           <div className="victory-icon">
-            {isTrueEnding ? "�" : "�"}
+            {isTrueEnding ? "\uD83C\uDFC6" : "\uD83C\uDF89"}
           </div>
           <h2 className={`victory-title ${isTrueEnding ? "true-ending-title" : ""}`}>
             {isTrueEnding ? "真结局 · 真相大白" : "成功逃脱"}
@@ -1287,7 +1237,7 @@ function App() {
             ) : endingType === "normal_key" ? (
               <>
                 <p>
-                  你集齐了三枚钥匙碎片，将它们按「☉」符号、「右转两次」刻字、「三合一」提示的顺序
+                  你集齐了三枚钥匙碎片，将它们按「\u2299」符号、「右转两次」刻字、「三合一」提示的顺序
                   小心翼翼地拼合在一起，形成了一把散发着冷光的完整钥匙。
                 </p>
                 <p>
@@ -1399,7 +1349,7 @@ function App() {
         <article>
           <small>隐藏</small>
           <strong>
-            {hiddenClueCount > 0 ? `�️ ${hiddenClueCount}/3` : "🔒 0/3"}
+            {hiddenClueCount > 0 ? `\uD83D\uDDDD ${hiddenClueCount}/3` : "\uD83D\uDD12 0/3"}
           </strong>
         </article>
       </section>
@@ -1953,9 +1903,9 @@ function App() {
           {!drawerUnlocked && hasItem("note_bookshelf") &&
             " 🔢 书架纸条提示密码7-3-1倒序即1-3-7，去打开抽屉吧！"}
           {drawerUnlocked && !paintingRemoved && hasScrewdriver &&
-            " 🪛 有螺丝刀了，去取下挂画看看背后有什么！"}
+            " \uD83D\uDD27 有螺丝刀了，去取下挂画看看背后有什么！"}
           {drawerUnlocked && !boxOpened && hasScrewdriver && paintingRemoved &&
-            " 🪛 挂画已取下，再去撬开箱子看看！"}
+            " \uD83D\uDD27 挂画已取下，再去撬开箱子看看！"}
           {drawerUnlocked && paintingRemoved && boxOpened && !hasFlashlight &&
             " 💡 挂画和箱子都探索完了，去台灯那里看看有什么工具！"}
           {drawerUnlocked && paintingRemoved && boxOpened && hasFlashlight && !hasBattery && !hasPoweredFlashlight &&
