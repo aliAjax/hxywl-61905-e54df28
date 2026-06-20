@@ -277,7 +277,17 @@ function App() {
       const raw = localStorage.getItem(SAVE_KEY);
       if (!raw) return false;
       const data = JSON.parse(raw) as SaveData;
-      return data.version === 1 && data.inventory.length > 0;
+      if (data.version !== 1) return false;
+      return (
+        data.inventory.length > 0 ||
+        (data.investigatedCells?.length ?? 0) > 0 ||
+        data.drawerUnlocked ||
+        data.boxOpened ||
+        data.paintingRemoved ||
+        data.curtainChecked ||
+        data.escaped ||
+        data.flashlightActive
+      );
     } catch {
       return false;
     }
