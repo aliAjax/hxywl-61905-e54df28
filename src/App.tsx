@@ -1246,7 +1246,7 @@ function App() {
           {drawerUnlocked && paintingRemoved && boxOpened && hasFlashlight && !flashlightActive && !hasItem("note_carpet") &&
             " 🔦 打开手电筒，去地毯那里找找荧光暗号！"}
           {flashlightActive && !hasItem("note_carpet") &&
-            " � 手电筒已开，去地毯那里找找荧光暗号！"}
+            " 🔦 手电筒已开，去地毯那里找找荧光暗号！"}
           {drawerUnlocked && paintingRemoved && boxOpened && !curtainChecked &&
             " 🪟 别忘了查看窗帘背后有没有刻字！"}
           {fragmentCount === 3 && !hasCompleteKey &&
