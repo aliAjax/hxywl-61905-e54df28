@@ -14,10 +14,13 @@ interface ItemDef {
 
 interface CellDef {
   label: string;
+  icon: string;
   description: string;
   itemId: string | null;
   hiddenItemId?: string;
   darkHint?: string;
+  clueDetail: string;
+  nextHint: string;
 }
 
 const ITEMS: Record<string, ItemDef> = {
@@ -96,15 +99,89 @@ const ITEMS: Record<string, ItemDef> = {
 };
 
 const CELLS: CellDef[] = [
-  { label: "书架", description: "一排落满灰尘的旧书，书脊上标注着奇怪的编号。", itemId: "note_bookshelf" },
-  { label: "花瓶", description: "一只青花瓷花瓶，瓶口似乎塞着什么东西。", itemId: "frag_a" },
-  { label: "抽屉", description: "半开的木抽屉，里面散落着几张废纸。", itemId: "note_drawer" },
-  { label: "挂画", description: "一幅暗色调油画，画框微微松动。", itemId: "frag_b" },
-  { label: "地毯", description: "厚实的波斯地毯，边角微微翘起。", itemId: null, hiddenItemId: "note_carpet", darkHint: "地毯角落似乎有微弱的荧光……试试手电筒？" },
-  { label: "台灯", description: "一盏复古台灯，灯罩下藏着小巧的手电筒。", itemId: "flashlight" },
-  { label: "门锁", description: "一扇铁门上的密码锁，需要输入4位数字。", itemId: null },
-  { label: "箱子", description: "一只贴着封条的铁皮箱，底部有暗格。", itemId: "frag_c" },
-  { label: "窗帘", description: "厚重的深色窗帘，遮住了整个窗户。", itemId: "note_curtain" },
+  {
+    label: "书架",
+    icon: "📚",
+    description: "一排落满灰尘的旧书，书脊上标注着奇怪的编号。",
+    itemId: "note_bookshelf",
+    clueDetail:
+      "书架上整齐排列着十几本老旧书籍，书脊上的编号从1到9依次排列，但第7、3、1册的书脊颜色略有不同，似乎经常被人抽出过。仔细检查书架夹层，你发现了一张藏在书后的泛黄纸条。",
+    nextHint: "纸条上写着「书脊编号7-3-1，倒序即真相」，也许和某处密码有关。继续探索其他地方寻找更多线索。",
+  },
+  {
+    label: "花瓶",
+    icon: "🏺",
+    description: "一只青花瓷花瓶，瓶口似乎塞着什么东西。",
+    itemId: "frag_a",
+    clueDetail:
+      "青花瓷瓶身上绘着缠枝莲纹，瓶底有「大明宣德年制」的落款。瓶口塞着一团皱巴巴的纸条？不对——伸手进去摸索，你触碰到一块冰凉的金属碎片。",
+    nextHint: "获得了一枚钥匙碎片！碎片上刻着符号「☉」。房间里应该还有其他碎片，继续寻找它们吧。",
+  },
+  {
+    label: "抽屉",
+    icon: "🗄️",
+    description: "半开的木抽屉，里面散落着几张废纸。",
+    itemId: "note_drawer",
+    clueDetail:
+      "木质抽屉已经有些老旧，导轨发出吱呀的响声。抽屉里散落着几张没用的废纸，底部有一些铅笔涂鸦。抽屉底部内侧有一道细微的刻槽，槽里塞着一张薄纸片。",
+    nextHint: "纸条上画着指向左边的箭头和「光的颜色是关键——红、蓝、绿」的字样。这也许是某个机关的提示。",
+  },
+  {
+    label: "挂画",
+    icon: "🖼️",
+    description: "一幅暗色调油画，画框微微松动。",
+    itemId: "frag_b",
+    clueDetail:
+      "画作描绘的是一片阴沉的森林，色调压抑。画框微微翘起一角，似乎经常被人移动过。小心地取下挂画，你发现画框背面的挂钩上挂着一片金属碎片。",
+    nextHint: "又一枚钥匙碎片！内侧刻有「右转两次」的字样。继续寻找第三枚碎片吧。",
+  },
+  {
+    label: "地毯",
+    icon: "🧶",
+    description: "厚实的波斯地毯，边角微微翘起。",
+    itemId: null,
+    hiddenItemId: "note_carpet",
+    darkHint: "地毯角落似乎有微弱的荧光……试试手电筒？",
+    clueDetail:
+      "波斯地毯图案繁复，织工精细。地毯边角微微翘起，下面似乎压着什么东西。凑近仔细看，地毯角落隐约有一些荧光痕迹，但光线太暗看不清楚。",
+    nextHint: "地毯下似乎藏着秘密，但光线太暗看不清楚。也许需要找到能照亮暗处的工具……",
+  },
+  {
+    label: "台灯",
+    icon: "💡",
+    description: "一盏复古台灯，灯罩下藏着小巧的手电筒。",
+    itemId: "flashlight",
+    clueDetail:
+      "复古台灯造型优雅，灯罩是磨砂玻璃的。灯座旁放着一盏小巧的LED手电筒，看起来电量还很充足。",
+    nextHint: "获得了手电筒！打开它可以照亮房间里的暗处，也许能发现肉眼难以察觉的线索。",
+  },
+  {
+    label: "门锁",
+    icon: "🔒",
+    description: "一扇铁门上的密码锁，需要输入4位数字。",
+    itemId: null,
+    clueDetail:
+      "厚重的铁门牢牢锁住了出口，门上有一个四位数字密码锁。锁旁边有一个钥匙孔，看起来需要一把特殊的钥匙才能打开。密码锁旁边还有一些划痕，似乎有人尝试过开锁但失败了。",
+    nextHint: "需要找到钥匙和密码才能打开这扇门。继续探索房间收集线索吧。",
+  },
+  {
+    label: "箱子",
+    icon: "📦",
+    description: "一只贴着封条的铁皮箱，底部有暗格。",
+    itemId: "frag_c",
+    clueDetail:
+      "铁皮箱上贴着破旧的封条，写着「证物」二字。箱子没有上锁了，但底部有一个暗格。打开暗格，里面躺着一枚钥匙的尾部碎片。",
+    nextHint: "第三枚钥匙碎片！握柄背面刻着「三合一，门自开」。集齐三枚碎片就能组合成完整的钥匙。",
+  },
+  {
+    label: "窗帘",
+    icon: "🪟",
+    description: "厚重的深色窗帘，遮住了整个窗户。",
+    itemId: "note_curtain",
+    clueDetail:
+      "厚重的深色窗帘完全遮住了窗户，光线很难透进来。拉开窗帘，窗玻璃上似乎……不，是窗帘背面！有人用指甲在窗帘布上刻下了字迹。",
+    nextHint: "窗帘背面刻着「向左三圈，再向右一圈」，旁边还有一个太阳图案。这或许与门锁的旋转方向有关。",
+  },
 ];
 
 const CATEGORY_LABEL: Record<ItemCategory, string> = {
@@ -137,6 +214,8 @@ function App() {
   const [filterTab, setFilterTab] = useState<FilterTab>("all");
   const [flashlightActive, setFlashlightActive] = useState(false);
   const [escaped, setEscaped] = useState(false);
+  const [investigatedCells, setInvestigatedCells] = useState<Set<number>>(new Set());
+  const [clueModalIndex, setClueModalIndex] = useState<number | null>(null);
 
   const showMsg = useCallback(
     (text: string, type: "info" | "collect" | "empty") => {
@@ -154,35 +233,29 @@ function App() {
     (index: number) => {
       if (escaped) return;
       const cell = CELLS[index];
+      const isInvestigated = investigatedCells.has(index);
+
+      if (!isInvestigated) {
+        setInvestigatedCells((prev) => new Set(prev).add(index));
+      }
 
       if (!cell.itemId && cell.hiddenItemId && flashlightActive) {
-        if (inventory.includes(cell.hiddenItemId)) {
-          showMsg(`你已经从${cell.label}拿到了「${ITEMS[cell.hiddenItemId].name}」`, "info");
-        } else {
+        if (!inventory.includes(cell.hiddenItemId)) {
           setInventory((prev) => [...prev, cell.hiddenItemId!]);
           setJustCollected(cell.hiddenItemId!);
           setTimeout(() => setJustCollected(null), 600);
-          showMsg(`用手电筒照亮${cell.label}，发现了「${ITEMS[cell.hiddenItemId!].name}」！`, "collect");
         }
-        return;
-      }
-
-      if (cell.itemId) {
-        if (inventory.includes(cell.itemId)) {
-          showMsg(`你已经从${cell.label}拿到了「${ITEMS[cell.itemId].name}」`, "info");
-        } else {
+      } else if (cell.itemId) {
+        if (!inventory.includes(cell.itemId)) {
           setInventory((prev) => [...prev, cell.itemId!]);
           setJustCollected(cell.itemId!);
           setTimeout(() => setJustCollected(null), 600);
-          showMsg(`从${cell.label}中发现了「${ITEMS[cell.itemId].name}」！`, "collect");
         }
-      } else if (cell.hiddenItemId && !flashlightActive && hasFlashlight) {
-        showMsg(cell.darkHint || "这里似乎藏着什么，试试打开手电筒？", "info");
-      } else {
-        showMsg(cell.description, "empty");
       }
+
+      setClueModalIndex(index);
     },
-    [inventory, showMsg, flashlightActive, hasFlashlight, escaped]
+    [inventory, flashlightActive, escaped, investigatedCells]
   );
 
   const handleItemClick = useCallback(
@@ -268,15 +341,18 @@ function App() {
             const collected = cell.itemId && inventory.includes(cell.itemId);
             const hiddenCollected = cell.hiddenItemId && inventory.includes(cell.hiddenItemId);
             const isLit = flashlightActive && cell.hiddenItemId && !hiddenCollected;
+            const isInvestigated = investigatedCells.has(index);
             return (
               <button
-                className={`board-cell ${collected || hiddenCollected ? "collected" : ""} ${isLit ? "flashlight-lit" : ""}`}
+                className={`board-cell ${collected || hiddenCollected ? "collected" : ""} ${isLit ? "flashlight-lit" : ""} ${isInvestigated ? "investigated" : ""}`}
                 key={index}
                 onClick={() => handleCellClick(index)}
               >
+                <span className="cell-icon">{cell.icon}</span>
                 <span className="cell-label">{cell.label}</span>
                 {(collected || hiddenCollected) && <span className="cell-check">✓</span>}
                 {isLit && <span className="cell-glow">💡</span>}
+                {isInvestigated && !(collected || hiddenCollected) && <span className="cell-investigated">👁️</span>}
               </button>
             );
           })}
@@ -393,6 +469,90 @@ function App() {
           </div>
         </div>
       )}
+
+      {clueModalIndex !== null && (() => {
+        const cell = CELLS[clueModalIndex];
+        const collectedItem = cell.itemId && inventory.includes(cell.itemId) ? ITEMS[cell.itemId] : null;
+        const hiddenCollectedItem = cell.hiddenItemId && inventory.includes(cell.hiddenItemId) ? ITEMS[cell.hiddenItemId] : null;
+        const gotClue = collectedItem || hiddenCollectedItem;
+        const isFirstTime = investigatedCells.has(clueModalIndex) && (
+          (cell.itemId && justCollected === cell.itemId) ||
+          (cell.hiddenItemId && justCollected === cell.hiddenItemId) ||
+          (!cell.itemId && !cell.hiddenItemId && investigatedCells.size === 1)
+        );
+
+        return (
+          <div className="modal-overlay clue-modal-overlay" onClick={() => setClueModalIndex(null)}>
+            <div className="modal-card clue-modal-card" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header clue-modal-header">
+                <span className="modal-icon clue-modal-icon">{cell.icon}</span>
+                <div>
+                  <h3>{cell.label}</h3>
+                  <span className="clue-status-tag">
+                    {gotClue ? "✨ 已获得线索" : investigatedCells.has(clueModalIndex) ? "👁️ 已调查" : "🔍 调查中"}
+                  </span>
+                </div>
+                <button className="modal-close" onClick={() => setClueModalIndex(null)}>
+                  ✕
+                </button>
+              </div>
+
+              <div className="clue-detail-section">
+                <h4 className="clue-section-title">📖 场景描述</h4>
+                <p className="clue-detail-text">{cell.clueDetail}</p>
+              </div>
+
+              <div className="clue-detail-section">
+                <h4 className="clue-section-title">
+                  {gotClue ? "🎁 获得线索" : "🔍 线索状态"}
+                </h4>
+                {gotClue ? (
+                  <div className="clue-item-box">
+                    <span className="clue-item-icon">{gotClue.icon}</span>
+                    <div className="clue-item-info">
+                      <span className="clue-item-name">{gotClue.name}</span>
+                      <span className="clue-item-desc">{gotClue.description}</span>
+                    </div>
+                    <button
+                      className="clue-item-view-btn"
+                      onClick={() => {
+                        setDetailItem(gotClue);
+                        setClueModalIndex(null);
+                      }}
+                    >
+                      查看详情
+                    </button>
+                  </div>
+                ) : cell.hiddenItemId && !flashlightActive ? (
+                  <p className="clue-status-text hint-text">
+                    {cell.darkHint || "这里似乎藏着什么，试试打开手电筒？"}
+                  </p>
+                ) : (
+                  <p className="clue-status-text">
+                    这里没有发现可收集的物品。
+                  </p>
+                )}
+              </div>
+
+              <div className="clue-detail-section">
+                <h4 className="clue-section-title">💡 下一步提示</h4>
+                <p className="clue-hint-text">
+                  {cell.hiddenItemId && !flashlightActive && hasFlashlight
+                    ? "打开手电筒，也许能发现隐藏的线索！"
+                    : cell.nextHint}
+                </p>
+              </div>
+
+              <button
+                className="action-btn clue-close-btn"
+                onClick={() => setClueModalIndex(null)}
+              >
+                知道了
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       <section className="result-panel">
         <h2>探索进度</h2>
