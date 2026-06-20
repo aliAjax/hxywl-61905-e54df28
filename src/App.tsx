@@ -388,23 +388,42 @@ function App() {
               alreadyChecked: true,
             };
           }
-          const canUseKey = hasCompleteKey && curtainChecked;
-          const canUsePassword = hasItem("note_carpet");
+          const missingSteps: string[] = [];
+          if (!drawerUnlocked) missingSteps.push("打开抽屉");
+          if (!paintingRemoved) missingSteps.push("取下挂画");
+          if (!boxOpened) missingSteps.push("撬开箱子");
+          if (!hasItem("note_curtain")) missingSteps.push("查看窗帘刻字");
+          if (!hasItem("note_carpet")) missingSteps.push("找到地毯密码");
+
+          const canUseKey = hasCompleteKey && hasItem("note_curtain") && drawerUnlocked && boxOpened && paintingRemoved;
+          const canUsePassword = hasItem("note_carpet") && drawerUnlocked && boxOpened && paintingRemoved;
+          const allExplored = drawerUnlocked && boxOpened && paintingRemoved;
+
+          let hintText = "";
+          if (missingSteps.length > 0) {
+            hintText = `还需完成：${missingSteps.join("、")}。`;
+          }
+          if (canUseKey && canUsePassword) {
+            hintText += " 一切就绪！可以用完整钥匙开锁，或输入密码 1-3-7-9 开门。";
+          } else if (canUsePassword) {
+            hintText += " 地毯暗号已知：1-3-7-9，可以输入密码开门了！";
+          } else if (canUseKey) {
+            hintText += " 完整钥匙和使用方法都已齐备，可以用钥匙开锁了！";
+          } else if (allExplored && fragmentCount < 3) {
+            hintText += ` 还需收集 ${3 - fragmentCount} 片钥匙碎片。`;
+          } else if (allExplored && fragmentCount === 3 && !hasCompleteKey) {
+            hintText += " 三枚碎片已齐，到物品栏组合成完整钥匙！";
+          } else if (allExplored && hasCompleteKey && !hasItem("note_curtain")) {
+            hintText += " 钥匙已组合好，但还需要查看窗帘上的使用方法。";
+          }
+
           return {
-            description: "一扇铁门上的密码锁，需要输入4位数字或使用完整钥匙。",
+            description: "一扇铁门上的密码锁，需要完成全部探索才能开启。",
             clueDetail:
-              "厚重的铁门牢牢锁住了出口。门上有一个四位数字密码锁，锁旁还有一个钥匙孔。密码锁旁还有操作说明：「可凭四位密码开启，或凭完整钥匙按特定方向转动开启。」",
-            nextHint: canUseKey
-              ? "你已经集齐了完整钥匙，也看过窗帘上刻的使用方法（向左三圈，再向右一圈）！可以用钥匙开锁了。"
-              : canUsePassword
-              ? "你已经从地毯的荧光暗号中得知了四位密码1-3-7-9，可以输入密码开门了！"
-              : hasCompleteKey
-              ? "三片碎片已拼成完整钥匙，但你还不知道转动方法——窗帘背面似乎刻着相关提示，去看看吧。"
-              : fragmentCount === 3
-              ? "三枚钥匙碎片已齐，但需要先把它们组合成完整钥匙。另外你还需要找到使用钥匙的方法和/或门锁密码。"
-              : `当前钥匙碎片仅有${fragmentCount}/3，还需要找到密码线索或集齐钥匙。继续探索吧。`,
+              "厚重的铁门牢牢锁住了出口。门上有一个四位数字密码锁，锁旁还有一个钥匙孔。锁下方刻着一行小字：「须尽搜此间所有机关，方可开启此门。」",
+            nextHint: hintText || "继续探索房间，完成所有关键步骤后再来。",
             isLocked: true,
-            lockReason: "需要密码或钥匙",
+            lockReason: missingSteps.length > 0 ? `未完成：${missingSteps.join("、")}` : "需要密码或钥匙",
           };
         }
 
@@ -631,11 +650,28 @@ function App() {
         setTimeout(() => setLockError(false), 600);
       }
     } else if (lockTarget === "door") {
-      const canUsePassword = hasItem("note_carpet");
-      if (!canUsePassword) {
+      if (!drawerUnlocked) {
         setLockError(true);
         setTimeout(() => setLockError(false), 600);
-        showMsg("你还不知道密码是什么，先去找到密码线索！", "error");
+        showMsg("你还没有打开抽屉。必须先找到抽屉密码，取出螺丝刀推进探索！", "error");
+        return;
+      }
+      if (!boxOpened) {
+        setLockError(true);
+        setTimeout(() => setLockError(false), 600);
+        showMsg("你还没有撬开箱子。必须先用螺丝刀打开箱子，完整探索房间！", "error");
+        return;
+      }
+      if (!paintingRemoved) {
+        setLockError(true);
+        setTimeout(() => setLockError(false), 600);
+        showMsg("你还没有取下挂画。必须先用螺丝刀取下挂画，仔细检查每一处！", "error");
+        return;
+      }
+      if (!hasItem("note_carpet")) {
+        setLockError(true);
+        setTimeout(() => setLockError(false), 600);
+        showMsg("你还不知道密码是什么。打开手电筒照地毯，找到荧光暗号！", "error");
         return;
       }
       if (entered === DOOR_PASSWORD) {
@@ -650,8 +686,20 @@ function App() {
   }, [lockDigits, lockTarget, collectItem, showMsg]);
 
   const handleUseKeyOnDoor = useCallback(() => {
+    if (!drawerUnlocked) {
+      showMsg("抽屉还没打开，必须先完成基础探索才能用钥匙！", "error");
+      return;
+    }
+    if (!boxOpened) {
+      showMsg("箱子还没撬开，完整探索后再用钥匙！", "error");
+      return;
+    }
+    if (!paintingRemoved) {
+      showMsg("挂画还没取下，仔细检查每一处再用钥匙！", "error");
+      return;
+    }
     if (!hasCompleteKey) {
-      showMsg("需要先组合成完整钥匙。", "error");
+      showMsg("需要先集齐3片碎片并组合成完整钥匙。", "error");
       return;
     }
     if (!curtainChecked) {
@@ -665,7 +713,7 @@ function App() {
     setEscapeMethod("key");
     setEscaped(true);
     setLockTarget(null);
-  }, [hasCompleteKey, curtainChecked, showMsg]);
+  }, [hasCompleteKey, curtainChecked, drawerUnlocked, boxOpened, paintingRemoved, showMsg]);
 
   const filteredInventory =
     filterTab === "all" ? inventory : inventory.filter((id) => ITEMS[id]?.category === filterTab);
@@ -732,11 +780,19 @@ function App() {
           <strong>
             {flashlightActive
               ? "🔦 照明中"
-              : hasCompleteKey && curtainChecked
-                ? "🔑 可用钥匙"
-                : hasItem("note_carpet")
-                  ? "🔢 已知密码"
-                  : "探索中"}
+              : !drawerUnlocked
+                ? "🔍 需开抽屉"
+                : !paintingRemoved && !boxOpened
+                  ? "🪛 需拆挂画/箱子"
+                  : !paintingRemoved
+                    ? "🖼️ 需拆挂画"
+                    : !boxOpened
+                      ? "📦 需撬箱子"
+                      : hasCompleteKey && hasItem("note_curtain")
+                        ? "🔑 可用钥匙"
+                        : hasItem("note_carpet")
+                          ? "🔢 已知密码"
+                          : "🧩 探索中"}
           </strong>
         </article>
       </section>
@@ -840,23 +896,53 @@ function App() {
             </button>
             <button
               className="action-btn"
-              disabled={!hasCompleteKey || !curtainChecked}
-              onClick={hasCompleteKey && curtainChecked ? handleUseKeyOnDoor : undefined}
+              disabled={
+                !drawerUnlocked ||
+                !boxOpened ||
+                !paintingRemoved ||
+                !hasCompleteKey ||
+                !curtainChecked ||
+                !hasItem("note_curtain")
+              }
+              onClick={
+                drawerUnlocked &&
+                boxOpened &&
+                paintingRemoved &&
+                hasCompleteKey &&
+                curtainChecked &&
+                hasItem("note_curtain")
+                  ? handleUseKeyOnDoor
+                  : undefined
+              }
               title={
-                !hasCompleteKey
-                  ? "需要先集齐3片碎片并组合成完整钥匙"
-                  : !curtainChecked
-                    ? "需要先查看窗帘上的使用说明"
-                    : ""
+                !drawerUnlocked
+                  ? "需要先打开抽屉"
+                  : !boxOpened
+                    ? "需要先撬开箱子"
+                    : !paintingRemoved
+                      ? "需要先取下挂画"
+                      : !hasCompleteKey
+                        ? "需要先集齐3片碎片并组合成完整钥匙"
+                        : !curtainChecked
+                          ? "需要先查看窗帘"
+                          : !hasItem("note_curtain")
+                            ? "需要获得钥匙使用说明纸条"
+                            : ""
               }
             >
-              {!hasCompleteKey
-                ? "需要完整钥匙"
-                : !curtainChecked
-                  ? "先查看窗帘刻字"
-                  : !hasItem("note_curtain")
-                    ? "需要钥匙使用说明"
-                    : "🔑 用钥匙开锁"}
+              {!drawerUnlocked
+                ? "先打开抽屉"
+                : !boxOpened
+                  ? "先撬开箱子"
+                  : !paintingRemoved
+                    ? "先取下挂画"
+                    : !hasCompleteKey
+                      ? "需要完整钥匙"
+                      : !curtainChecked
+                        ? "先查看窗帘"
+                        : !hasItem("note_curtain")
+                          ? "需要钥匙说明"
+                          : "🔑 用钥匙开锁"}
             </button>
           </div>
         </aside>
@@ -1027,7 +1113,24 @@ function App() {
         const title = isDrawer ? "抽屉密码锁" : "门锁密码";
         const subtitle = isDrawer ? "请输入3位数字密码" : "请输入4位数字密码";
         const icon = isDrawer ? "🗄️" : "🔒";
-        const canUsePassword = !isDrawer && hasItem("note_carpet");
+        const canUsePassword =
+          !isDrawer &&
+          hasItem("note_carpet") &&
+          drawerUnlocked &&
+          boxOpened &&
+          paintingRemoved;
+        const canUseKeyInModal =
+          !isDrawer &&
+          drawerUnlocked &&
+          boxOpened &&
+          paintingRemoved &&
+          hasCompleteKey &&
+          hasItem("note_curtain");
+
+        const missingDoorSteps: string[] = [];
+        if (!drawerUnlocked) missingDoorSteps.push("打开抽屉");
+        if (!paintingRemoved) missingDoorSteps.push("取下挂画");
+        if (!boxOpened) missingDoorSteps.push("撬开箱子");
 
         return (
           <div className="modal-overlay" onClick={() => setLockTarget(null)}>
@@ -1048,12 +1151,17 @@ function App() {
 
               {!isDrawer && (
                 <div style={{ marginBottom: "12px" }}>
-                  {!canUsePassword && (
+                  {missingDoorSteps.length > 0 && (
+                    <p className="lock-error-text" style={{ margin: "0 0 8px", textAlign: "left" }}>
+                      ⚠️ 必须先完成：{missingDoorSteps.join("、")}，完整探索后才能开启门锁！
+                    </p>
+                  )}
+                  {!hasItem("note_carpet") && missingDoorSteps.length === 0 && (
                     <p className="lock-error-text" style={{ margin: "0 0 8px", textAlign: "left" }}>
                       ⚠️ 你还不知道密码。需要先从地毯荧光暗号中找到密码线索。
                     </p>
                   )}
-                  {hasCompleteKey && curtainChecked && (
+                  {canUseKeyInModal && (
                     <button
                       className="action-btn modal-use-btn"
                       style={{ width: "100%" }}
@@ -1131,20 +1239,22 @@ function App() {
             " 🔢 书架纸条提示密码7-3-1倒序即1-3-7，去打开抽屉吧！"}
           {drawerUnlocked && !paintingRemoved && hasScrewdriver &&
             " 🪛 有螺丝刀了，去取下挂画看看背后有什么！"}
-          {drawerUnlocked && !boxOpened && hasScrewdriver &&
-            " 🪛 有螺丝刀了，去撬开箱子看看！"}
+          {drawerUnlocked && !boxOpened && hasScrewdriver && paintingRemoved &&
+            " 🪛 挂画已取下，再去撬开箱子看看！"}
+          {drawerUnlocked && paintingRemoved && boxOpened && !hasFlashlight &&
+            " 💡 挂画和箱子都探索完了，去台灯那里看看有什么工具！"}
+          {drawerUnlocked && paintingRemoved && boxOpened && hasFlashlight && !flashlightActive && !hasItem("note_carpet") &&
+            " 🔦 打开手电筒，去地毯那里找找荧光暗号！"}
           {flashlightActive && !hasItem("note_carpet") &&
-            " 🔦 手电筒已开，去地毯那里找找荧光暗号！"}
-          {!flashlightActive && hasFlashlight && !hasItem("note_carpet") &&
-            " 💡 记得打开手电筒检查地毯！"}
+            " � 手电筒已开，去地毯那里找找荧光暗号！"}
+          {drawerUnlocked && paintingRemoved && boxOpened && !curtainChecked &&
+            " 🪟 别忘了查看窗帘背后有没有刻字！"}
           {fragmentCount === 3 && !hasCompleteKey &&
             " 🗝️ 三枚碎片已齐，可以组合成完整钥匙了！"}
-          {hasCompleteKey && !curtainChecked &&
+          {hasCompleteKey && !hasItem("note_curtain") &&
             " 🪟 钥匙已组合好，但还需要查看窗帘上的使用方法！"}
-          {hasCompleteKey && curtainChecked && hasItem("note_curtain") &&
-            " 🔑 一切就绪，可以用钥匙开锁或者输入密码1379！"}
-          {!drawerUnlocked &&
-            " 继续探索房间，收集更多线索与道具。"}
+          {drawerUnlocked && paintingRemoved && boxOpened && hasCompleteKey && hasItem("note_curtain") && hasItem("note_carpet") &&
+            " ✅ 全部线索与道具已收集！可以用钥匙开锁或输入密码 1379 逃脱！"}
         </p>
       </section>
     </main>
