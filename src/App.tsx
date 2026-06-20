@@ -12,6 +12,15 @@ interface ItemDef {
   detail: string;
 }
 
+interface CombineRecipe {
+  id: string;
+  inputs: string[];
+  output: string;
+  consumesInputs: boolean;
+  successMessage: string;
+  failMessage: string;
+}
+
 interface CellState {
   label: string;
   icon: string;
@@ -97,12 +106,12 @@ const ITEMS: Record<string, ItemDef> = {
   },
   flashlight: {
     id: "flashlight",
-    name: "手电筒",
+    name: "手电筒（无电池）",
     category: "tool",
     icon: "🔦",
-    description: "一盏小巧的LED手电筒，电量充足。",
+    description: "一盏小巧的LED手电筒，但电池仓是空的。",
     detail:
-      "手电筒开关灵敏，光束聚焦良好。照亮暗处时似乎能看到平时肉眼难以察觉的痕迹——也许房间某些角落还藏着用荧光墨水书写的暗号。\n\n提示：打开手电筒后，检查地毯下方。",
+      "手电筒外观完好，开关灵敏，但电池仓是空的——没有电池就无法点亮。灯头处的透镜干净透亮，看来之前的主人很爱惜它。\n\n提示：需要找到一节电池才能使用。装电池的地方……也许在抽屉里？",
   },
   screwdriver: {
     id: "screwdriver",
@@ -121,6 +130,24 @@ const ITEMS: Record<string, ItemDef> = {
     description: "三片碎片拼合而成的完整钥匙，散发着金属光泽。",
     detail:
       "将三片碎片按「☉」符号、「右转两次」刻字、「三合一」提示的顺序组合，形成一把完整的钥匙。钥匙柄上有三道刻痕，提示着使用方法：向左三圈，再向右一圈。",
+  },
+  battery: {
+    id: "battery",
+    name: "电池",
+    category: "tool",
+    icon: "🔋",
+    description: "一节崭新的五号电池，电量充足。",
+    detail:
+      "一节标准的五号干电池，包装完好。上面标注着「高能环保」的字样。也许能给某些电子设备供电——比如手电筒？",
+  },
+  powered_flashlight: {
+    id: "powered_flashlight",
+    name: "可用手电筒",
+    category: "tool",
+    icon: "🔦",
+    description: "装上电池的手电筒，光束明亮。",
+    detail:
+      "手电筒装上电池后焕然一新，光束聚焦良好。照亮暗处时能看到平时肉眼难以察觉的痕迹——也许房间某些角落还藏着用荧光墨水书写的暗号。\n\n提示：打开手电筒后，检查地毯下方。",
   },
 };
 
@@ -150,6 +177,25 @@ const CATEGORY_COLOR: Record<ItemCategory, string> = {
   note: "#a855f7",
   tool: "#22d3ee",
 };
+
+const COMBINE_RECIPES: CombineRecipe[] = [
+  {
+    id: "complete_key",
+    inputs: ["frag_a", "frag_b", "frag_c"],
+    output: "complete_key",
+    consumesInputs: true,
+    successMessage: "🔑 三片碎片成功组合成完整钥匙！",
+    failMessage: "碎片似乎对不上，需要集齐三片才能组合。",
+  },
+  {
+    id: "powered_flashlight",
+    inputs: ["flashlight", "battery"],
+    output: "powered_flashlight",
+    consumesInputs: true,
+    successMessage: "🔦 手电筒装上电池，亮了！可以照亮暗处了！",
+    failMessage: "这两样东西似乎没法组合在一起。",
+  },
+];
 
 type FilterTab = "all" | ItemCategory;
 
@@ -188,6 +234,9 @@ function App() {
   const [lockDigits, setLockDigits] = useState<string[]>([]);
   const [lockError, setLockError] = useState(false);
 
+  const [combineMode, setCombineMode] = useState(false);
+  const [selectedForCombine, setSelectedForCombine] = useState<string[]>([]);
+
   const [drawerUnlocked, setDrawerUnlocked] = useState(false);
   const [boxOpened, setBoxOpened] = useState(false);
   const [paintingRemoved, setPaintingRemoved] = useState(false);
@@ -205,12 +254,77 @@ function App() {
 
   const hasItem = (id: string) => inventory.includes(id);
   const hasFlashlight = hasItem("flashlight");
+  const hasPoweredFlashlight = hasItem("powered_flashlight");
   const hasScrewdriver = hasItem("screwdriver");
   const hasCompleteKey = hasItem("complete_key");
+  const hasBattery = hasItem("battery");
   const fragmentCount = inventory.filter(
     (id) => ITEMS[id]?.category === "key_fragment" && id !== "complete_key"
   ).length;
   const noteCount = inventory.filter((id) => ITEMS[id]?.category === "note").length;
+  const toolCount = inventory.filter((id) => ITEMS[id]?.category === "tool").length;
+
+  const findMatchingRecipe = useCallback((): CombineRecipe | null => {
+    for (const recipe of COMBINE_RECIPES) {
+      const hasAllInputs = recipe.inputs.every(
+        (inputId) =>
+          selectedForCombine.includes(inputId) ||
+          (hasItem(inputId) && !selectedForCombine.includes(inputId))
+      );
+      const hasAtLeastOneSelected = recipe.inputs.some((inputId) =>
+        selectedForCombine.includes(inputId)
+      );
+      const notAlreadyHave = !hasItem(recipe.output);
+      if (hasAllInputs && hasAtLeastOneSelected && notAlreadyHave) {
+        return recipe;
+      }
+    }
+    return null;
+  }, [selectedForCombine, inventory]);
+
+  const canCombine = findMatchingRecipe() !== null;
+
+  const toggleCombineSelect = useCallback(
+    (itemId: string) => {
+      if (selectedForCombine.includes(itemId)) {
+        setSelectedForCombine((prev) => prev.filter((id) => id !== itemId));
+      } else if (selectedForCombine.length < 3) {
+        setSelectedForCombine((prev) => [...prev, itemId]);
+      }
+    },
+    [selectedForCombine]
+  );
+
+  const handleCombine = useCallback(() => {
+    const recipe = findMatchingRecipe();
+    if (!recipe) {
+      showMsg("这几样东西似乎没法组合在一起。", "error");
+      return;
+    }
+
+    if (recipe.consumesInputs) {
+      const newInventory = inventory.filter(
+        (id) => !recipe.inputs.includes(id)
+      );
+      newInventory.push(recipe.output);
+      setInventory(newInventory);
+    } else {
+      if (!hasItem(recipe.output)) {
+        setInventory((prev) => [...prev, recipe.output]);
+      }
+    }
+
+    setJustCollected(recipe.output);
+    setTimeout(() => setJustCollected(null), 600);
+    showMsg(recipe.successMessage, "collect");
+    setSelectedForCombine([]);
+    setCombineMode(false);
+  }, [findMatchingRecipe, inventory, showMsg]);
+
+  const toggleCombineMode = useCallback(() => {
+    setCombineMode((prev) => !prev);
+    setSelectedForCombine([]);
+  }, []);
 
   const collectItem = useCallback(
     (itemId: string) => {
@@ -280,22 +394,29 @@ function App() {
           } else {
             const gotScrewdriver = hasItem("screwdriver");
             const gotNote = hasItem("note_drawer");
-            const allGot = gotScrewdriver && gotNote;
+            const gotBattery = hasItem("battery");
+            const allGot = gotScrewdriver && gotNote && gotBattery;
+            const remainingCount =
+              (gotScrewdriver ? 0 : 1) + (gotNote ? 0 : 1) + (gotBattery ? 0 : 1);
+            let itemToShow: string | undefined;
+            if (!gotScrewdriver) itemToShow = "screwdriver";
+            else if (!gotBattery) itemToShow = "battery";
+            else if (!gotNote) itemToShow = "note_drawer";
             return {
               description: allGot
                 ? "一个空木抽屉，里面散落着几张废纸。"
-                : "一只打开的木抽屉，里面似乎还有东西。",
+                : `一只打开的木抽屉，里面似乎还有${remainingCount}样东西。`,
               clueDetail: allGot
                 ? "木质抽屉敞开着，里面除了几张没用的废纸，所有有价值的东西都被你取走了。底部的刻槽空空如也。"
-                : "木质抽屉敞开着，抽屉里散落着几张没用的废纸，底部有一些铅笔涂鸦。抽屉底部内侧有一道细微的刻槽，旁边还放着一把螺丝刀！",
+                : "木质抽屉敞开着，抽屉里散落着几张没用的废纸，底部有一些铅笔涂鸦。抽屉底部内侧有一道细微的刻槽，旁边放着一把螺丝刀和一节电池！",
               nextHint: allGot
                 ? "抽屉里的东西都被你取走了，继续探索其他地方吧。"
-                : gotNote
-                ? "抽屉里还有一把螺丝刀！拿上它，也许能撬开挂画和箱子。"
-                : gotScrewdriver
-                ? "抽屉底部的刻槽里还有一张薄纸片，写着挂画和箱子都需要螺丝刀才能打开。"
-                : "你在抽屉里发现了一把螺丝刀和一张纸条！纸条提示：挂画背后和铁皮箱都需要螺丝刀才能打开。",
-              itemId: gotNote ? (gotScrewdriver ? undefined : "screwdriver") : "screwdriver",
+                : remainingCount === 2
+                ? "抽屉里还有东西没拿完，继续探索吧！"
+                : remainingCount === 1
+                ? "抽屉里还有一样东西，别忘了拿走！"
+                : "你在抽屉里发现了螺丝刀、电池和一张纸条！纸条提示：挂画背后和铁皮箱都需要螺丝刀才能打开。",
+              itemId: itemToShow,
               alreadyChecked: allGot,
             };
           }
@@ -337,7 +458,7 @@ function App() {
 
         case "地毯": {
           const got = hasItem("note_carpet");
-          const canSee = flashlightActive;
+          const canSee = flashlightActive && hasPoweredFlashlight;
           return {
             description: got
               ? "厚实的波斯地毯，边角微微翘起。"
@@ -348,16 +469,20 @@ function App() {
               ? "波斯地毯图案繁复，织工精细。地毯边角微微翘起——不过荧光暗号已经被你记录下来了，这里没有更多东西了。"
               : canSee
               ? "波斯地毯图案繁复，织工精细。在手电筒的强光照射下，地毯角落的荧光墨水逐渐显现——那是一串数字和一些说明文字！"
+              : hasFlashlight && !hasPoweredFlashlight
+              ? "波斯地毯图案繁复，织工精细。地毯边角微微翘起，下面似乎压着什么东西。你有手电筒，但好像没装电池，亮不起来。"
               : "波斯地毯图案繁复，织工精细。地毯边角微微翘起，下面似乎压着什么东西。凑近仔细看，地毯角落隐约有一些痕迹，但光线太暗看不清楚。",
             nextHint: got
               ? "地毯的线索已经收集完毕。"
               : canSee
               ? "荧光暗号显示密码是1-3-7-9！这就是门锁的四位密码！如果你集齐了钥匙碎片和窗帘上的使用说明，也可以选择用钥匙开锁。"
+              : hasPoweredFlashlight
+              ? "地毯下似乎藏着秘密，先打开手电筒照照看！"
               : hasFlashlight
-              ? "地毯下似乎藏着秘密，但光线太暗看不清楚。打开手电筒照照看！"
+              ? "手电筒没电池，亮不起来。也许需要找一节电池来——抽屉里好像有工具？"
               : "地毯下似乎有痕迹但看不清楚。也许需要一盏能照亮暗处的工具——台灯旁边是不是有什么？",
             itemId: got ? undefined : canSee ? "note_carpet" : undefined,
-            requires: canSee ? undefined : "flashlight",
+            requires: canSee ? undefined : "powered_flashlight",
             alreadyChecked: got,
           };
         }
@@ -533,11 +658,13 @@ function App() {
           showMsg("挂画被螺丝固定，需要螺丝刀才能取下。", "error");
         } else if (cell.label === "箱子") {
           showMsg("箱子封条太牢固，需要螺丝刀才能撬开。", "error");
-        } else if (cell.label === "地毯" && content.requires === "flashlight") {
-          if (hasFlashlight && !flashlightActive) {
+        } else if (cell.label === "地毯" && content.requires === "powered_flashlight") {
+          if (hasPoweredFlashlight && !flashlightActive) {
             showMsg("光线太暗，先打开手电筒看看。", "info");
+          } else if (hasFlashlight && !hasPoweredFlashlight) {
+            showMsg("手电筒没有电池，亮不起来。需要找到电池后组合使用。", "info");
           } else {
-            showMsg("太暗了看不清，需要找到手电筒。", "info");
+            showMsg("太暗了看不清，需要找到能发光的工具。", "info");
           }
         }
         setClueModalIndex(index);
@@ -565,6 +692,9 @@ function App() {
         if (!hasItem("note_drawer")) {
           collectItem("note_drawer");
         }
+        if (!hasItem("battery")) {
+          collectItem("battery");
+        }
       }
 
       if (content.itemId) {
@@ -591,7 +721,11 @@ function App() {
 
   const handleItemClick = useCallback(
     (itemId: string) => {
-      if (itemId === "flashlight") {
+      if (combineMode) {
+        toggleCombineSelect(itemId);
+        return;
+      }
+      if (itemId === "powered_flashlight") {
         setFlashlightActive((prev) => !prev);
         if (!flashlightActive) {
           showMsg("🔦 手电筒已打开，暗处的线索将显现！", "collect");
@@ -601,7 +735,7 @@ function App() {
       }
       setDetailItem(ITEMS[itemId]);
     },
-    [flashlightActive, showMsg]
+    [combineMode, toggleCombineSelect, flashlightActive, showMsg]
   );
 
   const handleCombineKey = useCallback(() => {
@@ -750,7 +884,7 @@ function App() {
     return {
       isLocked: content.isLocked,
       alreadyChecked: content.alreadyChecked,
-      isLit: flashlightActive && CELL_LABELS[index].label === "地毯" && !hasItem("note_carpet"),
+      isLit: flashlightActive && hasPoweredFlashlight && CELL_LABELS[index].label === "地毯" && !hasItem("note_carpet"),
     };
   };
 
@@ -778,7 +912,7 @@ function App() {
         <article>
           <small>状态</small>
           <strong>
-            {flashlightActive
+            {flashlightActive && hasPoweredFlashlight
               ? "🔦 照明中"
               : !drawerUnlocked
                 ? "🔍 需开抽屉"
@@ -788,11 +922,13 @@ function App() {
                     ? "🖼️ 需拆挂画"
                     : !boxOpened
                       ? "📦 需撬箱子"
-                      : hasCompleteKey && hasItem("note_curtain")
-                        ? "🔑 可用钥匙"
-                        : hasItem("note_carpet")
-                          ? "🔢 已知密码"
-                          : "🧩 探索中"}
+                      : hasFlashlight && hasBattery && !hasPoweredFlashlight
+                        ? "🔋 可组合手电"
+                        : hasCompleteKey && hasItem("note_curtain")
+                          ? "🔑 可用钥匙"
+                          : hasItem("note_carpet")
+                            ? "🔢 已知密码"
+                            : "🧩 探索中"}
           </strong>
         </article>
       </section>
@@ -832,7 +968,7 @@ function App() {
             </span>
             <span style={{ color: CATEGORY_COLOR.note }}>📝 {noteCount}</span>
             <span style={{ color: CATEGORY_COLOR.tool }}>
-              🔧 {(hasFlashlight ? 1 : 0) + (hasScrewdriver ? 1 : 0)}
+              🔧 {toolCount}
             </span>
           </div>
 
@@ -848,6 +984,35 @@ function App() {
             ))}
           </div>
 
+          {combineMode && (
+            <div className="combine-slots">
+              <div className="combine-slots-title">
+                选择要组合的道具（最多3个）
+              </div>
+              <div className="combine-slot-row">
+                {[0, 1, 2].map((i) => {
+                  const itemId = selectedForCombine[i];
+                  const item = itemId ? ITEMS[itemId] : null;
+                  return (
+                    <div
+                      key={i}
+                      className={`combine-slot ${item ? "combine-slot-filled" : ""}`}
+                    >
+                      {item ? (
+                        <>
+                          <span className="combine-slot-icon">{item.icon}</span>
+                          <span className="combine-slot-name">{item.name}</span>
+                        </>
+                      ) : (
+                        <span className="combine-slot-placeholder">空</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {filteredInventory.length === 0 ? (
             <p className="empty-hint">
               {inventory.length === 0
@@ -860,10 +1025,11 @@ function App() {
                 const item = ITEMS[itemId];
                 if (!item) return null;
                 const isNew = justCollected === itemId;
-                const isActiveFlashlight = itemId === "flashlight" && flashlightActive;
+                const isActiveFlashlight = itemId === "powered_flashlight" && flashlightActive;
+                const isSelected = selectedForCombine.includes(itemId);
                 return (
                   <button
-                    className={`inventory-item ${isNew ? "item-pop" : ""} ${isActiveFlashlight ? "item-active" : ""}`}
+                    className={`inventory-item ${isNew ? "item-pop" : ""} ${isActiveFlashlight ? "item-active" : ""} ${isSelected ? "item-selected" : ""} ${combineMode ? "item-combine-mode" : ""}`}
                     key={itemId}
                     onClick={() => handleItemClick(itemId)}
                   >
@@ -873,9 +1039,11 @@ function App() {
                       <span className="item-tag" style={{ color: CATEGORY_COLOR[item.category] }}>
                         {CATEGORY_LABEL[item.category]}
                         {isActiveFlashlight && " · 已开启"}
+                        {isSelected && " · 已选"}
                       </span>
                     </span>
                     {isActiveFlashlight && <span className="item-status">ON</span>}
+                    {isSelected && <span className="item-check">✓</span>}
                   </button>
                 );
               })}
@@ -883,17 +1051,33 @@ function App() {
           )}
 
           <div className="actions">
-            <button
-              className="action-btn"
-              disabled={fragmentCount < 3 || hasCompleteKey}
-              onClick={fragmentCount >= 3 && !hasCompleteKey ? handleCombineKey : undefined}
-            >
-              {hasCompleteKey
-                ? "🔑 已有完整钥匙"
-                : fragmentCount < 3
-                  ? `组合钥匙（${fragmentCount}/3）`
-                  : "🔓 组合钥匙碎片"}
-            </button>
+            {!combineMode ? (
+              <button
+                className="action-btn combine-toggle-btn"
+                onClick={toggleCombineMode}
+                disabled={inventory.length < 2}
+                title={inventory.length < 2 ? "至少需要2个道具才能组合" : "选择道具进行组合"}
+              >
+                🔧 组合道具
+              </button>
+            ) : (
+              <>
+                <button
+                  className="action-btn combine-confirm-btn"
+                  disabled={!canCombine}
+                  onClick={canCombine ? handleCombine : undefined}
+                  title={canCombine ? "确认组合选中的道具" : "选中的道具无法组合，请尝试其他搭配"}
+                >
+                  {canCombine ? "✨ 确认组合" : "无法组合"}
+                </button>
+                <button
+                  className="action-btn combine-cancel-btn"
+                  onClick={toggleCombineMode}
+                >
+                  取消
+                </button>
+              </>
+            )}
             <button
               className="action-btn"
               disabled={
@@ -977,7 +1161,7 @@ function App() {
                 <p key={i}>{line}</p>
               ))}
             </div>
-            {detailItem.id === "flashlight" && (
+            {detailItem.id === "powered_flashlight" && (
               <button
                 className="action-btn modal-use-btn"
                 onClick={() => {
@@ -992,6 +1176,16 @@ function App() {
               >
                 {flashlightActive ? "关闭手电筒" : "🔦 打开手电筒"}
               </button>
+            )}
+            {detailItem.id === "flashlight" && (
+              <p className="modal-hint">
+                💡 提示：这把手电筒没有电池，需要找到电池后组合使用。
+              </p>
+            )}
+            {detailItem.id === "battery" && (
+              <p className="modal-hint">
+                💡 提示：也许能和某个电子设备组合使用——比如台灯旁边那把手电筒？
+              </p>
             )}
           </div>
         </div>
@@ -1074,15 +1268,17 @@ function App() {
                       </button>
                     )}
                   </p>
-                ) : content.requires === "flashlight" && !flashlightActive ? (
+                ) : content.requires === "powered_flashlight" ? (
                   <p className="clue-status-text hint-text">
-                    {hasFlashlight
+                    {hasPoweredFlashlight && !flashlightActive
                       ? "这里似乎藏着荧光墨水书写的暗号。打开手电筒照照看！"
-                      : "光线太暗看不清楚，需要找到手电筒。台灯旁边似乎有一个……"}
+                      : hasFlashlight && !hasPoweredFlashlight
+                        ? "你有手电筒，但没有电池亮不起来。去抽屉里找找电池，然后组合使用！"
+                        : "光线太暗看不清楚，需要找到能发光的工具。台灯旁边似乎有一个……"}
                   </p>
                 ) : (
                   <p className="clue-status-text">
-                    {cell.label === "地毯" && flashlightActive
+                    {cell.label === "地毯" && flashlightActive && hasPoweredFlashlight
                       ? "地毯的线索已经被你记录下来了。"
                       : cell.label === "窗帘" && curtainChecked
                         ? "窗帘上的刻字你已经记下了。"
@@ -1243,9 +1439,13 @@ function App() {
             " 🪛 挂画已取下，再去撬开箱子看看！"}
           {drawerUnlocked && paintingRemoved && boxOpened && !hasFlashlight &&
             " 💡 挂画和箱子都探索完了，去台灯那里看看有什么工具！"}
-          {drawerUnlocked && paintingRemoved && boxOpened && hasFlashlight && !flashlightActive && !hasItem("note_carpet") &&
+          {drawerUnlocked && paintingRemoved && boxOpened && hasFlashlight && !hasBattery && !hasPoweredFlashlight &&
+            " 🔦 找到手电筒了，但没有电池亮不起来。去抽屉里找找有没有电池？"}
+          {hasFlashlight && hasBattery && !hasPoweredFlashlight &&
+            " 🔋 手电筒和电池都有了！去物品栏组合一下，让手电筒亮起来！"}
+          {hasPoweredFlashlight && !flashlightActive && !hasItem("note_carpet") &&
             " 🔦 打开手电筒，去地毯那里找找荧光暗号！"}
-          {flashlightActive && !hasItem("note_carpet") &&
+          {flashlightActive && hasPoweredFlashlight && !hasItem("note_carpet") &&
             " 🔦 手电筒已开，去地毯那里找找荧光暗号！"}
           {drawerUnlocked && paintingRemoved && boxOpened && !curtainChecked &&
             " 🪟 别忘了查看窗帘背后有没有刻字！"}
