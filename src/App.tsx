@@ -196,6 +196,8 @@ const CATEGORY_COLOR: Record<ItemCategory, string> = {
   flashlight: "#22d3ee",
 };
 
+const CORRECT_PASSWORD = "1379";
+
 type FilterTab = "all" | ItemCategory;
 
 const FILTER_TABS: { key: FilterTab; label: string }[] = [
@@ -216,6 +218,9 @@ function App() {
   const [escaped, setEscaped] = useState(false);
   const [investigatedCells, setInvestigatedCells] = useState<Set<number>>(new Set());
   const [clueModalIndex, setClueModalIndex] = useState<number | null>(null);
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [passwordDigits, setPasswordDigits] = useState<string[]>([]);
+  const [passwordError, setPasswordError] = useState(false);
 
   const showMsg = useCallback(
     (text: string, type: "info" | "collect" | "empty") => {
@@ -237,6 +242,13 @@ function App() {
 
       if (!isInvestigated) {
         setInvestigatedCells((prev) => new Set(prev).add(index));
+      }
+
+      if (cell.label === "门锁") {
+        setPasswordModalOpen(true);
+        setPasswordDigits([]);
+        setPasswordError(false);
+        return;
       }
 
       if (!cell.itemId && cell.hiddenItemId && flashlightActive) {
@@ -276,6 +288,31 @@ function App() {
   const handleCombineKey = useCallback(() => {
     setEscaped(true);
   }, []);
+
+  const handlePasswordDigit = useCallback(
+    (digit: string) => {
+      if (passwordDigits.length < 4) {
+        setPasswordDigits((prev) => [...prev, digit]);
+        setPasswordError(false);
+      }
+    },
+    [passwordDigits.length]
+  );
+
+  const handlePasswordDelete = useCallback(() => {
+    setPasswordDigits((prev) => prev.slice(0, -1));
+    setPasswordError(false);
+  }, []);
+
+  const handlePasswordSubmit = useCallback(() => {
+    const entered = passwordDigits.join("");
+    if (entered === CORRECT_PASSWORD) {
+      setEscaped(true);
+    } else {
+      setPasswordError(true);
+      setTimeout(() => setPasswordError(false), 600);
+    }
+  }, [passwordDigits]);
 
   const fragmentCount = inventory.filter((id) => ITEMS[id].category === "key_fragment").length;
   const noteCount = inventory.filter((id) => ITEMS[id].category === "note").length;
@@ -553,6 +590,72 @@ function App() {
           </div>
         );
       })()}
+
+      {passwordModalOpen && (
+        <div className="modal-overlay" onClick={() => setPasswordModalOpen(false)}>
+          <div
+            className={`modal-card lock-modal-card ${passwordError ? "lock-shake" : ""}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <span className="modal-icon">🔒</span>
+              <div>
+                <h3>密码锁</h3>
+                <span className="clue-status-tag">请输入4位数字密码</span>
+              </div>
+              <button className="modal-close" onClick={() => setPasswordModalOpen(false)}>
+                ✕
+              </button>
+            </div>
+
+            <div className="lock-digits">
+              {[0, 1, 2, 3].map((i) => (
+                <span
+                  key={i}
+                  className={`lock-digit ${passwordError ? "lock-digit-error" : ""} ${i === passwordDigits.length ? "lock-digit-active" : ""}`}
+                >
+                  {passwordDigits[i] || ""}
+                </span>
+              ))}
+            </div>
+
+            {passwordError && (
+              <p className="lock-error-text">密码错误，请重新输入</p>
+            )}
+
+            <div className="lock-numpad">
+              {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => (
+                <button
+                  key={d}
+                  className="lock-numpad-key"
+                  onClick={() => handlePasswordDigit(d)}
+                >
+                  {d}
+                </button>
+              ))}
+              <button
+                className="lock-numpad-key lock-numpad-delete"
+                onClick={handlePasswordDelete}
+              >
+                ⌫
+              </button>
+              <button
+                className="lock-numpad-key"
+                onClick={() => handlePasswordDigit("0")}
+              >
+                0
+              </button>
+              <button
+                className={`lock-numpad-key lock-numpad-submit ${passwordDigits.length === 4 ? "lock-numpad-submit-active" : ""}`}
+                disabled={passwordDigits.length < 4}
+                onClick={handlePasswordSubmit}
+              >
+                ✓
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <section className="result-panel">
         <h2>探索进度</h2>

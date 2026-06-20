@@ -820,3 +820,123 @@ button {
     padding: 20px;
   }
 }
+
+.lock-modal-card {
+  width: min(380px, 100%);
+}
+
+.lock-digits {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 20px 0 12px;
+}
+
+.lock-digit {
+  width: 56px;
+  height: 64px;
+  border: 2px solid rgba(148, 163, 184, 0.3);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 800;
+  color: #f8fafc;
+  transition: border-color 200ms ease, background 200ms ease, transform 200ms ease;
+}
+
+.lock-digit-active {
+  border-color: var(--secondary);
+  background: rgba(168, 85, 247, 0.08);
+}
+
+.lock-digit-error {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+  color: #fca5a5;
+}
+
+.lock-error-text {
+  text-align: center;
+  color: #fca5a5;
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  animation: lockErrorFade 0.6s ease;
+}
+
+@keyframes lockErrorFade {
+  0% { opacity: 0; transform: translateY(-6px); }
+  30% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 1; }
+}
+
+.lock-numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.lock-numpad-key {
+  min-height: 52px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 10px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--primary) 52%, #1e293b), #111827);
+  color: #f8fafc;
+  font-size: 22px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lock-numpad-key:active {
+  transform: translateY(2px) scale(0.96);
+  border-color: var(--secondary);
+  background: linear-gradient(145deg, rgba(168, 85, 247, 0.2), rgba(15, 23, 42, 0.9));
+}
+
+.lock-numpad-delete {
+  color: #94a3b8;
+  font-size: 24px;
+}
+
+.lock-numpad-delete:hover {
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+.lock-numpad-submit {
+  color: #22d3ee;
+  background: rgba(34, 211, 238, 0.08);
+}
+
+.lock-numpad-submit-active {
+  background: linear-gradient(135deg, #22d3ee, #0891b2);
+  color: #0f172a;
+  border-color: rgba(34, 211, 238, 0.4);
+}
+
+.lock-numpad-submit:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background: rgba(34, 211, 238, 0.04);
+  color: #22d3ee;
+}
+
+.lock-shake {
+  animation: lockShake 0.4s ease;
+}
+
+@keyframes lockShake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-8px); }
+  30% { transform: translateX(8px); }
+  45% { transform: translateX(-6px); }
+  60% { transform: translateX(6px); }
+  75% { transform: translateX(-3px); }
+  90% { transform: translateX(3px); }
+}
