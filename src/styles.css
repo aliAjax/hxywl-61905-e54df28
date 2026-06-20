@@ -1276,3 +1276,136 @@ button {
     flex-direction: column;
   }
 }
+
+.hud-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+@media (max-width: 820px) {
+  .hud-5 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.victory-panel.normal-ending {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+}
+
+.victory-panel.true-ending {
+  background:
+    radial-gradient(ellipse at top, rgba(251, 191, 36, 0.15), transparent 60%),
+    linear-gradient(180deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+  border-color: rgba(251, 191, 36, 0.35);
+  box-shadow:
+    0 24px 70px rgba(251, 191, 36, 0.15),
+    0 24px 70px rgba(0, 0, 0, 0.35);
+}
+
+.victory-title {
+  margin: 0 0 8px;
+  font-size: 32px;
+}
+
+.victory-title.true-ending-title {
+  background: linear-gradient(135deg, #fbbf24, #f97316, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.victory-ending-tag {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 0 24px;
+}
+
+.normal-ending .victory-ending-tag {
+  background: rgba(168, 85, 247, 0.15);
+  color: #a855f7;
+  border: 1px solid rgba(168, 85, 247, 0.25);
+}
+
+.true-ending .victory-ending-tag {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.victory-story {
+  text-align: left;
+  margin: 0 auto 28px;
+  padding: 20px 22px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 14px;
+  max-width: 520px;
+}
+
+.true-ending .victory-story {
+  background: rgba(251, 191, 36, 0.05);
+  border-color: rgba(251, 191, 36, 0.15);
+}
+
+.victory-story p {
+  color: #cbd5e1;
+  line-height: 1.85;
+  margin: 0;
+  font-size: 14px;
+}
+
+.victory-story p + p {
+  margin-top: 10px;
+}
+
+.victory-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 600px) {
+  .victory-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 10px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.true-ending .stat-card {
+  background: rgba(251, 191, 36, 0.06);
+  border-color: rgba(251, 191, 36, 0.15);
+}
+
+.stat-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.true-ending .stat-value {
+  color: #fbbf24;
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+}

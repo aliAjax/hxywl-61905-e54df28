@@ -3,6 +3,8 @@ import "./styles.css";
 
 const SAVE_KEY = "escape_room_save_v1";
 
+type EndingType = "normal_key" | "normal_password" | "true_ending" | null;
+
 interface SaveData {
   version: number;
   savedAt: number;
@@ -16,6 +18,12 @@ interface SaveData {
   escapeMethod: "key" | "password" | null;
   flashlightActive: boolean;
   lastHint: string;
+  gameStartTime: number;
+  combineCount: number;
+  hiddenCurtainChecked: boolean;
+  hiddenPaintingChecked: boolean;
+  hiddenLampChecked: boolean;
+  endingType: EndingType;
 }
 
 type ItemCategory = "key_fragment" | "note" | "tool";
@@ -55,7 +63,9 @@ type GameStage =
   | "carpet_checked"
   | "escaped";
 
-type LockTarget = "drawer" | "box" | "door" | null;
+type LockTarget = "drawer" | "box" | "door" | "hidden" | null;
+
+const HIDDEN_PASSWORD = "482";
 
 const ITEMS: Record<string, ItemDef> = {
   frag_a: {
@@ -166,6 +176,33 @@ const ITEMS: Record<string, ItemDef> = {
     detail:
       "手电筒装上电池后焕然一新，光束聚焦良好。照亮暗处时能看到平时肉眼难以察觉的痕迹——也许房间某些角落还藏着用荧光墨水书写的暗号。\n\n提示：打开手电筒后，检查地毯下方。",
   },
+  note_hidden_curtain: {
+    id: "note_hidden_curtain",
+    name: "暗码·窗帘",
+    category: "note",
+    icon: "📜",
+    description: "窗帘最深折痕处隐约刻下的数字暗号。",
+    detail:
+      "将窗帘完全展开，在最深处的一道折缝中，有人用针尖刻下了一个数字：\n\n「4」\n\n字迹虽浅却清晰，似乎暗示着某种密码的一位数字。窗帘、挂画、台灯——这三处若都有暗码，拼在一起也许就是真相的钥匙。",
+  },
+  note_hidden_painting: {
+    id: "note_hidden_painting",
+    name: "暗码·挂画",
+    category: "note",
+    icon: "📜",
+    description: "画框内侧隐秘角落刻下的数字暗号。",
+    detail:
+      "取下挂画后，将画框翻到背面，在靠近挂钩的一个隐秘角落里，发现了被人用小刀刻下的数字：\n\n「8」\n\n刻痕很新，像是不久前才留下的。窗帘、挂画、台灯——这三处的暗码拼在一起，也许能打开另一扇门。",
+  },
+  note_hidden_lamp: {
+    id: "note_hidden_lamp",
+    name: "暗码·台灯",
+    category: "note",
+    icon: "📜",
+    description: "台灯底座下方贴着的微型数字暗号。",
+    detail:
+      "将台灯轻轻抬起，底座下方贴着一张几乎看不见的微型标签，上面用极小的字体印着一个数字：\n\n「2」\n\n标签边缘有胶水残留的痕迹，似乎是匆忙贴上的。窗帘「4」、挂画「8」、台灯「2」——按此顺序排列，就是三位隐藏密码：4-8-2。",
+  },
 };
 
 const CELL_LABELS: CellState[] = [
@@ -261,6 +298,14 @@ function App() {
   const [paintingRemoved, setPaintingRemoved] = useState(false);
   const [curtainChecked, setCurtainChecked] = useState(false);
 
+  const [gameStartTime, setGameStartTime] = useState<number>(0);
+  const [currentTime, setCurrentTime] = useState<number>(0);
+  const [combineCount, setCombineCount] = useState(0);
+  const [hiddenCurtainChecked, setHiddenCurtainChecked] = useState(false);
+  const [hiddenPaintingChecked, setHiddenPaintingChecked] = useState(false);
+  const [hiddenLampChecked, setHiddenLampChecked] = useState(false);
+  const [endingType, setEndingType] = useState<EndingType>(null);
+
   const showMsg = useCallback(
     (text: string, type: "info" | "collect" | "empty" | "error") => {
       setMessage({ text, type });
@@ -286,7 +331,10 @@ function App() {
         data.paintingRemoved ||
         data.curtainChecked ||
         data.escaped ||
-        data.flashlightActive
+        data.flashlightActive ||
+        data.hiddenCurtainChecked ||
+        data.hiddenPaintingChecked ||
+        data.hiddenLampChecked
       );
     } catch {
       return false;
@@ -308,6 +356,12 @@ function App() {
         escapeMethod,
         flashlightActive,
         lastHint,
+        gameStartTime,
+        combineCount,
+        hiddenCurtainChecked,
+        hiddenPaintingChecked,
+        hiddenLampChecked,
+        endingType,
       };
       localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
     } catch (e) {
@@ -324,6 +378,12 @@ function App() {
     escapeMethod,
     flashlightActive,
     lastHint,
+    gameStartTime,
+    combineCount,
+    hiddenCurtainChecked,
+    hiddenPaintingChecked,
+    hiddenLampChecked,
+    endingType,
   ]);
 
   const loadGame = useCallback(() => {
@@ -343,6 +403,12 @@ function App() {
       setEscapeMethod(data.escapeMethod || null);
       setFlashlightActive(!!data.flashlightActive);
       setLastHint(data.lastHint || "");
+      setGameStartTime(data.gameStartTime || Date.now());
+      setCombineCount(data.combineCount || 0);
+      setHiddenCurtainChecked(!!data.hiddenCurtainChecked);
+      setHiddenPaintingChecked(!!data.hiddenPaintingChecked);
+      setHiddenLampChecked(!!data.hiddenLampChecked);
+      setEndingType(data.endingType || null);
       return true;
     } catch (e) {
       console.error("读取存档失败:", e);
@@ -379,11 +445,19 @@ function App() {
     setCombineMode(false);
     setSelectedForCombine([]);
     setClueModalIndex(null);
+    setGameStartTime(0);
+    setCurrentTime(0);
+    setCombineCount(0);
+    setHiddenCurtainChecked(false);
+    setHiddenPaintingChecked(false);
+    setHiddenLampChecked(false);
+    setEndingType(null);
   }, []);
 
   const handleNewGame = useCallback(() => {
     clearSave();
     resetGameState();
+    setGameStartTime(Date.now());
     setGameStarted(true);
   }, [clearSave, resetGameState]);
 
@@ -420,8 +494,31 @@ function App() {
     escapeMethod,
     flashlightActive,
     lastHint,
+    combineCount,
+    hiddenCurtainChecked,
+    hiddenPaintingChecked,
+    hiddenLampChecked,
+    endingType,
     saveGame,
   ]);
+
+  useEffect(() => {
+    if (!gameStarted || escaped || gameStartTime === 0) return;
+    const timer = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [gameStarted, escaped, gameStartTime]);
+
+  const formatTime = useCallback((ms: number): string => {
+    if (ms <= 0) return "00:00";
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+  }, []);
+
+  const elapsedTime = currentTime > 0 && gameStartTime > 0 ? currentTime - gameStartTime : 0;
 
   const hasItem = (id: string) => inventory.includes(id);
   const hasFlashlight = hasItem("flashlight");
@@ -434,6 +531,13 @@ function App() {
   ).length;
   const noteCount = inventory.filter((id) => ITEMS[id]?.category === "note").length;
   const toolCount = inventory.filter((id) => ITEMS[id]?.category === "tool").length;
+
+  const hiddenClueCount = [
+    hasItem("note_hidden_curtain"),
+    hasItem("note_hidden_painting"),
+    hasItem("note_hidden_lamp"),
+  ].filter(Boolean).length;
+  const hasAllHiddenClues = hiddenClueCount === 3;
 
   const findMatchingRecipe = useCallback((): CombineRecipe | null => {
     for (const recipe of COMBINE_RECIPES) {
@@ -483,6 +587,7 @@ function App() {
       return next;
     });
 
+    setCombineCount((prev) => prev + 1);
     setJustCollected(recipe.output);
     setTimeout(() => setJustCollected(null), 600);
     showMsg(recipe.successMessage, "collect");
@@ -609,19 +714,40 @@ function App() {
               lockReason: "需要螺丝刀",
             };
           } else {
-            const got = hasItem("frag_b");
+            const gotFrag = hasItem("frag_b");
+            const gotHidden = hasItem("note_hidden_painting");
+            if (!gotFrag) {
+              return {
+                description: "墙上挂着的画被取下来了，挂钩上似乎挂着东西。",
+                clueDetail:
+                  "挂画被取下后靠在墙边，墙上原本挂画的位置露出了斑驳的石灰墙面。画框背面的挂钩上，挂着一片金属碎片，在手电筒光下闪着冷光。",
+                nextHint:
+                  "获得了第二枚钥匙碎片！内侧刻有「右转两次」的字样。继续寻找第三枚碎片——也许铁皮箱子里有线索？",
+                itemId: "frag_b",
+                alreadyChecked: false,
+              };
+            }
+            if (!hiddenPaintingChecked || !gotHidden) {
+              return {
+                description: gotHidden
+                  ? "画框背面已被你仔细检查过了。"
+                  : "靠在墙边的画框，背面似乎还有未被发现的细节。",
+                clueDetail: gotHidden
+                  ? "你已经将画框翻过来仔细检查过，在挂钩旁的隐秘角落里发现了刻着的数字「8」。这是隐藏密码的第二位。"
+                  : "再次将画框翻到背面，在靠近挂钩的一个隐秘角落里——你之前没注意到的地方——发现了被人用小刀刻下的痕迹。凑近看，是一个数字「8」！",
+                nextHint: gotHidden
+                  ? "挂画的隐藏线索已经收集完毕。"
+                  : "获得了隐藏线索！挂画暗码是「8」。窗帘、挂画、台灯——三处暗码集齐后可解出隐藏密码。",
+                itemId: gotHidden ? undefined : "note_hidden_painting",
+                alreadyChecked: gotHidden,
+              };
+            }
             return {
-              description: got
-                ? "墙上挂着的画被取下来了，露出了斑驳的墙面。"
-                : "墙上挂着的画被取下来了，挂钩上似乎挂着东西。",
-              clueDetail: got
-                ? "挂画被取下后靠在墙边，墙上原本挂画的位置露出了斑驳的石灰墙面。挂钩已经空了——你取走的那枚钥匙碎片原来就挂在这里。"
-                : "挂画被取下后靠在墙边，墙上原本挂画的位置露出了斑驳的石灰墙面。画框背面的挂钩上，挂着一片金属碎片，在手电筒光下闪着冷光。",
-              nextHint: got
-                ? "挂画区域已经搜索完毕。"
-                : "获得了第二枚钥匙碎片！内侧刻有「右转两次」的字样。继续寻找第三枚碎片——也许铁皮箱子里有线索？",
-              itemId: got ? undefined : "frag_b",
-              alreadyChecked: got,
+              description: "画框背面已被你彻底检查过了。",
+              clueDetail:
+                "画框被取下后靠在墙边。你已经取走了钥匙碎片，并在画框背面发现了隐藏的数字「8」。这里没有更多东西了。",
+              nextHint: "挂画区域已彻底搜索完毕。",
+              alreadyChecked: true,
             };
           }
         }
@@ -658,19 +784,40 @@ function App() {
         }
 
         case "台灯": {
-          const got = hasItem("flashlight");
+          const gotFlashlight = hasItem("flashlight");
+          const gotHidden = hasItem("note_hidden_lamp");
+          if (!gotFlashlight) {
+            return {
+              description: "一盏复古台灯，灯罩下藏着小巧的手电筒。",
+              clueDetail:
+                "复古台灯造型优雅，灯罩是磨砂玻璃的。灯座旁放着一盏小巧的LED手电筒，看起来电量还很充足。",
+              nextHint:
+                "获得了手电筒！打开它可以照亮房间里的暗处——地毯下方似乎有什么东西需要光照才能看清。",
+              itemId: "flashlight",
+              alreadyChecked: false,
+            };
+          }
+          if (!hiddenLampChecked || !gotHidden) {
+            return {
+              description: gotHidden
+                ? "台灯底座已被你仔细检查过了。"
+                : "一盏复古台灯静静地立在那里，灯座下方似乎有些异样。",
+              clueDetail: gotHidden
+                ? "你已经将台灯抬起，在底座下方发现了贴着的微型标签，上面印着数字「2」。这是隐藏密码的第三位。"
+                : "再次仔细观察台灯，你注意到底座似乎微微翘起。小心地将台灯抬起——底座下方贴着一张几乎看不见的微型标签，上面用极小的字体印着一个数字「2」！",
+              nextHint: gotHidden
+                ? "台灯的隐藏线索已经收集完毕。"
+                : "获得了隐藏线索！台灯暗码是「2」。窗帘「4」、挂画「8」、台灯「2」——按此顺序排列，隐藏密码就是 4-8-2！",
+              itemId: gotHidden ? undefined : "note_hidden_lamp",
+              alreadyChecked: gotHidden,
+            };
+          }
           return {
-            description: got
-              ? "一盏复古台灯，静静地立在那里。"
-              : "一盏复古台灯，灯罩下藏着小巧的手电筒。",
-            clueDetail: got
-              ? "复古台灯造型优雅，灯罩是磨砂玻璃的。灯座旁原本放着的手电筒已经被你拿走了。"
-              : "复古台灯造型优雅，灯罩是磨砂玻璃的。灯座旁放着一盏小巧的LED手电筒，看起来电量还很充足。",
-            nextHint: got
-              ? "台灯旁边的东西已经被你取走了。"
-              : "获得了手电筒！打开它可以照亮房间里的暗处——地毯下方似乎有什么东西需要光照才能看清。",
-            itemId: got ? undefined : "flashlight",
-            alreadyChecked: got,
+            description: "复古台灯静静地立在那里，已被你彻底检查过。",
+            clueDetail:
+              "复古台灯造型优雅，灯罩是磨砂玻璃的。你已经拿走了灯座旁的手电筒，并在底座下方发现了隐藏的数字「2」。这里没有更多东西了。",
+            nextHint: "台灯区域已彻底搜索完毕。",
+            alreadyChecked: true,
           };
         }
 
@@ -757,23 +904,49 @@ function App() {
         }
 
         case "窗帘": {
-          const got = hasItem("note_curtain");
+          const gotNote = hasItem("note_curtain");
+          const gotHidden = hasItem("note_hidden_curtain");
+          if (!curtainChecked) {
+            return {
+              description: "厚重的深色窗帘，遮住了整个窗户。",
+              clueDetail:
+                "厚重的深色窗帘完全遮住了窗户，光线很难透进来。需要拉开窗帘仔细检查一下。",
+              nextHint: "拉开窗帘后，发现窗帘背面有刻字——记下来，这对用钥匙开锁很重要！",
+              alreadyChecked: false,
+            };
+          }
+          if (!gotNote) {
+            return {
+              description: "厚重的深色窗帘，半拉开着遮住窗户。",
+              clueDetail:
+                "厚重的深色窗帘完全遮住了窗户，光线很难透进来。拉开窗帘，窗玻璃被封死了——但窗帘背面！有人用指甲在窗帘布上刻下了字迹。",
+              nextHint:
+                "窗帘背面刻着「向左三圈，再向右一圈」，这是使用完整钥匙开锁的转动方法！如果你已经集齐了三片钥匙碎片，就可以组合成完整钥匙了。",
+              itemId: "note_curtain",
+              alreadyChecked: false,
+            };
+          }
+          if (!hiddenCurtainChecked || !gotHidden) {
+            return {
+              description: gotHidden
+                ? "窗帘最深处的折痕已被你仔细检查过。"
+                : "厚重的深色窗帘半拉开着，最深处的折缝中似乎藏着什么。",
+              clueDetail: gotHidden
+                ? "你已经将窗帘完全展开，在最深处的折缝中发现了用针尖刻下的数字「4」。这是隐藏密码的第一位。"
+                : "将窗帘完全展开，在最深处的一道折缝中——你之前没有注意到的地方——发现了有人用针尖刻下的痕迹。凑近仔细辨认，是一个数字「4」！",
+              nextHint: gotHidden
+                ? "窗帘的隐藏线索已经收集完毕。"
+                : "获得了隐藏线索！窗帘暗码是「4」。继续寻找挂画和台灯的隐藏暗码，三处集齐后可解出隐藏密码。",
+              itemId: gotHidden ? undefined : "note_hidden_curtain",
+              alreadyChecked: gotHidden,
+            };
+          }
           return {
-            description: got
-              ? "厚重的深色窗帘，半拉开着遮住窗户。"
-              : "厚重的深色窗帘，遮住了整个窗户。",
-            clueDetail: got
-              ? "厚重的深色窗帘被半拉开着，露出了被封死的窗户。窗帘背面刻的字迹你已经记录下来了。"
-              : curtainChecked
-              ? "厚重的深色窗帘完全遮住了窗户，光线很难透进来。拉开窗帘，窗玻璃被封死了——但窗帘背面！有人用指甲在窗帘布上刻下了字迹。"
-              : "厚重的深色窗帘完全遮住了窗户，光线很难透进来。需要拉开窗帘仔细检查一下。",
-            nextHint: got
-              ? "窗帘上的线索已经记录下来了。"
-              : curtainChecked
-              ? "窗帘背面刻着「向左三圈，再向右一圈」，这是使用完整钥匙开锁的转动方法！如果你已经集齐了三片钥匙碎片，就可以组合成完整钥匙了。"
-              : "拉开窗帘后，发现窗帘背面有刻字——记下来，这对用钥匙开锁很重要！",
-            itemId: got ? undefined : curtainChecked ? "note_curtain" : undefined,
-            alreadyChecked: got,
+            description: "厚重的深色窗帘半拉开着，已被你彻底检查过。",
+            clueDetail:
+              "厚重的深色窗帘被半拉开着，露出了被封死的窗户。你已经记录下了窗帘背面的开锁方法，并在最深处的折缝中发现了隐藏的数字「4」。这里没有更多东西了。",
+            nextHint: "窗帘区域已彻底搜索完毕。",
+            alreadyChecked: true,
           };
         }
 
@@ -796,6 +969,9 @@ function App() {
       fragmentCount,
       hasCompleteKey,
       flashlightActive,
+      hiddenCurtainChecked,
+      hiddenPaintingChecked,
+      hiddenLampChecked,
     ]
   );
 
@@ -855,6 +1031,21 @@ function App() {
         setCurtainChecked(true);
       }
 
+      if (cell.label === "窗帘" && curtainChecked && hasItem("note_curtain") && !hiddenCurtainChecked) {
+        setHiddenCurtainChecked(true);
+        showMsg("🔍 你将窗帘完全展开，仔细检查着每一道折缝……", "info");
+      }
+
+      if (cell.label === "挂画" && paintingRemoved && hasItem("frag_b") && !hiddenPaintingChecked) {
+        setHiddenPaintingChecked(true);
+        showMsg("🔍 你再次将画框翻到背面，仔细检查着每一个角落……", "info");
+      }
+
+      if (cell.label === "台灯" && hasItem("flashlight") && !hiddenLampChecked) {
+        setHiddenLampChecked(true);
+        showMsg("🔍 你小心地抬起台灯，仔细检查着底座下方……", "info");
+      }
+
       if (content.itemId) {
         collectItem(content.itemId);
       }
@@ -874,6 +1065,9 @@ function App() {
       flashlightActive,
       collectItem,
       showMsg,
+      hiddenCurtainChecked,
+      hiddenPaintingChecked,
+      hiddenLampChecked,
     ]
   );
 
@@ -956,6 +1150,17 @@ function App() {
       }
       if (entered === DOOR_PASSWORD) {
         setEscapeMethod("password");
+        setEndingType("normal_password");
+        setEscaped(true);
+        setLockTarget(null);
+      } else {
+        setLockError(true);
+        setTimeout(() => setLockError(false), 600);
+      }
+    } else if (lockTarget === "hidden") {
+      if (entered === HIDDEN_PASSWORD) {
+        setEscapeMethod("password");
+        setEndingType("true_ending");
         setEscaped(true);
         setLockTarget(null);
       } else {
@@ -991,6 +1196,7 @@ function App() {
       return;
     }
     setEscapeMethod("key");
+    setEndingType("normal_key");
     setEscaped(true);
     setLockTarget(null);
   }, [hasCompleteKey, curtainChecked, drawerUnlocked, boxOpened, paintingRemoved, showMsg]);
@@ -1032,6 +1238,9 @@ function App() {
   }
 
   if (escaped) {
+    const isTrueEnding = endingType === "true_ending";
+    const displayTime = formatTime(elapsedTime);
+
     return (
       <main className="game-shell">
         <section className="hero">
@@ -1039,17 +1248,101 @@ function App() {
           <h1>密室文字逃脱</h1>
           <span>点击场景收集线索，按顺序解开谜题，最终逃出密室</span>
         </section>
-        <section className="victory-panel">
-          <div className="victory-icon">🎉</div>
-          <h2>成功逃脱！</h2>
-          <p>
-            {escapeMethod === "key"
-              ? "你集齐了三枚钥匙碎片，组合成完整钥匙，并按照窗帘上「向左三圈，再向右一圈」的提示成功打开门锁，逃出了密室！"
-              : "你通过缜密的推理，依次解开抽屉密码、用螺丝刀探索挂画和箱子，最终用手电筒发现地毯下的荧光密码「1-3-7-9」，成功打开了门锁！"}
+        <section className={`victory-panel ${isTrueEnding ? "true-ending" : "normal-ending"}`}>
+          <div className="victory-icon">
+            {isTrueEnding ? "�" : "�"}
+          </div>
+          <h2 className={`victory-title ${isTrueEnding ? "true-ending-title" : ""}`}>
+            {isTrueEnding ? "真结局 · 真相大白" : "成功逃脱"}
+          </h2>
+          <p className="victory-ending-tag">
+            {isTrueEnding
+              ? "✨ 你揭开了所有隐藏的秘密"
+              : endingType === "normal_key"
+                ? "🗝️ 钥匙逃脱路线"
+                : "🔢 密码逃脱路线"}
           </p>
-          <p className="victory-stats">
-            收集道具 {inventory.length} 件 · 线索纸条 {noteCount} 张 · 钥匙碎片 3/3
-          </p>
+
+          <div className="victory-story">
+            {isTrueEnding ? (
+              <>
+                <p>
+                  当你输入隐藏密码「4-8-2」的那一刻，铁门深处传来一阵低沉的机械转动声。
+                  伴随着尘土簌簌落下，墙面缓缓移开，露出了一条从未被人发现的暗道。
+                </p>
+                <p>
+                  你穿过暗道，走进了一间被刻意隐藏的密室。墙上贴满了照片、剪报和手绘的地图——
+                  这一切都指向多年前那桩悬而未决的失踪案。
+                </p>
+                <p>
+                  书桌上摊着一本日记，最后一页写着：
+                  「如果你能读到这里，说明你比我更聪明。窗帘、挂画、台灯——
+                  这三个地方留下的线索，是我留给这个世界最后的真相。」
+                </p>
+                <p>
+                  你紧紧握住日记，走出了暗道。阳光洒在脸上，你知道——
+                  这不仅仅是一场逃脱，更是一段尘封真相的揭开。
+                </p>
+              </>
+            ) : endingType === "normal_key" ? (
+              <>
+                <p>
+                  你集齐了三枚钥匙碎片，将它们按「☉」符号、「右转两次」刻字、「三合一」提示的顺序
+                  小心翼翼地拼合在一起，形成了一把散发着冷光的完整钥匙。
+                </p>
+                <p>
+                  按照窗帘背面刻下的指示——「向左三圈，再向右一圈」——你深吸一口气，
+                  将钥匙插入门锁，伴随着清脆的"咔哒"声，沉重的铁门缓缓打开。
+                </p>
+                <p>
+                  你走出密室，重获自由。但在门关上的瞬间，你隐约觉得——
+                  这个房间里，似乎还有什么秘密没有被揭开……
+                </p>
+              </>
+            ) : (
+              <>
+                <p>
+                  你通过缜密的推理，依次解开了书架纸条暗示的抽屉密码「1-3-7」，
+                  用螺丝刀取下挂画、撬开铁皮箱，收集齐所有关键线索。
+                </p>
+                <p>
+                  最终，你用手电筒照亮地毯角落，发现了用荧光墨水写下的四位密码「1-3-7-9」。
+                  当最后一位数字输入完毕，门锁应声而开。
+                </p>
+                <p>
+                  你走出密室，呼吸着新鲜的空气。但回望那扇关闭的铁门时，
+                  一丝疑虑涌上心头——窗帘、挂画、台灯，那三个被你匆匆略过的角落，
+                  是否还藏着更深的秘密？
+                </p>
+              </>
+            )}
+          </div>
+
+          <div className="victory-stats-grid">
+            <div className="stat-card">
+              <span className="stat-icon">⏱️</span>
+              <span className="stat-value">{displayTime}</span>
+              <span className="stat-label">本局用时</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-icon">📝</span>
+              <span className="stat-value">{noteCount}</span>
+              <span className="stat-label">发现线索</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-icon">🔧</span>
+              <span className="stat-value">{combineCount}</span>
+              <span className="stat-label">道具组合</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-icon">
+                {isTrueEnding ? "🌟" : hiddenClueCount > 0 ? "🗝️" : "🔒"}
+              </span>
+              <span className="stat-value">{hiddenClueCount}/3</span>
+              <span className="stat-label">隐藏线索</span>
+            </div>
+          </div>
+
           <div className="victory-buttons">
             <button className="action-btn victory-restart" onClick={handleNewGame}>
               🔄 再来一次
@@ -1086,39 +1379,27 @@ function App() {
         <span>按顺序解开谜题：书架 → 抽屉 → 挂画/箱子 → 窗帘/地毯 → 门锁</span>
       </section>
 
-      <section className="hud">
+      <section className="hud hud-5">
+        <article>
+          <small>用时</small>
+          <strong>⏱️ {formatTime(elapsedTime)}</strong>
+        </article>
         <article>
           <small>线索</small>
-          <strong>{noteCount}</strong>
+          <strong>📝 {noteCount}</strong>
         </article>
         <article>
           <small>道具</small>
-          <strong>{inventory.length}</strong>
+          <strong>🎒 {inventory.length}</strong>
         </article>
         <article>
-          <small>碎片</small>
-          <strong>{fragmentCount}/3</strong>
+          <small>组合</small>
+          <strong>🔧 {combineCount}</strong>
         </article>
         <article>
-          <small>状态</small>
+          <small>隐藏</small>
           <strong>
-            {flashlightActive && hasPoweredFlashlight
-              ? "🔦 照明中"
-              : !drawerUnlocked
-                ? "🔍 需开抽屉"
-                : !paintingRemoved && !boxOpened
-                  ? "🪛 需拆挂画/箱子"
-                  : !paintingRemoved
-                    ? "🖼️ 需拆挂画"
-                    : !boxOpened
-                      ? "📦 需撬箱子"
-                      : hasFlashlight && hasBattery && !hasPoweredFlashlight
-                        ? "🔋 可组合手电"
-                        : hasCompleteKey && hasItem("note_curtain")
-                          ? "🔑 可用钥匙"
-                          : hasItem("note_carpet")
-                            ? "🔢 已知密码"
-                            : "🧩 探索中"}
+            {hiddenClueCount > 0 ? `�️ ${hiddenClueCount}/3` : "🔒 0/3"}
           </strong>
         </article>
       </section>
@@ -1507,18 +1788,24 @@ function App() {
 
       {lockTarget && (() => {
         const isDrawer = lockTarget === "drawer";
-        const maxLen = isDrawer ? 3 : 4;
-        const title = isDrawer ? "抽屉密码锁" : "门锁密码";
-        const subtitle = isDrawer ? "请输入3位数字密码" : "请输入4位数字密码";
-        const icon = isDrawer ? "🗄️" : "🔒";
+        const isHidden = lockTarget === "hidden";
+        const isDoor = lockTarget === "door";
+        const maxLen = isDrawer || isHidden ? 3 : 4;
+        const title = isDrawer ? "抽屉密码锁" : isHidden ? "隐藏密码锁" : "门锁密码";
+        const subtitle = isDrawer
+          ? "请输入3位数字密码"
+          : isHidden
+            ? "请输入3位隐藏密码"
+            : "请输入4位数字密码";
+        const icon = isDrawer ? "🗄️" : isHidden ? "🗝️" : "🔒";
         const canUsePassword =
-          !isDrawer &&
+          isDoor &&
           hasItem("note_carpet") &&
           drawerUnlocked &&
           boxOpened &&
           paintingRemoved;
         const canUseKeyInModal =
-          !isDrawer &&
+          isDoor &&
           drawerUnlocked &&
           boxOpened &&
           paintingRemoved &&
@@ -1547,7 +1834,7 @@ function App() {
                 </button>
               </div>
 
-              {!isDrawer && (
+              {isDoor && (
                 <div style={{ marginBottom: "12px" }}>
                   {missingDoorSteps.length > 0 && (
                     <p className="lock-error-text" style={{ margin: "0 0 8px", textAlign: "left" }}>
@@ -1568,6 +1855,34 @@ function App() {
                       🔑 使用完整钥匙开锁
                     </button>
                   )}
+                  {hasAllHiddenClues && missingDoorSteps.length === 0 && (
+                    <button
+                      className="action-btn"
+                      style={{ width: "100%", marginTop: "10px", background: "linear-gradient(135deg, #fbbf24, #f97316)", color: "#0f172a" }}
+                      onClick={() => {
+                        setLockTarget("hidden");
+                        setLockDigits([]);
+                        setLockError(false);
+                      }}
+                    >
+                      ✨ 尝试隐藏密码（真结局）
+                    </button>
+                  )}
+                  {!hasAllHiddenClues && missingDoorSteps.length === 0 && hasItem("note_carpet") && hiddenClueCount > 0 && (
+                    <p className="lock-error-text" style={{ margin: "10px 0 0", textAlign: "left", color: "#fbbf24" }}>
+                      💡 已发现 {hiddenClueCount}/3 个隐藏线索，集齐后可尝试隐藏密码解锁真结局！
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {isHidden && (
+                <div style={{ marginBottom: "12px" }}>
+                  <p style={{ margin: "0 0 8px", textAlign: "left", color: "#fbbf24", fontSize: "14px", lineHeight: "1.7" }}>
+                    📜 你已集齐三处隐藏暗码：
+                    <br />窗帘「4」· 挂画「8」· 台灯「2」
+                    <br />按此顺序输入三位数字，揭开真结局的秘密……
+                  </p>
                 </div>
               )}
 
@@ -1586,9 +1901,11 @@ function App() {
                 <p className="lock-error-text">
                   {isDrawer
                     ? "密码错误，请重新输入。提示：书架纸条——7-3-1倒序！"
-                    : canUsePassword
-                      ? "密码错误，请重新输入。地毯荧光暗号是1-3-7-9！"
-                      : "你还不知道密码，先去找到线索！"}
+                    : isHidden
+                      ? "隐藏密码错误。窗帘「4」· 挂画「8」· 台灯「2」，按顺序输入！"
+                      : canUsePassword
+                        ? "密码错误，请重新输入。地毯荧光暗号是1-3-7-9！"
+                        : "你还不知道密码，先去找到线索！"}
                 </p>
               )}
 
@@ -1655,8 +1972,10 @@ function App() {
             " 🗝️ 三枚碎片已齐，可以组合成完整钥匙了！"}
           {hasCompleteKey && !hasItem("note_curtain") &&
             " 🪟 钥匙已组合好，但还需要查看窗帘上的使用方法！"}
-          {drawerUnlocked && paintingRemoved && boxOpened && hasCompleteKey && hasItem("note_curtain") && hasItem("note_carpet") &&
-            " ✅ 全部线索与道具已收集！可以用钥匙开锁或输入密码 1379 逃脱！"}
+          {drawerUnlocked && paintingRemoved && boxOpened && hasCompleteKey && hasItem("note_curtain") && hasItem("note_carpet") && !hasAllHiddenClues &&
+            ` ✅ 基础线索已集齐！可逃脱，或继续探索隐藏线索 (${hiddenClueCount}/3)。窗帘、挂画、台灯处似乎还有更深的秘密…`}
+          {drawerUnlocked && paintingRemoved && boxOpened && hasCompleteKey && hasItem("note_curtain") && hasItem("note_carpet") && hasAllHiddenClues &&
+            " 🌟 全部线索与隐藏暗码已集齐！去门锁处尝试隐藏密码 482 解锁真结局！"}
         </p>
         {lastHint && (
           <div className="last-hint">
