@@ -1,5 +1,22 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import "./styles.css";
+
+const SAVE_KEY = "escape_room_save_v1";
+
+interface SaveData {
+  version: number;
+  savedAt: number;
+  inventory: string[];
+  investigatedCells: number[];
+  drawerUnlocked: boolean;
+  boxOpened: boolean;
+  paintingRemoved: boolean;
+  curtainChecked: boolean;
+  escaped: boolean;
+  escapeMethod: "key" | "password" | null;
+  flashlightActive: boolean;
+  lastHint: string;
+}
 
 type ItemCategory = "key_fragment" | "note" | "tool";
 
@@ -218,6 +235,7 @@ interface CellContent {
 }
 
 function App() {
+  const [gameStarted, setGameStarted] = useState(false);
   const [inventory, setInventory] = useState<string[]>([]);
   const [message, setMessage] = useState<{ text: string; type: "info" | "collect" | "empty" | "error" } | null>(null);
   const [detailItem, setDetailItem] = useState<ItemDef | null>(null);
@@ -229,6 +247,7 @@ function App() {
   const [escapeMethod, setEscapeMethod] = useState<"key" | "password" | null>(null);
   const [investigatedCells, setInvestigatedCells] = useState<Set<number>>(new Set());
   const [clueModalIndex, setClueModalIndex] = useState<number | null>(null);
+  const [lastHint, setLastHint] = useState("");
 
   const [lockTarget, setLockTarget] = useState<LockTarget>(null);
   const [lockDigits, setLockDigits] = useState<string[]>([]);
@@ -245,12 +264,154 @@ function App() {
   const showMsg = useCallback(
     (text: string, type: "info" | "collect" | "empty" | "error") => {
       setMessage({ text, type });
+      setLastHint(text);
       if (messageTimer) clearTimeout(messageTimer);
       const timer = setTimeout(() => setMessage(null), 2500);
       setMessageTimer(timer);
     },
     [messageTimer]
   );
+
+  const hasExistingSave = useMemo(() => {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return false;
+      const data = JSON.parse(raw) as SaveData;
+      return data.version === 1 && data.inventory.length > 0;
+    } catch {
+      return false;
+    }
+  }, [gameStarted]);
+
+  const saveGame = useCallback(() => {
+    try {
+      const saveData: SaveData = {
+        version: 1,
+        savedAt: Date.now(),
+        inventory: [...inventory],
+        investigatedCells: Array.from(investigatedCells),
+        drawerUnlocked,
+        boxOpened,
+        paintingRemoved,
+        curtainChecked,
+        escaped,
+        escapeMethod,
+        flashlightActive,
+        lastHint,
+      };
+      localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+    } catch (e) {
+      console.error("保存游戏失败:", e);
+    }
+  }, [
+    inventory,
+    investigatedCells,
+    drawerUnlocked,
+    boxOpened,
+    paintingRemoved,
+    curtainChecked,
+    escaped,
+    escapeMethod,
+    flashlightActive,
+    lastHint,
+  ]);
+
+  const loadGame = useCallback(() => {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return false;
+      const data = JSON.parse(raw) as SaveData;
+      if (data.version !== 1) return false;
+
+      setInventory(data.inventory || []);
+      setInvestigatedCells(new Set(data.investigatedCells || []));
+      setDrawerUnlocked(!!data.drawerUnlocked);
+      setBoxOpened(!!data.boxOpened);
+      setPaintingRemoved(!!data.paintingRemoved);
+      setCurtainChecked(!!data.curtainChecked);
+      setEscaped(!!data.escaped);
+      setEscapeMethod(data.escapeMethod || null);
+      setFlashlightActive(!!data.flashlightActive);
+      setLastHint(data.lastHint || "");
+      return true;
+    } catch (e) {
+      console.error("读取存档失败:", e);
+      return false;
+    }
+  }, []);
+
+  const clearSave = useCallback(() => {
+    try {
+      localStorage.removeItem(SAVE_KEY);
+    } catch (e) {
+      console.error("清除存档失败:", e);
+    }
+  }, []);
+
+  const resetGameState = useCallback(() => {
+    setInventory([]);
+    setInvestigatedCells(new Set());
+    setDrawerUnlocked(false);
+    setBoxOpened(false);
+    setPaintingRemoved(false);
+    setCurtainChecked(false);
+    setEscaped(false);
+    setEscapeMethod(null);
+    setFlashlightActive(false);
+    setLastHint("");
+    setMessage(null);
+    setDetailItem(null);
+    setJustCollected(null);
+    setFilterTab("all");
+    setLockTarget(null);
+    setLockDigits([]);
+    setLockError(false);
+    setCombineMode(false);
+    setSelectedForCombine([]);
+    setClueModalIndex(null);
+  }, []);
+
+  const handleNewGame = useCallback(() => {
+    clearSave();
+    resetGameState();
+    setGameStarted(true);
+  }, [clearSave, resetGameState]);
+
+  const handleContinue = useCallback(() => {
+    if (loadGame()) {
+      setGameStarted(true);
+      setTimeout(() => showMsg("📂 已加载存档，继续你的逃脱之旅！", "info"), 0);
+    } else {
+      handleNewGame();
+    }
+  }, [loadGame, handleNewGame, showMsg]);
+
+  const handleRestart = useCallback(() => {
+    if (confirm("确定要重新开始吗？当前进度将被清除且无法恢复。")) {
+      clearSave();
+      resetGameState();
+      showMsg("🔄 游戏已重置，开始新的冒险！", "info");
+    }
+  }, [clearSave, resetGameState, showMsg]);
+
+  useEffect(() => {
+    if (gameStarted) {
+      saveGame();
+    }
+  }, [
+    gameStarted,
+    inventory,
+    investigatedCells,
+    drawerUnlocked,
+    boxOpened,
+    paintingRemoved,
+    curtainChecked,
+    escaped,
+    escapeMethod,
+    flashlightActive,
+    lastHint,
+    saveGame,
+  ]);
 
   const hasItem = (id: string) => inventory.includes(id);
   const hasFlashlight = hasItem("flashlight");
@@ -827,6 +988,39 @@ function App() {
   const filteredInventory =
     filterTab === "all" ? inventory : inventory.filter((id) => ITEMS[id]?.category === filterTab);
 
+  if (!gameStarted) {
+    return (
+      <main className="game-shell">
+        <section className="hero">
+          <p>密室文字逃脱 · H5Game</p>
+          <h1>密室文字逃脱</h1>
+          <span>点击场景收集线索，按顺序解开谜题，最终逃出密室</span>
+        </section>
+        <section className="start-panel">
+          <div className="start-icon">🔐</div>
+          <h2>欢迎来到密室逃脱</h2>
+          <p className="start-desc">
+            你醒来时发现自己被困在一间神秘的房间里。仔细观察四周，收集线索和道具，
+            解开层层谜题，找到逃出密室的方法！
+          </p>
+          <div className="start-buttons">
+            <button className="action-btn start-btn primary-btn" onClick={handleNewGame}>
+              🎮 新游戏
+            </button>
+            {hasExistingSave && (
+              <button className="action-btn start-btn continue-btn" onClick={handleContinue}>
+                📂 继续游戏
+              </button>
+            )}
+          </div>
+          {hasExistingSave && (
+            <p className="save-hint">检测到本地存档，点击「继续游戏」可恢复上次进度</p>
+          )}
+        </section>
+      </main>
+    );
+  }
+
   if (escaped) {
     return (
       <main className="game-shell">
@@ -846,9 +1040,20 @@ function App() {
           <p className="victory-stats">
             收集道具 {inventory.length} 件 · 线索纸条 {noteCount} 张 · 钥匙碎片 3/3
           </p>
-          <button className="action-btn victory-restart" onClick={() => window.location.reload()}>
-            🔄 再来一次
-          </button>
+          <div className="victory-buttons">
+            <button className="action-btn victory-restart" onClick={handleNewGame}>
+              🔄 再来一次
+            </button>
+            <button
+              className="action-btn victory-restart secondary-btn"
+              onClick={() => {
+                clearSave();
+                setGameStarted(false);
+              }}
+            >
+              🏠 返回主菜单
+            </button>
+          </div>
         </section>
       </main>
     );
@@ -1102,6 +1307,18 @@ function App() {
                         : !hasItem("note_curtain")
                           ? "需要钥匙说明"
                           : "🔑 用钥匙开锁"}
+            </button>
+          </div>
+
+          <div className="game-menu">
+            <button className="action-btn menu-btn restart-btn" onClick={handleRestart}>
+              🔄 重新开始
+            </button>
+            <button
+              className="action-btn menu-btn main-menu-btn"
+              onClick={() => setGameStarted(false)}
+            >
+              🏠 主菜单
             </button>
           </div>
         </aside>
@@ -1431,6 +1648,12 @@ function App() {
           {drawerUnlocked && paintingRemoved && boxOpened && hasCompleteKey && hasItem("note_curtain") && hasItem("note_carpet") &&
             " ✅ 全部线索与道具已收集！可以用钥匙开锁或输入密码 1379 逃脱！"}
         </p>
+        {lastHint && (
+          <div className="last-hint">
+            <span className="last-hint-label">💡 最近提示</span>
+            <span className="last-hint-text">{lastHint}</span>
+          </div>
+        )}
       </section>
     </main>
   );
