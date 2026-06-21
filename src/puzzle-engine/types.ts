@@ -90,11 +90,13 @@ export interface LockKeyUnlock {
 }
 
 export interface LockHiddenPassword {
+  lockId: string;
   digits: number;
   password: string;
   showCondition: Condition;
   buttonText: string;
   onSuccess: LockResult;
+  hiddenClueItemIds?: string[];
   partialHintCondition?: Condition;
   partialHintText?: string;
 }
@@ -117,6 +119,7 @@ export interface LockDef {
   errorHint?: string;
   keyUnlock?: LockKeyUnlock;
   hiddenPassword?: LockHiddenPassword;
+  descriptionLines?: string[];
   modalHints?: LockModalHint[];
 }
 
@@ -177,6 +180,7 @@ export interface LockUIInfo {
   } | null;
   hiddenPassword: {
     canShow: boolean;
+    lockId: string;
     buttonText: string;
     digits: number;
     password: string;

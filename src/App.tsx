@@ -1010,7 +1010,7 @@ function App() {
                           color: "#0f172a",
                         }}
                         onClick={() => {
-                          setLockTargetId("hidden");
+                          setLockTargetId(lockUIInfo.hiddenPassword!.lockId);
                           setLockDigits([]);
                           setLockError(false);
                         }}
@@ -1044,11 +1044,12 @@ function App() {
                         lineHeight: "1.7",
                       }}
                     >
-                      📜 你已集齐三处隐藏暗码：
-                      <br />
-                      窗帘「4」· 挂画「8」· 台灯「2」
-                      <br />
-                      按此顺序输入三位数字，揭开真结局的秘密……
+                      {(lock.descriptionLines ?? []).map((line, i) => (
+                        <span key={line}>
+                          {line}
+                          {i < (lock.descriptionLines?.length ?? 0) - 1 && <br />}
+                        </span>
+                      ))}
                     </p>
                   </div>
                 )}

@@ -1104,6 +1104,46 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
               showMessage: "🔑 你按照窗帘背面刻下的指示——「向左三圈，再向右一圈」——小心翼翼地转动钥匙……",
               messageType: "collect"
             }
+          },
+          hiddenPassword: {
+            lockId: "hidden",
+            digits: 3,
+            password: "482",
+            showCondition: all(
+              flagTrue("drawerUnlocked"),
+              flagTrue("boxOpened"),
+              flagTrue("paintingRemoved"),
+              hasItem("note_hidden_curtain"),
+              hasItem("note_hidden_painting"),
+              hasItem("note_hidden_lamp")
+            ),
+            buttonText: "✨ 尝试隐藏密码（真结局）",
+            hiddenClueItemIds: [
+              "note_hidden_curtain",
+              "note_hidden_painting",
+              "note_hidden_lamp"
+            ],
+            partialHintCondition: all(
+              flagTrue("drawerUnlocked"),
+              flagTrue("boxOpened"),
+              flagTrue("paintingRemoved"),
+              hasItem("note_carpet"),
+              any(
+                hasItem("note_hidden_curtain"),
+                hasItem("note_hidden_painting"),
+                hasItem("note_hidden_lamp")
+              ),
+              any(
+                notHasItem("note_hidden_curtain"),
+                notHasItem("note_hidden_painting"),
+                notHasItem("note_hidden_lamp")
+              )
+            ),
+            partialHintText: "💡 已发现 {found}/{total} 个隐藏线索，集齐后可尝试隐藏密码解锁真结局！",
+            onSuccess: {
+              triggerEnding: "true_ending",
+              successMessage: "🌟 隐藏密码正确！墙面缓缓移开，一条暗道出现在你眼前……",
+            }
           }
         },
         {
@@ -1117,6 +1157,11 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
             triggerEnding: "true_ending",
             successMessage: "🌟 隐藏密码正确！墙面缓缓移开，一条暗道出现在你眼前……",
           },
+          descriptionLines: [
+            "📜 你已集齐三处隐藏暗码：",
+            "窗帘「4」· 挂画「8」· 台灯「2」",
+            "按此顺序输入三位数字，揭开真结局的秘密……"
+          ],
         },
       ],
     },

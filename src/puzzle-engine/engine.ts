@@ -638,9 +638,9 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
         };
       }
 
-      const hiddenLock = getLock("hidden");
       let hiddenPasswordResult: {
         canShow: boolean;
+        lockId: string;
         buttonText: string;
         digits: number;
         password: string;
@@ -648,23 +648,25 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
         showPartialHint: boolean;
         partialHintText?: string;
       } | null = null;
-      if (lockId === "door" && hiddenLock) {
-        const hiddenClueIds = ["note_hidden_curtain", "note_hidden_painting", "note_hidden_lamp"];
+      const hiddenLock = lock.hiddenPassword ? getLock(lock.hiddenPassword.lockId) : undefined;
+      if (lock.hiddenPassword && hiddenLock) {
+        const hiddenClueIds = lock.hiddenPassword.hiddenClueItemIds ?? [];
         const hiddenClueCount = hiddenClueIds.filter((id) => state.inventory.includes(id)).length;
-        const hasAllHidden = hiddenClueCount === 3;
-        const missingDoorStepsMissing =
-          !state.flags.drawerUnlocked || !state.flags.paintingRemoved || !state.flags.boxOpened;
-        const canShow = hasAllHidden && !missingDoorStepsMissing;
+        const hiddenClueTotal = hiddenClueIds.length;
+        const canShow = checkCond(lock.hiddenPassword.showCondition);
 
         let showPartialHint = false;
         let partialHintText: string | undefined;
-        if (!missingDoorStepsMissing && state.inventory.includes("note_carpet") && !hasAllHidden && hiddenClueCount > 0) {
+        if (lock.hiddenPassword.partialHintCondition && checkCond(lock.hiddenPassword.partialHintCondition)) {
           showPartialHint = true;
-          partialHintText = `💡 已发现 ${hiddenClueCount}/3 个隐藏线索，集齐后可尝试隐藏密码解锁真结局！`;
+          partialHintText = lock.hiddenPassword.partialHintText
+            ?.replace("{found}", String(hiddenClueCount))
+            .replace("{total}", String(hiddenClueTotal));
         }
         hiddenPasswordResult = {
           canShow,
-          buttonText: "✨ 尝试隐藏密码（真结局）",
+          lockId: lock.hiddenPassword.lockId,
+          buttonText: lock.hiddenPassword.buttonText,
           digits: hiddenLock.digits,
           password: hiddenLock.password,
           onSuccess: hiddenLock.onSuccess,
