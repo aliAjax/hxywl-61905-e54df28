@@ -470,6 +470,9 @@ function App() {
     if (!drawerUnlocked) reasons.push("打开抽屉");
     if (!paintingRemoved) reasons.push("取下挂画");
     if (!boxOpened) reasons.push("撬开铁皮箱");
+    if (reasons.length === 0 && !secretDoorOpened) {
+      reasons.push("调查书房暗门");
+    }
     if (reasons.length === 0) return null;
     return reasons;
   };
@@ -646,7 +649,7 @@ function App() {
         </article>
         <article onClick={() => setClueBookOpen(true)} style={{ cursor: "pointer" }}>
           <small>线索册</small>
-          <strong>� {foundClueCount}/{totalClueCount}</strong>
+          <strong>📖 {foundClueCount}/{totalClueCount}</strong>
         </article>
         <article>
           <small>道具</small>
@@ -711,7 +714,7 @@ function App() {
                   </button>
                   {isLocked && secretDoorReasons && secretDoorReasons.length > 0 && (
                     <div className="room-tab-lock-reason">
-                      <div className="lock-reason-title">� 暗门开启条件：</div>
+                      <div className="lock-reason-title">🚪 暗门开启条件：</div>
                       <div className="lock-reason-list">
                         {secretDoorReasons.map((reason, idx) => (
                           <div key={idx} className="lock-reason-item">
