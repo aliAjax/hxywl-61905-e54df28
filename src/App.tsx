@@ -280,9 +280,9 @@ const HINT_PUZZLES: HintPuzzle[] = [
     title: "书架的秘密",
     icon: "📚",
     hints: [
-      "书架上的书脊编号似乎有规律——第 7、3、1 册的位置有些特别，仔细看看这几本书周围。",
-      "书脊编号是 7、3、1，但纸条背面说「倒序即真相」。把这三个数字倒过来排列试试？",
-      "7-3-1 倒序就是 1-3-7，这是一个三位数字密码。去看看房间里哪个地方需要三位密码。",
+      "书架上的书脊编号有高有低，某几册的位置似乎经常被人翻动过——颜色比旁边的浅一些。",
+      "书脊上印着从 1 到 9 的编号，但有三本的书脊颜色和其他不一样。记住它们的数字，再看看纸条背面写了什么。",
+      "纸条说「倒序即真相」——把那三个特殊的数字反过来排，就是一个三位数的密码。哪个地方需要三位密码呢？去探索一下吧。",
     ],
     isCompleted: (ctx) => ctx.hasItem("note_bookshelf"),
     isAvailable: () => true,
@@ -292,9 +292,9 @@ const HINT_PUZZLES: HintPuzzle[] = [
     title: "抽屉密码锁",
     icon: "🗄️",
     hints: [
-      "抽屉被三位密码锁锁住了。先去书架那里找找有没有写着数字的纸条。",
-      "书架夹层的纸条写着「书脊编号 7-3-1，倒序即真相」。倒序排列这三个数字。",
-      "7-3-1 倒序是 1-3-7。直接在抽屉密码锁上输入 1、3、7 就能打开了。",
+      "抽屉被牢牢锁住了，密码是三位数。房间里某个地方应该能找到和数字相关的线索。",
+      "书架的纸条上有三个数字，旁边还写着「倒序即真相」。先找到纸条，再把数字倒过来试试。",
+      "把纸条上的三个数从右往左重新排列，就是抽屉的密码。输入的时候按从左到右的顺序。",
     ],
     isCompleted: (ctx) => ctx.drawerUnlocked,
     isAvailable: (ctx) => true,
@@ -304,9 +304,9 @@ const HINT_PUZZLES: HintPuzzle[] = [
     title: "螺丝刀的用处",
     icon: "🔧",
     hints: [
-      "抽屉里找到的螺丝刀看起来很有用。房间里有什么东西是被螺丝或封条固定住的？",
-      "墙上的挂画用螺丝钉固定着，还有铁皮箱的封条也需要工具才能撬开。",
-      "先去挂画那里用螺丝刀把它取下来，再去用螺丝刀撬开铁皮箱。这两个地方都需要螺丝刀。",
+      "螺丝刀是很常用的工具。环顾房间，有什么东西是被螺丝或者封条固定住、徒手打不开的？",
+      "墙上的画看起来钉得很牢，角落有螺丝的痕迹。还有一个铁皮箱贴着封条，封条的铆钉看起来也能撬开。",
+      "挂画和铁皮箱都可以用螺丝刀打开。先试试哪一个都行——两个地方都藏着重要的东西。",
     ],
     isCompleted: (ctx) => ctx.paintingRemoved && ctx.boxOpened,
     isAvailable: (ctx) => ctx.hasItem("screwdriver"),
@@ -316,9 +316,9 @@ const HINT_PUZZLES: HintPuzzle[] = [
     title: "钥匙碎片收集",
     icon: "🗝️",
     hints: [
-      "房间里散落着三片钥匙碎片。你已经在花瓶里找到了一片，还有两片在哪里呢？",
-      "挂画被取下后，挂钩上挂着一片碎片。铁皮箱撬开后，底部暗格里还有一片。",
-      "三片碎片分别藏在：花瓶、挂画挂钩、铁皮箱暗格。集齐后可以组合成完整钥匙。",
+      "你已经找到一片钥匙碎片了，房间里应该还有两片。仔细回想一下——哪些地方你还没有彻底搜过？",
+      "花瓶里、挂画后面、铁皮箱里——这三个地方似乎都和钥匙碎片有关。看看你已经去了哪里，还缺哪里。",
+      "三片碎片分别藏在三个不同的容器里：一个是瓷器里、一个是挂画背后、一个是箱子暗格。对照一下你已有的，去找缺的那几片。",
     ],
     isCompleted: (ctx) => ctx.hasCompleteKey || ctx.fragmentCount >= 3,
     isAvailable: (ctx) => ctx.fragmentCount > 0,
@@ -328,9 +328,9 @@ const HINT_PUZZLES: HintPuzzle[] = [
     title: "物品组合",
     icon: "🔧",
     hints: [
-      "有些物品单独无法使用，需要组合在一起。物品栏有一个「组合道具」按钮。",
-      "三枚钥匙碎片可以组合成完整钥匙；手电筒没有电池，需要找到电池组合使用。",
-      "点击物品栏的「组合道具」，选择三片钥匙碎片可以合成完整钥匙；选择手电筒和电池可以得到可用手电筒。",
+      "物品栏里有一个「组合道具」按钮——有些东西单独放着没用，拼在一起才能发挥作用。",
+      "三枚钥匙碎片肯定是要组合的。还有手电筒——它现在亮不起来，是不是缺了什么能源？",
+      "打开组合模式，试试把看起来相关的东西放在一起。钥匙碎片有三片，手电筒需要一节电池。",
     ],
     isCompleted: (ctx) => ctx.hasCompleteKey || ctx.hasPoweredFlashlight,
     isAvailable: (ctx) =>
@@ -341,9 +341,9 @@ const HINT_PUZZLES: HintPuzzle[] = [
     title: "点亮手电筒",
     icon: "🔦",
     hints: [
-      "台灯旁边找到的手电筒亮不起来——因为电池仓是空的。找找房间里有没有电池。",
-      "抽屉打开后，里面除了螺丝刀和纸条，还有一节电池。把电池和手电筒组合在一起。",
-      "在物品栏点击「组合道具」，选择手电筒和电池，组合后得到「可用手电筒」。点击它可以开关照明。",
+      "手电筒不亮——因为没有电。找找房间里有没有电池类的东西。",
+      "抽屉里除了螺丝刀和纸条，还有一个小东西你是不是忘了拿？它可能正好能装手电筒里。",
+      "找到电池后，用「组合道具」功能把手电筒和电池拼在一起。组合好的手电筒点击就能开关。",
     ],
     isCompleted: (ctx) => ctx.hasPoweredFlashlight,
     isAvailable: (ctx) => ctx.hasItem("flashlight"),
@@ -353,9 +353,9 @@ const HINT_PUZZLES: HintPuzzle[] = [
     title: "地毯荧光暗号",
     icon: "🧶",
     hints: [
-      "地毯边角微微翘起，下面似乎压着什么。但光线太暗看不清楚——需要能照亮暗处的工具。",
-      "把手电筒装上电池并打开后，再去检查地毯。荧光墨水的暗号只有在强光下才会显现。",
-      "打开手电筒（点击物品栏的「可用手电筒」开启），然后点击地毯。荧光暗号是 1-3-7-9，这是门锁的四位密码。",
+      "地毯下面似乎藏着东西，但房间的光线太暗了，看不清楚。需要更强的光源来照明。",
+      "你有没有试过用手电筒照地毯？听说有些墨水只有在强光下才会显现——比如荧光墨水。",
+      "打开手电筒，然后仔细检查地毯的角落。你会发现一串数字，那是门锁的密码——位数比抽屉密码多一位。",
     ],
     isCompleted: (ctx) => ctx.hasItem("note_carpet"),
     isAvailable: (ctx) => ctx.drawerUnlocked && ctx.hasItem("flashlight"),
@@ -365,9 +365,9 @@ const HINT_PUZZLES: HintPuzzle[] = [
     title: "窗帘的刻字",
     icon: "🪟",
     hints: [
-      "厚重的窗帘遮住了整扇窗户。拉开窗帘，仔细检查窗帘背面有没有什么痕迹。",
-      "窗帘背面有人用指甲刻下了字迹——这是关于如何使用完整钥匙的重要说明。",
-      "点击窗帘调查。拉开后会发现刻字：「向左三圈，再向右一圈」，这是用完整钥匙开锁的转动方法。",
+      "窗帘挡住了整扇窗户。拉开它，不仅能看看窗户的情况，也许窗帘背面还有什么意外发现。",
+      "窗帘布很厚，背面似乎刻着什么东西——是有人用指甲划的，关于钥匙怎么用的提示。",
+      "完整的钥匙不能直接插进锁里就拧，需要按照特定的方向和圈数来转。窗帘背面就写着这个方法。",
     ],
     isCompleted: (ctx) => ctx.hasItem("note_curtain"),
     isAvailable: (ctx) => ctx.drawerUnlocked,
@@ -377,9 +377,9 @@ const HINT_PUZZLES: HintPuzzle[] = [
     title: "隐藏暗码（真结局）",
     icon: "🌟",
     hints: [
-      "窗帘、挂画、台灯——这三个地方的秘密似乎不止表面那么简单。再次仔细检查它们。",
-      "在窗帘最深的折缝中、画框背面的隐秘角落、台灯底座下方，各藏着一位数字。凑齐三位就是隐藏密码。",
-      "三位暗码分别是：窗帘「4」、挂画「8」、台灯「2」。按窗帘→挂画→台灯的顺序排列，就是隐藏密码 4-8-2。在门锁处集齐基础线索后可以尝试输入。",
+      "窗帘、挂画、台灯——你已经在这三个地方找到过东西了。但它们的秘密也许不止这些，再回头看看？",
+      "这三处各自藏着一位数字，藏得非常隐蔽：窗帘的折缝最深处、画框的隐秘角落、台灯底座的下面。",
+      "三位数字分别藏在窗帘、挂画、台灯处。按「窗帘→挂画→台灯」的顺序排起来就是隐藏密码。三位数字，你可以自己去发掘。",
     ],
     isCompleted: (ctx) => ctx.hasAllHiddenClues,
     isAvailable: (ctx) =>
@@ -393,9 +393,9 @@ const HINT_PUZZLES: HintPuzzle[] = [
     title: "开启门锁逃脱",
     icon: "🔒",
     hints: [
-      "门锁有两种开法：一是集齐三片钥匙碎片组合成完整钥匙，按窗帘刻字的方法开锁；二是找到地毯的荧光暗号，输入四位密码。",
-      "如果你用钥匙开锁，需要：完整钥匙 + 窗帘刻字说明。如果你用密码开锁，需要地毯荧光暗号 1-3-7-9。两者都需要先打开抽屉、取下挂画、撬开箱子。",
-      "基础步骤：先开抽屉（137）→ 用螺丝刀取下挂画和撬开箱子 → 收集三片钥匙碎片 → 组合完整钥匙 → 查看窗帘刻字 → 去门锁使用钥匙。或者在得到可用手电筒后，开启手电筒查看地毯得到密码 1379，直接输入密码开锁。",
+      "门锁有两种开启方式：用钥匙，或者输密码。你现在收集到的东西更倾向于哪一条路线？",
+      "用钥匙的话，你需要先凑齐三片碎片组合成完整钥匙，还需要知道怎么转动它——窗帘上有说明。用密码的话，你需要从地毯的荧光暗号里找到那串数字。",
+      "不管走哪条路线，基础探索都得做完：抽屉、挂画、箱子，这三个地方是关键。把这些都搞定后，再根据你收集到的东西选择用钥匙还是密码开门。",
     ],
     isCompleted: (ctx) => ctx.escaped,
     isAvailable: (ctx) => ctx.drawerUnlocked && ctx.paintingRemoved && ctx.boxOpened,
@@ -2141,7 +2141,6 @@ function App() {
         const availablePuzzles = HINT_PUZZLES.filter(
           (p) => p.isAvailable(hintContext) && !p.isCompleted(hintContext)
         );
-        const completedPuzzles = HINT_PUZZLES.filter((p) => p.isCompleted(hintContext));
         const selectedPuzzle = hintDetailId
           ? HINT_PUZZLES.find((p) => p.id === hintDetailId)
           : null;
@@ -2250,7 +2249,7 @@ function App() {
                 </button>
               </div>
 
-              <div className="hint-panel-summary">
+              <div className="hint-panel-summary hint-panel-summary-2">
                 <div className="hint-summary-item">
                   <span className="hint-summary-icon">📊</span>
                   <div>
@@ -2263,13 +2262,6 @@ function App() {
                   <div>
                     <strong>{availablePuzzles.length}</strong>
                     <small>待解谜题</small>
-                  </div>
-                </div>
-                <div className="hint-summary-item">
-                  <span className="hint-summary-icon">✅</span>
-                  <div>
-                    <strong>{completedPuzzles.length}</strong>
-                    <small>已完成谜题</small>
                   </div>
                 </div>
               </div>
@@ -2323,44 +2315,6 @@ function App() {
                     <br />
                     继续探索，或者直接前往门锁逃脱！
                   </p>
-                </div>
-              )}
-
-              {completedPuzzles.length > 0 && (
-                <div className="hint-completed-section">
-                  <h4 className="hint-section-subtitle hint-completed-title">
-                    ✓ 已完成的谜题
-                  </h4>
-                  <div className="hint-completed-list">
-                    {completedPuzzles.map((puzzle) => {
-                      const used = hintUsage[puzzle.id] || 0;
-                      return (
-                        <div
-                          key={puzzle.id}
-                          className="hint-completed-item"
-                          title={
-                            used > 0
-                              ? `使用了 ${used} 层提示`
-                              : "未使用提示完成"
-                          }
-                        >
-                          <span className="hint-completed-icon">
-                            {puzzle.icon}
-                          </span>
-                          <span className="hint-completed-name">
-                            {puzzle.title}
-                          </span>
-                          <span
-                            className={`hint-completed-tag ${
-                              used === 0 ? "hint-tag-perfect" : ""
-                            }`}
-                          >
-                            {used === 0 ? "独立完成 ⭐" : `提示 ${used}/3`}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
                 </div>
               )}
 

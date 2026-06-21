@@ -1552,6 +1552,10 @@ button {
   border-radius: 12px;
 }
 
+.hint-panel-summary-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
 .hint-summary-item {
   display: flex;
   align-items: center;
