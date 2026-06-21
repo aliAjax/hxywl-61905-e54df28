@@ -378,17 +378,17 @@ function App() {
     }
   }, [lockDigits, lockTargetId, engine, applyEffects, showMsg]);
 
-  const { canUse: canUseKeyOnDoor, reason: keyUseReason } = engine.canUseKeyOnLock("door");
+  const doorUIInfo = engine.getLockUIInfo("door");
+  const canUseKeyOnDoor = doorUIInfo.keyUnlock?.canUse ?? false;
+  const keyUseReason = doorUIInfo.keyUnlock?.reason;
+  const keySidebarLabel = doorUIInfo.keyUnlock?.sidebarLabel;
+  const keyButtonText = doorUIInfo.keyUnlock?.buttonText ?? "🔑 使用完整钥匙开锁";
 
   const handleUseKeyOnDoor = useCallback(() => {
     if (!canUseKeyOnDoor) return;
-    engine.useKeyOnLock("door", "complete_key", "note_curtain");
-    showMsg(
-      "🔑 你按照窗帘背面刻下的指示——「向左三圈，再向右一圈」——小心翼翼地转动钥匙……",
-      "collect"
-    );
+    engine.useKeyOnLock("door");
     setLockTargetId(null);
-  }, [canUseKeyOnDoor, engine, showMsg]);
+  }, [canUseKeyOnDoor, engine]);
 
   const filteredInventory =
     filterTab === "all"
@@ -553,77 +553,7 @@ function App() {
     };
   };
 
-  const missingDoorSteps: string[] = [];
-  if (!drawerUnlocked) missingDoorSteps.push("打开抽屉");
-  if (!paintingRemoved) missingDoorSteps.push("取下挂画");
-  if (!boxOpened) missingDoorSteps.push("撬开箱子");
-
-  const generateProgressText = () => {
-    const parts: string[] = [];
-    parts.push(
-      `已收集 ${engine.inventory.length} 件道具，钥匙碎片 ${fragmentCount}/3，线索纸条 ${noteCount} 张。`
-    );
-    if (!drawerUnlocked && !engine.hasItem("note_bookshelf"))
-      parts.push(" 🔍 先从书架开始调查吧，也许能找到抽屉的密码线索。");
-    if (!drawerUnlocked && engine.hasItem("note_bookshelf"))
-      parts.push(" 🔢 书架纸条提示密码7-3-1倒序即1-3-7，去打开抽屉吧！");
-    if (drawerUnlocked && !paintingRemoved && engine.hasItem("screwdriver"))
-      parts.push(" 🔧 有螺丝刀了，去取下挂画看看背后有什么！");
-    if (drawerUnlocked && !boxOpened && engine.hasItem("screwdriver") && paintingRemoved)
-      parts.push(" 🔧 挂画已取下，再去撬开箱子看看！");
-    if (drawerUnlocked && paintingRemoved && boxOpened && !hasFlashlight)
-      parts.push(" 💡 挂画和箱子都探索完了，去台灯那里看看有什么工具！");
-    if (
-      drawerUnlocked &&
-      paintingRemoved &&
-      boxOpened &&
-      hasFlashlight &&
-      !engine.hasItem("battery") &&
-      !hasPoweredFlashlight
-    )
-      parts.push(" 🔦 找到手电筒了，但没有电池亮不起来。去抽屉里找找有没有电池？");
-    if (hasFlashlight && engine.hasItem("battery") && !hasPoweredFlashlight)
-      parts.push(" 🔋 手电筒和电池都有了！去物品栏组合一下，让手电筒亮起来！");
-    if (hasPoweredFlashlight && !engine.flashlightActive && !engine.hasItem("note_carpet"))
-      parts.push(" 🔦 打开手电筒，去地毯那里找找荧光暗号！");
-    if (
-      engine.flashlightActive &&
-      hasPoweredFlashlight &&
-      !engine.hasItem("note_carpet")
-    )
-      parts.push(" 🔦 手电筒已开，去地毯那里找找荧光暗号！");
-    if (drawerUnlocked && paintingRemoved && boxOpened && !curtainChecked)
-      parts.push(" 🪟 别忘了查看窗帘背后有没有刻字！");
-    if (fragmentCount === 3 && !hasCompleteKey)
-      parts.push(" 🗝️ 三枚碎片已齐，可以组合成完整钥匙了！");
-    if (hasCompleteKey && !engine.hasItem("note_curtain"))
-      parts.push(" 🪟 钥匙已组合好，但还需要查看窗帘上的使用方法！");
-    if (
-      drawerUnlocked &&
-      paintingRemoved &&
-      boxOpened &&
-      hasCompleteKey &&
-      engine.hasItem("note_curtain") &&
-      engine.hasItem("note_carpet") &&
-      !hasAllHiddenClues
-    )
-      parts.push(
-        ` ✅ 基础线索已集齐！可逃脱，或继续探索隐藏线索 (${hiddenClueCount}/3)。窗帘、挂画、台灯处似乎还有更深的秘密…`
-      );
-    if (
-      drawerUnlocked &&
-      paintingRemoved &&
-      boxOpened &&
-      hasCompleteKey &&
-      engine.hasItem("note_curtain") &&
-      engine.hasItem("note_carpet") &&
-      hasAllHiddenClues
-    )
-      parts.push(
-        " 🌟 全部线索与隐藏暗码已集齐！去门锁处尝试隐藏密码 482 解锁真结局！"
-      );
-    return parts.join("");
-  };
+  const progressText = engine.getProgressText();
 
   return (
     <main className="game-shell">
@@ -823,19 +753,7 @@ function App() {
               onClick={canUseKeyOnDoor ? handleUseKeyOnDoor : undefined}
               title={keyUseReason ?? ""}
             >
-              {!drawerUnlocked
-                ? "先打开抽屉"
-                : !boxOpened
-                ? "先撬开箱子"
-                : !paintingRemoved
-                ? "先取下挂画"
-                : !hasCompleteKey
-                ? "需要完整钥匙"
-                : !curtainChecked
-                ? "先查看窗帘"
-                : !engine.hasItem("note_curtain")
-                ? "需要钥匙说明"
-                : "🔑 用钥匙开锁"}
+              {keySidebarLabel ?? "🔑 用钥匙开锁"}
             </button>
           </div>
           <div className="game-menu">
@@ -1041,6 +959,7 @@ function App() {
             drawerUnlocked &&
             boxOpened &&
             paintingRemoved;
+          const lockUIInfo = engine.getLockUIInfo(lockTargetId);
           return (
             <div className="modal-overlay" onClick={() => setLockTargetId(null)}>
               <div
@@ -1061,33 +980,27 @@ function App() {
                 </div>
                 {isDoor && (
                   <div style={{ marginBottom: "12px" }}>
-                    {missingDoorSteps.length > 0 && (
-                      <p
-                        className="lock-error-text"
-                        style={{ margin: "0 0 8px", textAlign: "left" }}
-                      >
-                        ⚠️ 必须先完成：{missingDoorSteps.join("、")}
-                        ，完整探索后才能开启门锁！
-                      </p>
-                    )}
-                    {!engine.hasItem("note_carpet") && missingDoorSteps.length === 0 && (
-                      <p
-                        className="lock-error-text"
-                        style={{ margin: "0 0 8px", textAlign: "left" }}
-                      >
-                        ⚠️ 你还不知道密码。需要先从地毯荧光暗号中找到密码线索。
-                      </p>
-                    )}
-                    {canUseKeyOnDoor && (
+                    {lockUIInfo.modalHints
+                      .filter((h) => h.type === "warning")
+                      .map((hint, i) => (
+                        <p
+                          key={i}
+                          className="lock-error-text"
+                          style={{ margin: "0 0 8px", textAlign: "left" }}
+                        >
+                          ⚠️ {hint.text}
+                        </p>
+                      ))}
+                    {lockUIInfo.keyUnlock?.canUse && (
                       <button
                         className="action-btn modal-use-btn"
                         style={{ width: "100%" }}
                         onClick={handleUseKeyOnDoor}
                       >
-                        🔑 使用完整钥匙开锁
+                        {keyButtonText}
                       </button>
                     )}
-                    {hasAllHiddenClues && missingDoorSteps.length === 0 && (
+                    {lockUIInfo.hiddenPassword?.canShow && (
                       <button
                         className="action-btn"
                         style={{
@@ -1102,13 +1015,11 @@ function App() {
                           setLockError(false);
                         }}
                       >
-                        ✨ 尝试隐藏密码（真结局）
+                        {lockUIInfo.hiddenPassword.buttonText}
                       </button>
                     )}
-                    {!hasAllHiddenClues &&
-                      missingDoorSteps.length === 0 &&
-                      engine.hasItem("note_carpet") &&
-                      hiddenClueCount > 0 && (
+                    {lockUIInfo.hiddenPassword?.showPartialHint &&
+                      lockUIInfo.hiddenPassword.partialHintText && (
                         <p
                           className="lock-error-text"
                           style={{
@@ -1117,7 +1028,7 @@ function App() {
                             color: "#fbbf24",
                           }}
                         >
-                          💡 已发现 {hiddenClueCount}/3 个隐藏线索，集齐后可尝试隐藏密码解锁真结局！
+                          {lockUIInfo.hiddenPassword.partialHintText}
                         </p>
                       )}
                   </div>
@@ -1378,7 +1289,7 @@ function App() {
         })()}
       <section className="result-panel">
         <h2>探索进度</h2>
-        <p>{generateProgressText()}</p>
+        <p>{progressText}</p>
         {engine.lastHint && (
           <div className="last-hint">
             <span className="last-hint-label">💡 最近提示</span>

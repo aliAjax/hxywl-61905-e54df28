@@ -74,6 +74,37 @@ export interface LockResult {
   successMessage: string;
 }
 
+export interface LockKeyStep {
+  condition: Condition;
+  reason: string;
+  sidebarLabel?: string;
+}
+
+export interface LockKeyUnlock {
+  steps: LockKeyStep[];
+  buttonText: string;
+  keyItemId: string;
+  requiredNoteId?: string;
+  unlockEffects: InteractionEffect;
+  defaultButtonText?: string;
+}
+
+export interface LockHiddenPassword {
+  digits: number;
+  password: string;
+  showCondition: Condition;
+  buttonText: string;
+  onSuccess: LockResult;
+  partialHintCondition?: Condition;
+  partialHintText?: string;
+}
+
+export interface LockModalHint {
+  condition?: Condition;
+  text: string;
+  type: "warning" | "info" | "partial";
+}
+
 export interface LockDef {
   id: string;
   label: string;
@@ -84,6 +115,9 @@ export interface LockDef {
   beforeSubmitMessage?: string;
   onSuccess: LockResult;
   errorHint?: string;
+  keyUnlock?: LockKeyUnlock;
+  hiddenPassword?: LockHiddenPassword;
+  modalHints?: LockModalHint[];
 }
 
 export interface CombineRecipe {
@@ -125,6 +159,33 @@ export interface CategoryConfig {
   color: string;
 }
 
+export interface ProgressHintDef {
+  condition: Condition;
+  text: string;
+  priority?: number;
+}
+
+export interface LockUIInfo {
+  modalHints: { conditionMet: boolean; text: string; type: "warning" | "info" | "partial" }[];
+  keyUnlock: {
+    canUse: boolean;
+    reason?: string;
+    sidebarLabel?: string;
+    buttonText: string;
+    keyItemId: string;
+    requiredNoteId?: string;
+  } | null;
+  hiddenPassword: {
+    canShow: boolean;
+    buttonText: string;
+    digits: number;
+    password: string;
+    onSuccess: LockResult;
+    showPartialHint: boolean;
+    partialHintText?: string;
+  } | null;
+}
+
 export interface GameConfig {
   id: string;
   title: string;
@@ -144,6 +205,7 @@ export interface GameConfig {
     title: string;
     description: string;
   };
+  progressHints?: ProgressHintDef[];
   progressSummary: {
     key: string;
     icon: string;
@@ -217,7 +279,7 @@ export interface EngineActions {
     effects?: InteractionEffect;
   };
   canUseKeyOnLock: (lockId: string) => { canUse: boolean; reason?: string };
-  useKeyOnLock: (lockId: string, keyItemId: string, requiredItemId: string) => void;
+  useKeyOnLock: (lockId: string) => void;
   toggleFlashlight: () => void;
   markInvestigated: (cellId: string) => void;
   autoAdvanceCell: (cellId: string) => boolean;
@@ -226,6 +288,13 @@ export interface EngineActions {
   getState: () => EngineState;
   getSaveData: () => SaveData;
   loadSaveData: (data: SaveData) => boolean;
+  getProgressText: () => string;
+  getLockUIInfo: (lockId: string) => LockUIInfo;
+  submitHiddenPassword: (lockId: string, digits: string[]) => {
+    success: boolean;
+    errorMessage?: string;
+    effects?: InteractionEffect;
+  };
 }
 
 export type PuzzleEngine = EngineState & EngineActions;

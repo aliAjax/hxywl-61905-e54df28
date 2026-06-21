@@ -371,6 +371,152 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
   },
   hintPuzzles: HINT_PUZZLES,
   autoAdvanceCellIds: ["carpet", "door"],
+  progressHints: [
+    {
+      priority: 1,
+      condition: { type: "all", conditions: [
+        { type: "flagFalse", flagId: "drawerUnlocked" },
+        { type: "notHasItem", itemId: "note_bookshelf" }
+      ]},
+      text: "🔍 先从书架开始调查吧，也许能找到抽屉的密码线索。"
+    },
+    {
+      priority: 2,
+      condition: { type: "all", conditions: [
+        { type: "flagFalse", flagId: "drawerUnlocked" },
+        { type: "hasItem", itemId: "note_bookshelf" }
+      ]},
+      text: "🔢 书架纸条提示密码7-3-1倒序即1-3-7，去打开抽屉吧！"
+    },
+    {
+      priority: 3,
+      condition: { type: "all", conditions: [
+        { type: "flagTrue", flagId: "drawerUnlocked" },
+        { type: "flagFalse", flagId: "paintingRemoved" },
+        { type: "hasItem", itemId: "screwdriver" }
+      ]},
+      text: "🔧 有螺丝刀了，去取下挂画看看背后有什么！"
+    },
+    {
+      priority: 4,
+      condition: { type: "all", conditions: [
+        { type: "flagTrue", flagId: "drawerUnlocked" },
+        { type: "flagFalse", flagId: "boxOpened" },
+        { type: "hasItem", itemId: "screwdriver" },
+        { type: "flagTrue", flagId: "paintingRemoved" }
+      ]},
+      text: "🔧 挂画已取下，再去撬开箱子看看！"
+    },
+    {
+      priority: 5,
+      condition: { type: "all", conditions: [
+        { type: "flagTrue", flagId: "drawerUnlocked" },
+        { type: "flagTrue", flagId: "paintingRemoved" },
+        { type: "flagTrue", flagId: "boxOpened" },
+        { type: "notHasItem", itemId: "flashlight" }
+      ]},
+      text: "💡 挂画和箱子都探索完了，去台灯那里看看有什么工具！"
+    },
+    {
+      priority: 6,
+      condition: { type: "all", conditions: [
+        { type: "flagTrue", flagId: "drawerUnlocked" },
+        { type: "flagTrue", flagId: "paintingRemoved" },
+        { type: "flagTrue", flagId: "boxOpened" },
+        { type: "hasItem", itemId: "flashlight" },
+        { type: "notHasItem", itemId: "battery" },
+        { type: "notHasItem", itemId: "powered_flashlight" }
+      ]},
+      text: "🔦 找到手电筒了，但没有电池亮不起来。去抽屉里找找有没有电池？"
+    },
+    {
+      priority: 7,
+      condition: { type: "all", conditions: [
+        { type: "hasItem", itemId: "flashlight" },
+        { type: "hasItem", itemId: "battery" },
+        { type: "notHasItem", itemId: "powered_flashlight" }
+      ]},
+      text: "🔋 手电筒和电池都有了！去物品栏组合一下，让手电筒亮起来！"
+    },
+    {
+      priority: 8,
+      condition: { type: "all", conditions: [
+        { type: "hasItem", itemId: "powered_flashlight" },
+        { type: "flagFalse", flagId: "flashlightActive" },
+        { type: "notHasItem", itemId: "note_carpet" }
+      ]},
+      text: "🔦 打开手电筒，去地毯那里找找荧光暗号！"
+    },
+    {
+      priority: 9,
+      condition: { type: "all", conditions: [
+        { type: "flagTrue", flagId: "flashlightActive" },
+        { type: "hasItem", itemId: "powered_flashlight" },
+        { type: "notHasItem", itemId: "note_carpet" }
+      ]},
+      text: "🔦 手电筒已开，去地毯那里找找荧光暗号！"
+    },
+    {
+      priority: 10,
+      condition: { type: "all", conditions: [
+        { type: "flagTrue", flagId: "drawerUnlocked" },
+        { type: "flagTrue", flagId: "paintingRemoved" },
+        { type: "flagTrue", flagId: "boxOpened" },
+        { type: "flagFalse", flagId: "curtainChecked" }
+      ]},
+      text: "🪟 别忘了查看窗帘背后有没有刻字！"
+    },
+    {
+      priority: 11,
+      condition: { type: "all", conditions: [
+        { type: "flagTrue", flagId: "fragment1Found" },
+        { type: "flagTrue", flagId: "fragment2Found" },
+        { type: "flagTrue", flagId: "fragment3Found" },
+        { type: "notHasItem", itemId: "complete_key" }
+      ]},
+      text: "🗝️ 三枚碎片已齐，可以组合成完整钥匙了！"
+    },
+    {
+      priority: 12,
+      condition: { type: "all", conditions: [
+        { type: "hasItem", itemId: "complete_key" },
+        { type: "notHasItem", itemId: "note_curtain" }
+      ]},
+      text: "🪟 钥匙已组合好，但还需要查看窗帘上的使用方法！"
+    },
+    {
+      priority: 13,
+      condition: { type: "all", conditions: [
+        { type: "flagTrue", flagId: "drawerUnlocked" },
+        { type: "flagTrue", flagId: "paintingRemoved" },
+        { type: "flagTrue", flagId: "boxOpened" },
+        { type: "hasItem", itemId: "complete_key" },
+        { type: "hasItem", itemId: "note_curtain" },
+        { type: "hasItem", itemId: "note_carpet" },
+        { type: "any", conditions: [
+          { type: "notHasItem", itemId: "note_hidden_curtain" },
+          { type: "notHasItem", itemId: "note_hidden_painting" },
+          { type: "notHasItem", itemId: "note_hidden_lamp" }
+        ]}
+      ]},
+      text: "✅ 基础线索已集齐！可逃脱，或继续探索隐藏线索。窗帘、挂画、台灯处似乎还有更深的秘密…"
+    },
+    {
+      priority: 14,
+      condition: { type: "all", conditions: [
+        { type: "flagTrue", flagId: "drawerUnlocked" },
+        { type: "flagTrue", flagId: "paintingRemoved" },
+        { type: "flagTrue", flagId: "boxOpened" },
+        { type: "hasItem", itemId: "complete_key" },
+        { type: "hasItem", itemId: "note_curtain" },
+        { type: "hasItem", itemId: "note_carpet" },
+        { type: "hasItem", itemId: "note_hidden_curtain" },
+        { type: "hasItem", itemId: "note_hidden_painting" },
+        { type: "hasItem", itemId: "note_hidden_lamp" }
+      ]},
+      text: "🌟 全部线索与隐藏暗码已集齐！去门锁处尝试隐藏密码 482 解锁真结局！"
+    }
+  ],
   rooms: [
     {
       id: "room_01",
@@ -899,6 +1045,66 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
             triggerEnding: "normal_password",
             successMessage: "🔓 密码正确！门锁应声而开！",
           },
+          modalHints: [
+            {
+              condition: { type: "any", conditions: [
+                { type: "flagFalse", flagId: "drawerUnlocked" },
+                { type: "flagFalse", flagId: "paintingRemoved" },
+                { type: "flagFalse", flagId: "boxOpened" }
+              ]},
+              text: "必须先完成：打开抽屉、取下挂画、撬开箱子，完整探索后才能开启门锁！",
+              type: "warning"
+            },
+            {
+              condition: { type: "all", conditions: [
+                { type: "flagTrue", flagId: "drawerUnlocked" },
+                { type: "flagTrue", flagId: "paintingRemoved" },
+                { type: "flagTrue", flagId: "boxOpened" },
+                { type: "notHasItem", itemId: "note_carpet" }
+              ]},
+              text: "你还不知道密码。需要先从地毯荧光暗号中找到密码线索。",
+              type: "warning"
+            },
+            {
+              condition: { type: "all", conditions: [
+                { type: "flagTrue", flagId: "drawerUnlocked" },
+                { type: "flagTrue", flagId: "paintingRemoved" },
+                { type: "flagTrue", flagId: "boxOpened" },
+                { type: "hasItem", itemId: "note_carpet" },
+                { type: "any", conditions: [
+                  { type: "hasItem", itemId: "note_hidden_curtain" },
+                  { type: "hasItem", itemId: "note_hidden_painting" },
+                  { type: "hasItem", itemId: "note_hidden_lamp" }
+                ]},
+                { type: "any", conditions: [
+                  { type: "notHasItem", itemId: "note_hidden_curtain" },
+                  { type: "notHasItem", itemId: "note_hidden_painting" },
+                  { type: "notHasItem", itemId: "note_hidden_lamp" }
+                ]}
+              ]},
+              text: "已发现 1/3 至 2/3 个隐藏线索，集齐后可尝试隐藏密码解锁真结局！",
+              type: "partial"
+            }
+          ],
+          keyUnlock: {
+            steps: [
+              { condition: flagTrue("drawerUnlocked"), reason: "需要先打开抽屉", sidebarLabel: "先打开抽屉" },
+              { condition: flagTrue("boxOpened"), reason: "需要先撬开箱子", sidebarLabel: "先撬开箱子" },
+              { condition: flagTrue("paintingRemoved"), reason: "需要先取下挂画", sidebarLabel: "先取下挂画" },
+              { condition: hasItem("complete_key"), reason: "需要先集齐3片碎片并组合成完整钥匙", sidebarLabel: "需要完整钥匙" },
+              { condition: flagTrue("curtainChecked"), reason: "需要先查看窗帘", sidebarLabel: "先查看窗帘" },
+              { condition: hasItem("note_curtain"), reason: "需要获得钥匙使用说明纸条", sidebarLabel: "需要钥匙说明" }
+            ],
+            buttonText: "🔑 使用完整钥匙开锁",
+            keyItemId: "complete_key",
+            requiredNoteId: "note_curtain",
+            defaultButtonText: "🔑 用钥匙开锁",
+            unlockEffects: {
+              triggerEnding: "normal_key",
+              showMessage: "🔑 你按照窗帘背面刻下的指示——「向左三圈，再向右一圈」——小心翼翼地转动钥匙……",
+              messageType: "collect"
+            }
+          }
         },
         {
           id: "hidden",

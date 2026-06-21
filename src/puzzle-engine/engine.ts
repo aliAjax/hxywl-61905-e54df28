@@ -8,6 +8,8 @@ import type {
   PuzzleEngine,
   CellDef,
   InteractionStage,
+  LockResult,
+  LockUIInfo,
 } from "./types";
 
 export function checkCondition(
@@ -316,6 +318,8 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
       if (!stage) return { effects: [] };
 
       const effectsList: InteractionEffect[] = [];
+      let openLockId: string | undefined;
+      let showClue: boolean | undefined;
 
       if (stage.isLocked && stage.requires && !checkCond(stage.requires)) {
         if (stage.onUnlock) {
@@ -325,47 +329,66 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
       }
 
       let stageAdvanced = false;
+      let newInventory = [...state.inventory];
+      let newFlags = { ...state.flags };
+      let newEscaped = state.escaped;
+      let newEndingId = state.endingId;
+      let newLastHint = state.lastHint;
+      let newCellStageIds = { ...state.cellStageIds };
+
       if (stage.isLocked && stage.requires && checkCond(stage.requires)) {
         if (stage.onUnlock) {
           const result = applyEffects(stage.onUnlock, state, config);
-          setState((prev) => ({
-            ...prev,
-            inventory: result.newInventory,
-            flags: result.newFlags,
-            escaped: result.newEscaped,
-            endingId: result.newEndingId,
-            lastHint: stage.onUnlock?.showMessage ?? prev.lastHint,
-          }));
+          newInventory = result.newInventory;
+          newFlags = result.newFlags;
+          newEscaped = result.newEscaped;
+          newEndingId = result.newEndingId;
+          newLastHint = stage.onUnlock.showMessage ?? newLastHint;
           effectsList.push(stage.onUnlock);
         }
         if (stage.moveToStage) {
-          setState((prev) => ({
-            ...prev,
-            cellStageIds: { ...prev.cellStageIds, [cellId]: stage.moveToStage! },
-          }));
+          newCellStageIds[cellId] = stage.moveToStage;
           stageAdvanced = true;
         }
         if (stage.lockTargetId) {
-          return { effects: effectsList, openLockId: stage.lockTargetId, showClue: true };
+          openLockId = stage.lockTargetId;
+          showClue = true;
+        } else {
+          showClue = true;
         }
-        return { effects: effectsList, showClue: true };
+        setState((prev) => {
+          const baseState: EngineState = {
+            ...prev,
+            inventory: newInventory,
+            flags: newFlags,
+            escaped: newEscaped,
+            endingId: newEndingId,
+            lastHint: newLastHint,
+            cellStageIds: newCellStageIds,
+          };
+          const advResult = autoAdvanceAllCells(baseState);
+          if (advResult.advanced && advResult.newState) {
+            return { ...baseState, ...advResult.newState };
+          }
+          return baseState;
+        });
+        return { effects: effectsList, openLockId, showClue };
       }
 
       if (stage.lockTargetId && stage.isLocked) {
-        return { effects: effectsList, openLockId: stage.lockTargetId, showClue: true };
+        openLockId = stage.lockTargetId;
+        showClue = true;
+        return { effects: effectsList, openLockId, showClue };
       }
 
       if (!stageAdvanced && stage.onInteract) {
         const result = applyEffects(stage.onInteract, state, config);
         const message = stage.collectMessage ?? stage.onInteract.showMessage;
-        setState((prev) => ({
-          ...prev,
-          inventory: result.newInventory,
-          flags: result.newFlags,
-          escaped: result.newEscaped,
-          endingId: result.newEndingId,
-          lastHint: message ?? prev.lastHint,
-        }));
+        newInventory = result.newInventory;
+        newFlags = result.newFlags;
+        newEscaped = result.newEscaped;
+        newEndingId = result.newEndingId;
+        newLastHint = message ?? newLastHint;
         effectsList.push({
           ...stage.onInteract,
           showMessage: message ?? stage.onInteract.showMessage,
@@ -373,15 +396,30 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
       }
 
       if (!stageAdvanced && stage.moveToStage) {
-        setState((prev) => ({
-          ...prev,
-          cellStageIds: { ...prev.cellStageIds, [cellId]: stage.moveToStage! },
-        }));
+        newCellStageIds[cellId] = stage.moveToStage;
+        stageAdvanced = true;
       }
+
+      setState((prev) => {
+        const baseState: EngineState = {
+          ...prev,
+          inventory: newInventory,
+          flags: newFlags,
+          escaped: newEscaped,
+          endingId: newEndingId,
+          lastHint: newLastHint,
+          cellStageIds: newCellStageIds,
+        };
+        const advResult = autoAdvanceAllCells(baseState);
+        if (advResult.advanced && advResult.newState) {
+          return { ...baseState, ...advResult.newState };
+        }
+        return baseState;
+      });
 
       return { effects: effectsList, showClue: true };
     },
-    [getCell, state.cellStageIds, checkCond, state, config]
+    [getCell, state, checkCond, config]
   );
 
   const findMatchingRecipe = useCallback(
@@ -491,33 +529,24 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
 
   const canUseKeyOnLock = useCallback(
     (lockId: string) => {
-      if (lockId !== "door") return { canUse: false, reason: undefined };
-      const steps: { cond: Condition; reason: string }[] = [
-        { cond: { type: "flagTrue", flagId: "drawerUnlocked" }, reason: "需要先打开抽屉" },
-        { cond: { type: "flagTrue", flagId: "boxOpened" }, reason: "需要先撬开箱子" },
-        { cond: { type: "flagTrue", flagId: "paintingRemoved" }, reason: "需要先取下挂画" },
-        { cond: { type: "hasItem", itemId: "complete_key" }, reason: "需要先集齐3片碎片并组合成完整钥匙" },
-        { cond: { type: "flagTrue", flagId: "curtainChecked" }, reason: "需要先查看窗帘" },
-        { cond: { type: "hasItem", itemId: "note_curtain" }, reason: "需要获得钥匙使用说明纸条" },
-      ];
-      for (const step of steps) {
-        if (!checkCond(step.cond)) {
+      const lock = getLock(lockId);
+      if (!lock || !lock.keyUnlock) return { canUse: false, reason: undefined };
+      for (const step of lock.keyUnlock.steps) {
+        if (!checkCond(step.condition)) {
           return { canUse: false, reason: step.reason };
         }
       }
       return { canUse: true };
     },
-    [checkCond]
+    [getLock, checkCond]
   );
 
   const useKeyOnLock = useCallback(
-    (lockId: string, _keyItemId: string, _requiredItemId: string) => {
-      if (lockId !== "door") return;
-      const effects: InteractionEffect = {
-        triggerEnding: "normal_key",
-        showMessage: "🔑 你按照窗帘背面刻下的指示，小心翼翼地转动钥匙……",
-        messageType: "collect",
-      };
+    (lockId: string) => {
+      const lock = getLock(lockId);
+      if (!lock || !lock.keyUnlock) return;
+      if (!canUseKeyOnLock(lockId).canUse) return;
+      const effects = lock.keyUnlock.unlockEffects;
       const result = applyEffects(effects, state, config);
       setState((prev) => ({
         ...prev,
@@ -528,7 +557,136 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
         lastHint: effects.showMessage ?? prev.lastHint,
       }));
     },
-    [state, config]
+    [getLock, canUseKeyOnLock, state, config]
+  );
+
+  const getProgressText = useCallback(() => {
+    const fragmentCount = state.inventory.filter((id) =>
+      id === "key_fragment_1" || id === "key_fragment_2" || id === "key_fragment_3"
+    ).length;
+    const noteCount = state.inventory.filter((id) => id.startsWith("note_") && !id.startsWith("note_hidden")).length;
+    const baseLine = `已收集 ${state.inventory.length} 件道具，钥匙碎片 ${fragmentCount}/3，线索纸条 ${noteCount} 张。`;
+
+    if (!config.progressHints || config.progressHints.length === 0) {
+      return baseLine;
+    }
+
+    const matchedHints: { priority: number; text: string }[] = [];
+    for (const hint of config.progressHints) {
+      if (hint.condition && checkCond(hint.condition)) {
+        matchedHints.push({ priority: hint.priority ?? 0, text: hint.text });
+      }
+    }
+    matchedHints.sort((a, b) => b.priority - a.priority);
+    const parts = [baseLine];
+    if (matchedHints.length > 0) {
+      for (const m of matchedHints) {
+        parts.push(" " + m.text);
+      }
+    }
+    return parts.join("");
+  }, [state.inventory, config.progressHints, checkCond]);
+
+  const getLockUIInfo = useCallback(
+    (lockId: string): LockUIInfo => {
+      const lock = getLock(lockId);
+      if (!lock) {
+        return {
+          modalHints: [],
+          keyUnlock: null,
+          hiddenPassword: null,
+        };
+      }
+
+      const modalHints: { conditionMet: boolean; text: string; type: "warning" | "info" | "partial" }[] = [];
+      if (lock.modalHints) {
+        for (const hint of lock.modalHints) {
+          const conditionMet = hint.condition ? checkCond(hint.condition) : true;
+          if (conditionMet) {
+            modalHints.push({ conditionMet, text: hint.text, type: hint.type });
+          }
+        }
+      }
+
+      let keyUnlockResult: {
+        canUse: boolean;
+        reason?: string;
+        sidebarLabel?: string;
+        buttonText: string;
+        keyItemId: string;
+        requiredNoteId?: string;
+      } | null = null;
+      if (lock.keyUnlock) {
+        let canUse = true;
+        let reason: string | undefined;
+        let sidebarLabel: string | undefined;
+        for (const step of lock.keyUnlock.steps) {
+          if (!checkCond(step.condition)) {
+            canUse = false;
+            reason = step.reason;
+            sidebarLabel = step.sidebarLabel;
+            break;
+          }
+        }
+        keyUnlockResult = {
+          canUse,
+          reason,
+          sidebarLabel: canUse ? lock.keyUnlock.defaultButtonText : (sidebarLabel ?? reason),
+          buttonText: lock.keyUnlock.buttonText,
+          keyItemId: lock.keyUnlock.keyItemId,
+          requiredNoteId: lock.keyUnlock.requiredNoteId,
+        };
+      }
+
+      const hiddenLock = getLock("hidden");
+      let hiddenPasswordResult: {
+        canShow: boolean;
+        buttonText: string;
+        digits: number;
+        password: string;
+        onSuccess: LockResult;
+        showPartialHint: boolean;
+        partialHintText?: string;
+      } | null = null;
+      if (lockId === "door" && hiddenLock) {
+        const hiddenClueIds = ["note_hidden_curtain", "note_hidden_painting", "note_hidden_lamp"];
+        const hiddenClueCount = hiddenClueIds.filter((id) => state.inventory.includes(id)).length;
+        const hasAllHidden = hiddenClueCount === 3;
+        const missingDoorStepsMissing =
+          !state.flags.drawerUnlocked || !state.flags.paintingRemoved || !state.flags.boxOpened;
+        const canShow = hasAllHidden && !missingDoorStepsMissing;
+
+        let showPartialHint = false;
+        let partialHintText: string | undefined;
+        if (!missingDoorStepsMissing && state.inventory.includes("note_carpet") && !hasAllHidden && hiddenClueCount > 0) {
+          showPartialHint = true;
+          partialHintText = `💡 已发现 ${hiddenClueCount}/3 个隐藏线索，集齐后可尝试隐藏密码解锁真结局！`;
+        }
+        hiddenPasswordResult = {
+          canShow,
+          buttonText: "✨ 尝试隐藏密码（真结局）",
+          digits: hiddenLock.digits,
+          password: hiddenLock.password,
+          onSuccess: hiddenLock.onSuccess,
+          showPartialHint,
+          partialHintText,
+        };
+      }
+
+      return {
+        modalHints,
+        keyUnlock: keyUnlockResult,
+        hiddenPassword: hiddenPasswordResult,
+      };
+    },
+    [getLock, checkCond, state.flags, state.inventory]
+  );
+
+  const submitHiddenPassword = useCallback(
+    (lockId: string, digits: string[]) => {
+      return submitLock(lockId, digits);
+    },
+    [submitLock]
   );
 
   const toggleFlashlight = useCallback(() => {
@@ -652,6 +810,9 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
     getState,
     getSaveData,
     loadSaveData,
+    getProgressText,
+    getLockUIInfo,
+    submitHiddenPassword,
   };
 }
 
