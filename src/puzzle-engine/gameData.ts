@@ -34,6 +34,7 @@ export const ITEMS: Record<string, ItemDef> = {
     category: "note",
     icon: "📝",
     description: "从书架夹层中掉落的泛黄纸条。",
+    summary: "书脊编号 7-3-1，倒序即抽屉三位密码。",
     detail:
       "纸条上用褪色的墨水写着：\n\n「书脊编号 7-3-1，倒序即真相。」\n\n背面还有一行小字：「此乃抽屉之钥——三位数，莫记错。」\n\n看来这是某个三位密码锁的提示……",
   },
@@ -52,6 +53,7 @@ export const ITEMS: Record<string, ItemDef> = {
     category: "note",
     icon: "📝",
     description: "窗帘背后被人用指甲刻下的留言。",
+    summary: "组合钥匙使用方法：向左三圈，再向右一圈。",
     detail:
       "窗帘背面深深的划痕组成了一句话：\n\n「向左三圈，再向右一圈。」\n\n旁边还有一个歪歪扭扭的太阳图案和一句话：「钥匙集齐时，按此法转动门锁方可开启。」\n\n这是使用完整钥匙开锁的关键提示！",
   },
@@ -115,6 +117,7 @@ export const ITEMS: Record<string, ItemDef> = {
     category: "note",
     icon: "📜",
     description: "窗帘最深折痕处隐约刻下的数字暗号。",
+    summary: "隐藏密码第一位：4",
     detail:
       "将窗帘完全展开，在最深处的一道折缝中，有人用针尖刻下了一个数字：\n\n「4」\n\n字迹虽浅却清晰，似乎暗示着某种密码的一位数字。窗帘、挂画、台灯——这三处若都有暗码，拼在一起也许就是真相的钥匙。",
   },
@@ -124,6 +127,7 @@ export const ITEMS: Record<string, ItemDef> = {
     category: "note",
     icon: "📜",
     description: "画框内侧隐秘角落刻下的数字暗号。",
+    summary: "隐藏密码第二位：8",
     detail:
       "取下挂画后，将画框翻到背面，在靠近挂钩的一个隐秘角落里，发现了被人用小刀刻下的数字：\n\n「8」\n\n刻痕很新，像是不久前才留下的。窗帘、挂画、台灯——这三处的暗码拼在一起，也许能打开另一扇门。",
   },
@@ -133,6 +137,7 @@ export const ITEMS: Record<string, ItemDef> = {
     category: "note",
     icon: "📜",
     description: "台灯底座下方贴着的微型数字暗号。",
+    summary: "隐藏密码第三位：2",
     detail:
       "将台灯轻轻抬起，底座下方贴着一张几乎看不见的微型标签，上面用极小的字体印着一个数字：\n\n「2」\n\n标签边缘有胶水残留的痕迹，似乎是匆忙贴上的。窗帘「4」、挂画「8」、台灯「2」——按此顺序排列，就是三位隐藏密码：4-8-2。",
   },
@@ -142,6 +147,7 @@ export const ITEMS: Record<string, ItemDef> = {
     category: "note",
     icon: "📝",
     description: "储物架上夹着的破旧纸条，字迹潦草。",
+    summary: "档案柜三位密码：5-2-7。",
     detail:
       "纸条上歪歪扭扭地写着：\n\n「档案柜密码：5 - 2 - 7」\n\n背面还有一行被水渍模糊的小字：「第三个数字……看不清了……应该是7吧？」\n\n这是储物间档案柜的三位密码！",
   },
@@ -187,6 +193,7 @@ export const ITEMS: Record<string, ItemDef> = {
     category: "note",
     icon: "📝",
     description: "从档案柜中取出的机密文件，记录着最终大门的密码。",
+    summary: "最终大门四位密码：8-5-2-3（需电路板正常工作）。",
     detail:
       "文件上方盖着「机密」印章，内容如下：\n\n「最终大门紧急密码：8 - 5 - 2 - 3」\n\n「此密码仅在电路板正常工作时方可使用。如电路板损坏，需更换后方可输入。」\n\n「另外，若持有组合钥匙与窗帘上的使用说明，也可选择用钥匙开锁。」",
   },
@@ -214,6 +221,7 @@ export const ITEMS: Record<string, ItemDef> = {
     category: "note",
     icon: "📜",
     description: "储物架深处贴着的微型数字暗号。",
+    summary: "隐藏密码第四位：5",
     detail:
       "在储物架的最里层，有一张几乎与木板融为一体的标签。凑近辨认，上面用极小的字体印着一个数字：\n\n「5」\n\n这是隐藏密码的第四位数字！窗帘「4」、挂画「8」、台灯「2」、储物架「5」——还有一处暗码未找到……",
   },
@@ -223,6 +231,7 @@ export const ITEMS: Record<string, ItemDef> = {
     category: "note",
     icon: "📜",
     description: "工作台底部刻下的数字暗号。",
+    summary: "隐藏密码第五位：6",
     detail:
       "趴下身子查看工作台底部，在一块松动的木板后面，发现了被人用烙铁刻下的数字：\n\n「6」\n\n这是隐藏密码的第五位数字！窗帘「4」、挂画「8」、台灯「2」、储物架「5」、工作台「6」——五处暗码集齐，按此顺序排列就是隐藏密码：4-8-2-5-6！",
   },
@@ -1330,6 +1339,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           password: "137",
           digits: 3,
           errorHint: "密码错误，请重新输入。提示：书架纸条——7-3-1倒序！",
+          clueItemIds: ["note_bookshelf"],
           onSuccess: {
             giveItems: ["screwdriver", "battery", "note_drawer"],
             setFlags: { drawerUnlocked: true },
@@ -1661,6 +1671,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           password: "527",
           digits: 3,
           errorHint: "密码错误，请重新输入。提示：储物架纸条——5-2-7！",
+          clueItemIds: ["note_shelf"],
           onSuccess: {
             giveItems: ["oil_can", "note_cabinet"],
             setFlags: { cabinetOpened: true },
@@ -1683,6 +1694,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           ),
           beforeSubmitMessage: "必须先完成全部探索并插入电路板后才能开启最终大门！",
           errorHint: "密码错误，请重新输入。提示：档案柜文件——8-5-2-3！",
+          clueItemIds: ["note_cabinet", "note_curtain"],
           onSuccess: {
             triggerEnding: "normal_password",
             successMessage: "🔓 密码正确！最终大门应声而开！",
@@ -1808,6 +1820,13 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           password: "48256",
           digits: 5,
           errorHint: "隐藏密码错误。窗帘「4」·挂画「8」·台灯「2」·储物架「5」·工作台「6」，按顺序输入！",
+          clueItemIds: [
+            "note_hidden_curtain",
+            "note_hidden_painting",
+            "note_hidden_lamp",
+            "note_hidden_shelf",
+            "note_hidden_workbench",
+          ],
           onSuccess: {
             triggerEnding: "true_ending",
             successMessage: "🌟 隐藏密码正确！墙面缓缓移开，一条暗道出现在你眼前……",

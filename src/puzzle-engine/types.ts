@@ -7,6 +7,7 @@ export interface ItemDef {
   icon: string;
   description: string;
   detail: string;
+  summary?: string;
 }
 
 export type ConditionType =
@@ -121,6 +122,7 @@ export interface LockDef {
   hiddenPassword?: LockHiddenPassword;
   descriptionLines?: string[];
   modalHints?: LockModalHint[];
+  clueItemIds?: string[];
 }
 
 export interface CombineRecipe {

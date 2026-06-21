@@ -1231,6 +1231,33 @@ function App() {
                     </p>
                   </div>
                 )}
+                {lock.clueItemIds && lock.clueItemIds.length > 0 && (
+                  <div className="lock-clue-section">
+                    <h4 className="lock-clue-title">📝 已掌握线索</h4>
+                    <div className="lock-clue-list">
+                      {lock.clueItemIds
+                        .filter((id) => engine.hasItem(id))
+                        .map((itemId) => {
+                          const item = CONFIG.items[itemId];
+                          if (!item) return null;
+                          return (
+                            <div key={itemId} className="lock-clue-item">
+                              <span className="lock-clue-icon">{item.icon}</span>
+                              <div className="lock-clue-info">
+                                <span className="lock-clue-name">{item.name}</span>
+                                <span className="lock-clue-summary">
+                                  {item.summary ?? item.description}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      {lock.clueItemIds.filter((id) => engine.hasItem(id)).length === 0 && (
+                        <p className="lock-clue-empty">暂无已收集的相关线索，继续探索房间吧！</p>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <div className="lock-digits">
                   {Array.from({ length: lock.digits }).map((_, i) => (
                     <span
