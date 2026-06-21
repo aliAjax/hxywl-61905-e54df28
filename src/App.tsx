@@ -21,6 +21,7 @@ interface SaveData {
   gameStartTime: number;
   combineCount: number;
   endingType: EndingType;
+  hintUsage: Record<string, number>;
 }
 
 type ItemCategory = "key_fragment" | "note" | "tool";
@@ -248,6 +249,159 @@ const COMBINE_RECIPES: CombineRecipe[] = [
   },
 ];
 
+interface HintPuzzle {
+  id: string;
+  title: string;
+  icon: string;
+  hints: [string, string, string];
+  isCompleted: (ctx: HintContext) => boolean;
+  isAvailable: (ctx: HintContext) => boolean;
+}
+
+interface HintContext {
+  inventory: string[];
+  hasItem: (id: string) => boolean;
+  drawerUnlocked: boolean;
+  boxOpened: boolean;
+  paintingRemoved: boolean;
+  curtainChecked: boolean;
+  escaped: boolean;
+  fragmentCount: number;
+  hasCompleteKey: boolean;
+  hasPoweredFlashlight: boolean;
+  flashlightActive: boolean;
+  hiddenClueCount: number;
+  hasAllHiddenClues: boolean;
+}
+
+const HINT_PUZZLES: HintPuzzle[] = [
+  {
+    id: "bookshelf_clue",
+    title: "书架的秘密",
+    icon: "📚",
+    hints: [
+      "书架上的书脊编号似乎有规律——第 7、3、1 册的位置有些特别，仔细看看这几本书周围。",
+      "书脊编号是 7、3、1，但纸条背面说「倒序即真相」。把这三个数字倒过来排列试试？",
+      "7-3-1 倒序就是 1-3-7，这是一个三位数字密码。去看看房间里哪个地方需要三位密码。",
+    ],
+    isCompleted: (ctx) => ctx.hasItem("note_bookshelf"),
+    isAvailable: () => true,
+  },
+  {
+    id: "drawer_unlock",
+    title: "抽屉密码锁",
+    icon: "🗄️",
+    hints: [
+      "抽屉被三位密码锁锁住了。先去书架那里找找有没有写着数字的纸条。",
+      "书架夹层的纸条写着「书脊编号 7-3-1，倒序即真相」。倒序排列这三个数字。",
+      "7-3-1 倒序是 1-3-7。直接在抽屉密码锁上输入 1、3、7 就能打开了。",
+    ],
+    isCompleted: (ctx) => ctx.drawerUnlocked,
+    isAvailable: (ctx) => true,
+  },
+  {
+    id: "screwdriver_use",
+    title: "螺丝刀的用处",
+    icon: "🔧",
+    hints: [
+      "抽屉里找到的螺丝刀看起来很有用。房间里有什么东西是被螺丝或封条固定住的？",
+      "墙上的挂画用螺丝钉固定着，还有铁皮箱的封条也需要工具才能撬开。",
+      "先去挂画那里用螺丝刀把它取下来，再去用螺丝刀撬开铁皮箱。这两个地方都需要螺丝刀。",
+    ],
+    isCompleted: (ctx) => ctx.paintingRemoved && ctx.boxOpened,
+    isAvailable: (ctx) => ctx.hasItem("screwdriver"),
+  },
+  {
+    id: "fragments_collect",
+    title: "钥匙碎片收集",
+    icon: "🗝️",
+    hints: [
+      "房间里散落着三片钥匙碎片。你已经在花瓶里找到了一片，还有两片在哪里呢？",
+      "挂画被取下后，挂钩上挂着一片碎片。铁皮箱撬开后，底部暗格里还有一片。",
+      "三片碎片分别藏在：花瓶、挂画挂钩、铁皮箱暗格。集齐后可以组合成完整钥匙。",
+    ],
+    isCompleted: (ctx) => ctx.hasCompleteKey || ctx.fragmentCount >= 3,
+    isAvailable: (ctx) => ctx.fragmentCount > 0,
+  },
+  {
+    id: "combine_items",
+    title: "物品组合",
+    icon: "🔧",
+    hints: [
+      "有些物品单独无法使用，需要组合在一起。物品栏有一个「组合道具」按钮。",
+      "三枚钥匙碎片可以组合成完整钥匙；手电筒没有电池，需要找到电池组合使用。",
+      "点击物品栏的「组合道具」，选择三片钥匙碎片可以合成完整钥匙；选择手电筒和电池可以得到可用手电筒。",
+    ],
+    isCompleted: (ctx) => ctx.hasCompleteKey || ctx.hasPoweredFlashlight,
+    isAvailable: (ctx) =>
+      ctx.inventory.filter((id) => ITEMS[id]?.category !== undefined).length >= 2,
+  },
+  {
+    id: "flashlight_power",
+    title: "点亮手电筒",
+    icon: "🔦",
+    hints: [
+      "台灯旁边找到的手电筒亮不起来——因为电池仓是空的。找找房间里有没有电池。",
+      "抽屉打开后，里面除了螺丝刀和纸条，还有一节电池。把电池和手电筒组合在一起。",
+      "在物品栏点击「组合道具」，选择手电筒和电池，组合后得到「可用手电筒」。点击它可以开关照明。",
+    ],
+    isCompleted: (ctx) => ctx.hasPoweredFlashlight,
+    isAvailable: (ctx) => ctx.hasItem("flashlight"),
+  },
+  {
+    id: "carpet_clue",
+    title: "地毯荧光暗号",
+    icon: "🧶",
+    hints: [
+      "地毯边角微微翘起，下面似乎压着什么。但光线太暗看不清楚——需要能照亮暗处的工具。",
+      "把手电筒装上电池并打开后，再去检查地毯。荧光墨水的暗号只有在强光下才会显现。",
+      "打开手电筒（点击物品栏的「可用手电筒」开启），然后点击地毯。荧光暗号是 1-3-7-9，这是门锁的四位密码。",
+    ],
+    isCompleted: (ctx) => ctx.hasItem("note_carpet"),
+    isAvailable: (ctx) => ctx.drawerUnlocked && ctx.hasItem("flashlight"),
+  },
+  {
+    id: "curtain_instruction",
+    title: "窗帘的刻字",
+    icon: "🪟",
+    hints: [
+      "厚重的窗帘遮住了整扇窗户。拉开窗帘，仔细检查窗帘背面有没有什么痕迹。",
+      "窗帘背面有人用指甲刻下了字迹——这是关于如何使用完整钥匙的重要说明。",
+      "点击窗帘调查。拉开后会发现刻字：「向左三圈，再向右一圈」，这是用完整钥匙开锁的转动方法。",
+    ],
+    isCompleted: (ctx) => ctx.hasItem("note_curtain"),
+    isAvailable: (ctx) => ctx.drawerUnlocked,
+  },
+  {
+    id: "hidden_clues",
+    title: "隐藏暗码（真结局）",
+    icon: "🌟",
+    hints: [
+      "窗帘、挂画、台灯——这三个地方的秘密似乎不止表面那么简单。再次仔细检查它们。",
+      "在窗帘最深的折缝中、画框背面的隐秘角落、台灯底座下方，各藏着一位数字。凑齐三位就是隐藏密码。",
+      "三位暗码分别是：窗帘「4」、挂画「8」、台灯「2」。按窗帘→挂画→台灯的顺序排列，就是隐藏密码 4-8-2。在门锁处集齐基础线索后可以尝试输入。",
+    ],
+    isCompleted: (ctx) => ctx.hasAllHiddenClues,
+    isAvailable: (ctx) =>
+      ctx.hasItem("note_curtain") ||
+      ctx.paintingRemoved ||
+      ctx.hasItem("flashlight") ||
+      ctx.hasPoweredFlashlight,
+  },
+  {
+    id: "door_escape",
+    title: "开启门锁逃脱",
+    icon: "🔒",
+    hints: [
+      "门锁有两种开法：一是集齐三片钥匙碎片组合成完整钥匙，按窗帘刻字的方法开锁；二是找到地毯的荧光暗号，输入四位密码。",
+      "如果你用钥匙开锁，需要：完整钥匙 + 窗帘刻字说明。如果你用密码开锁，需要地毯荧光暗号 1-3-7-9。两者都需要先打开抽屉、取下挂画、撬开箱子。",
+      "基础步骤：先开抽屉（137）→ 用螺丝刀取下挂画和撬开箱子 → 收集三片钥匙碎片 → 组合完整钥匙 → 查看窗帘刻字 → 去门锁使用钥匙。或者在得到可用手电筒后，开启手电筒查看地毯得到密码 1379，直接输入密码开锁。",
+    ],
+    isCompleted: (ctx) => ctx.escaped,
+    isAvailable: (ctx) => ctx.drawerUnlocked && ctx.paintingRemoved && ctx.boxOpened,
+  },
+];
+
 type FilterTab = "all" | ItemCategory;
 
 const FILTER_TABS: { key: FilterTab; label: string }[] = [
@@ -299,6 +453,9 @@ function App() {
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [combineCount, setCombineCount] = useState(0);
   const [endingType, setEndingType] = useState<EndingType>(null);
+  const [hintUsage, setHintUsage] = useState<Record<string, number>>({});
+  const [hintPanelOpen, setHintPanelOpen] = useState(false);
+  const [hintDetailId, setHintDetailId] = useState<string | null>(null);
 
   const showMsg = useCallback(
     (text: string, type: "info" | "collect" | "empty" | "error") => {
@@ -350,6 +507,7 @@ function App() {
         gameStartTime,
         combineCount,
         endingType,
+        hintUsage,
       };
       localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
     } catch (e) {
@@ -369,6 +527,7 @@ function App() {
     gameStartTime,
     combineCount,
     endingType,
+    hintUsage,
   ]);
 
   const loadGame = useCallback(() => {
@@ -391,6 +550,7 @@ function App() {
       setGameStartTime(data.gameStartTime || Date.now());
       setCombineCount(data.combineCount || 0);
       setEndingType(data.endingType || null);
+      setHintUsage(data.hintUsage || {});
       return true;
     } catch (e) {
       console.error("读取存档失败:", e);
@@ -431,6 +591,9 @@ function App() {
     setCurrentTime(0);
     setCombineCount(0);
     setEndingType(null);
+    setHintUsage({});
+    setHintPanelOpen(false);
+    setHintDetailId(null);
   }, []);
 
   const handleNewGame = useCallback(() => {
@@ -514,6 +677,40 @@ function App() {
     hasItem("note_hidden_lamp"),
   ].filter(Boolean).length;
   const hasAllHiddenClues = hiddenClueCount === 3;
+
+  const hintContext: HintContext = {
+    inventory,
+    hasItem,
+    drawerUnlocked,
+    boxOpened,
+    paintingRemoved,
+    curtainChecked,
+    escaped,
+    fragmentCount,
+    hasCompleteKey,
+    hasPoweredFlashlight,
+    flashlightActive,
+    hiddenClueCount,
+    hasAllHiddenClues,
+  };
+
+  const totalHintCount = Object.values(hintUsage).reduce((sum, n) => sum + n, 0);
+  const puzzlesHintedCount = Object.keys(hintUsage).length;
+
+  const handleRevealHint = useCallback(
+    (puzzleId: string) => {
+      const puzzle = HINT_PUZZLES.find((p) => p.id === puzzleId);
+      if (!puzzle) return;
+      const currentLevel = hintUsage[puzzleId] || 0;
+      if (currentLevel >= 3) return;
+      setHintUsage((prev) => ({
+        ...prev,
+        [puzzleId]: currentLevel + 1,
+      }));
+      showMsg(`💡 已查看「${puzzle.title}」第 ${currentLevel + 1} 层提示`, "info");
+    },
+    [hintUsage, showMsg]
+  );
 
   const findMatchingRecipe = useCallback((): CombineRecipe | null => {
     for (const recipe of COMBINE_RECIPES) {
@@ -1268,7 +1465,7 @@ function App() {
             )}
           </div>
 
-          <div className="victory-stats-grid">
+          <div className="victory-stats-grid victory-stats-grid-6">
             <div className="stat-card">
               <span className="stat-icon">⏱️</span>
               <span className="stat-value">{displayTime}</span>
@@ -1291,7 +1488,47 @@ function App() {
               <span className="stat-value">{hiddenClueCount}/3</span>
               <span className="stat-label">隐藏线索</span>
             </div>
+            <div className="stat-card">
+              <span className="stat-icon">💡</span>
+              <span className="stat-value">{totalHintCount}</span>
+              <span className="stat-label">提示使用</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-icon">🧩</span>
+              <span className="stat-value">{puzzlesHintedCount}/{HINT_PUZZLES.length}</span>
+              <span className="stat-label">求助谜题</span>
+            </div>
           </div>
+
+          {totalHintCount > 0 && (
+            <div className="hint-stats-detail">
+              <h4 className="hint-stats-title">📋 提示使用详情</h4>
+              <div className="hint-stats-list">
+                {HINT_PUZZLES.map((puzzle) => {
+                  const count = hintUsage[puzzle.id] || 0;
+                  if (count === 0) return null;
+                  return (
+                    <div key={puzzle.id} className="hint-stats-item">
+                      <span className="hint-stats-icon">{puzzle.icon}</span>
+                      <span className="hint-stats-name">{puzzle.title}</span>
+                      <span className="hint-stats-level">
+                        {count === 1 ? "轻度求助" : count === 2 ? "中度求助" : "深度求助"}
+                      </span>
+                      <span className="hint-stats-count">
+                        {count}/3 层
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {totalHintCount === 0 && (
+            <p className="no-hint-badge">
+              🎉 太棒了！你没有使用任何提示，全凭自己的智慧逃出了密室！
+            </p>
+          )}
 
           <div className="victory-buttons">
             <button className="action-btn victory-restart" onClick={handleNewGame}>
@@ -1329,7 +1566,7 @@ function App() {
         <span>按顺序解开谜题：书架 → 抽屉 → 挂画/箱子 → 窗帘/地毯 → 门锁</span>
       </section>
 
-      <section className="hud hud-5">
+      <section className="hud hud-6">
         <article>
           <small>用时</small>
           <strong>⏱️ {formatTime(elapsedTime)}</strong>
@@ -1350,6 +1587,12 @@ function App() {
           <small>隐藏</small>
           <strong>
             {hiddenClueCount > 0 ? `\uD83D\uDDDD ${hiddenClueCount}/3` : "\uD83D\uDD12 0/3"}
+          </strong>
+        </article>
+        <article onClick={() => setHintPanelOpen(true)} style={{ cursor: "pointer" }}>
+          <small>提示</small>
+          <strong>
+            💡 {totalHintCount > 0 ? `${totalHintCount}次` : "未使用"}
           </strong>
         </article>
       </section>
@@ -1889,6 +2132,242 @@ function App() {
                   ✓
                 </button>
               </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {hintPanelOpen && (() => {
+        const availablePuzzles = HINT_PUZZLES.filter(
+          (p) => p.isAvailable(hintContext) && !p.isCompleted(hintContext)
+        );
+        const completedPuzzles = HINT_PUZZLES.filter((p) => p.isCompleted(hintContext));
+        const selectedPuzzle = hintDetailId
+          ? HINT_PUZZLES.find((p) => p.id === hintDetailId)
+          : null;
+
+        if (selectedPuzzle) {
+          const levelsUnlocked = hintUsage[selectedPuzzle.id] || 0;
+          return (
+            <div className="modal-overlay" onClick={() => setHintDetailId(null)}>
+              <div
+                className="modal-card hint-detail-card"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="modal-header">
+                  <span className="modal-icon hint-modal-icon">
+                    {selectedPuzzle.icon}
+                  </span>
+                  <div>
+                    <h3>{selectedPuzzle.title}</h3>
+                    <span className="clue-status-tag">
+                      💡 已解锁 {levelsUnlocked}/3 层提示
+                    </span>
+                  </div>
+                  <button
+                    className="modal-close"
+                    onClick={() => setHintDetailId(null)}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="hint-level-list">
+                  {[0, 1, 2].map((level) => {
+                    const isUnlocked = levelsUnlocked > level;
+                    const isNext = levelsUnlocked === level;
+                    return (
+                      <div
+                        key={level}
+                        className={`hint-level-item ${
+                          isUnlocked ? "hint-level-unlocked" : ""
+                        } ${isNext ? "hint-level-next" : ""}`}
+                      >
+                        <div className="hint-level-header">
+                          <span className="hint-level-badge">
+                            {level === 0 ? "🥉" : level === 1 ? "🥈" : "🥇"} 第
+                            {level + 1}层
+                          </span>
+                          <span className="hint-level-status">
+                            {isUnlocked
+                              ? "✓ 已查看"
+                              : isNext
+                              ? "可解锁"
+                              : "🔒 锁定"}
+                          </span>
+                        </div>
+                        {isUnlocked ? (
+                          <p className="hint-level-text">
+                            {selectedPuzzle.hints[level]}
+                          </p>
+                        ) : isNext ? (
+                          <button
+                            className="action-btn hint-reveal-btn"
+                            onClick={() => handleRevealHint(selectedPuzzle.id)}
+                          >
+                            💡 解锁第 {level + 1} 层提示
+                          </button>
+                        ) : (
+                          <p className="hint-level-locked">
+                            请先解锁前面的提示层
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <button
+                  className="action-btn clue-close-btn"
+                  onClick={() => setHintDetailId(null)}
+                >
+                  返回谜题列表
+                </button>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="modal-overlay" onClick={() => setHintPanelOpen(false)}>
+            <div
+              className="modal-card hint-panel-card"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <span className="modal-icon hint-modal-icon">💡</span>
+                <div>
+                  <h3>提示中心</h3>
+                  <span className="clue-status-tag">
+                    卡住了？选择一个谜题查看渐进式提示
+                  </span>
+                </div>
+                <button
+                  className="modal-close"
+                  onClick={() => setHintPanelOpen(false)}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="hint-panel-summary">
+                <div className="hint-summary-item">
+                  <span className="hint-summary-icon">📊</span>
+                  <div>
+                    <strong>{totalHintCount}</strong>
+                    <small>累计使用提示</small>
+                  </div>
+                </div>
+                <div className="hint-summary-item">
+                  <span className="hint-summary-icon">🧩</span>
+                  <div>
+                    <strong>{availablePuzzles.length}</strong>
+                    <small>待解谜题</small>
+                  </div>
+                </div>
+                <div className="hint-summary-item">
+                  <span className="hint-summary-icon">✅</span>
+                  <div>
+                    <strong>{completedPuzzles.length}</strong>
+                    <small>已完成谜题</small>
+                  </div>
+                </div>
+              </div>
+
+              {availablePuzzles.length > 0 && (
+                <>
+                  <h4 className="hint-section-subtitle">🔍 当前可求助的谜题</h4>
+                  <div className="hint-puzzle-list">
+                    {availablePuzzles.map((puzzle) => {
+                      const used = hintUsage[puzzle.id] || 0;
+                      return (
+                        <button
+                          key={puzzle.id}
+                          className="hint-puzzle-item"
+                          onClick={() => setHintDetailId(puzzle.id)}
+                        >
+                          <span className="hint-puzzle-icon">{puzzle.icon}</span>
+                          <div className="hint-puzzle-info">
+                            <span className="hint-puzzle-title">
+                              {puzzle.title}
+                            </span>
+                            <span className="hint-puzzle-progress">
+                              {used > 0
+                                ? `已查看 ${used}/3 层`
+                                : "尚未查看提示"}
+                            </span>
+                          </div>
+                          <div className="hint-puzzle-dots">
+                            {[0, 1, 2].map((i) => (
+                              <span
+                                key={i}
+                                className={`hint-dot ${
+                                  i < used ? "hint-dot-used" : ""
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="hint-puzzle-arrow">›</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+
+              {availablePuzzles.length === 0 && (
+                <div className="hint-empty-state">
+                  <span className="hint-empty-icon">🎉</span>
+                  <p className="hint-empty-text">
+                    太棒了！当前没有需要求助的谜题。
+                    <br />
+                    继续探索，或者直接前往门锁逃脱！
+                  </p>
+                </div>
+              )}
+
+              {completedPuzzles.length > 0 && (
+                <div className="hint-completed-section">
+                  <h4 className="hint-section-subtitle hint-completed-title">
+                    ✓ 已完成的谜题
+                  </h4>
+                  <div className="hint-completed-list">
+                    {completedPuzzles.map((puzzle) => {
+                      const used = hintUsage[puzzle.id] || 0;
+                      return (
+                        <div
+                          key={puzzle.id}
+                          className="hint-completed-item"
+                          title={
+                            used > 0
+                              ? `使用了 ${used} 层提示`
+                              : "未使用提示完成"
+                          }
+                        >
+                          <span className="hint-completed-icon">
+                            {puzzle.icon}
+                          </span>
+                          <span className="hint-completed-name">
+                            {puzzle.title}
+                          </span>
+                          <span
+                            className={`hint-completed-tag ${
+                              used === 0 ? "hint-tag-perfect" : ""
+                            }`}
+                          >
+                            {used === 0 ? "独立完成 ⭐" : `提示 ${used}/3`}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <p className="hint-footer-note">
+                💡 提示系统按层级渐进解锁：先看最模糊的提示，
+                实在不行再解锁更深层的提示，尽量保持解谜的乐趣！
+              </p>
             </div>
           </div>
         );
