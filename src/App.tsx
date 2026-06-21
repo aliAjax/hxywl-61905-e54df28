@@ -142,26 +142,32 @@ function App() {
   const handleNewGame = useCallback(() => {
     clearSave();
     resetAllState();
-    (engine as any).gameStartTime = Date.now();
+    const now = Date.now();
+    engine.setGameStartTime(now);
     setGameStarted(true);
   }, [clearSave, resetAllState, engine]);
 
   const handleContinue = useCallback(() => {
+    const now = Date.now();
     if (loadGame()) {
+      if (engine.gameStartTime === 0) {
+        engine.setGameStartTime(now);
+      }
       setGameStarted(true);
       setTimeout(() => showMsg("📂 已加载存档，继续你的逃脱之旅！", "info"), 0);
     } else {
       handleNewGame();
     }
-  }, [loadGame, handleNewGame, showMsg]);
+  }, [loadGame, engine, showMsg, handleNewGame]);
 
   const handleRestart = useCallback(() => {
     if (confirm("确定要重新开始吗？当前进度将被清除且无法恢复。")) {
       clearSave();
       resetAllState();
+      engine.setGameStartTime(Date.now());
       showMsg("🔄 游戏已重置，开始新的冒险！", "info");
     }
-  }, [clearSave, resetAllState, showMsg]);
+  }, [clearSave, resetAllState, engine, showMsg]);
 
   useEffect(() => {
     if (gameStarted) {
@@ -183,7 +189,7 @@ function App() {
     saveGame,
   ]);
 
-  const gameStartTime = (engine as any).gameStartTime ?? engine.gameStartTime ?? 0;
+  const gameStartTime = engine.gameStartTime;
 
   useEffect(() => {
     if (!gameStarted || engine.escaped || gameStartTime === 0) return;

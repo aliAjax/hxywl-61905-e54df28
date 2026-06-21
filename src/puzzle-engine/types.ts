@@ -302,6 +302,7 @@ export interface EngineActions {
     effects?: InteractionEffect;
   };
   switchRoom: (roomId: string) => void;
+  setGameStartTime: (time: number) => void;
 }
 
 export type PuzzleEngine = EngineState & EngineActions;

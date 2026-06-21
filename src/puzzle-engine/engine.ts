@@ -806,6 +806,13 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
     [config.rooms, state.flags.secretDoorOpened]
   );
 
+  const setGameStartTime = useCallback((time: number) => {
+    setState((prev) => {
+      if (prev.gameStartTime !== 0) return prev;
+      return { ...prev, gameStartTime: time };
+    });
+  }, []);
+
   return {
     ...state,
     hasItem,
@@ -832,6 +839,7 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
     getLockUIInfo,
     submitHiddenPassword,
     switchRoom,
+    setGameStartTime,
   };
 }
 
