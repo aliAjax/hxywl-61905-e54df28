@@ -1259,7 +1259,7 @@ function App() {
               💾 快速保存
             </button>
             <button className="action-btn menu-btn save-manage-btn" onClick={() => setSaveSlotPanelOpen(true)}>
-              � 存档管理
+              📂 存档管理
             </button>
             <button className="action-btn menu-btn restart-btn" onClick={handleRestart}>
               🔄 重新开始
