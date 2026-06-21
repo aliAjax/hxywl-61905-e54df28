@@ -690,7 +690,7 @@ function App() {
               lockReason: "需要螺丝刀",
             };
           } else {
-            const gotFrag = hasItem("frag_b");
+            const gotFrag = hasItem("frag_b") || hasItem("complete_key");
             const gotHidden = hasItem("note_hidden_painting");
             if (!gotFrag) {
               return {
@@ -756,7 +756,7 @@ function App() {
         }
 
         case "台灯": {
-          const gotFlashlight = hasItem("flashlight");
+          const gotFlashlight = hasItem("flashlight") || hasItem("powered_flashlight");
           const gotHidden = hasItem("note_hidden_lamp");
           if (!gotFlashlight) {
             return {
