@@ -268,6 +268,7 @@ export interface SaveData {
   combineCount: number;
   hintUsage: Record<string, number>;
   currentRoomId: string;
+  finalElapsedTime: number;
 }
 
 export interface EngineState {
@@ -283,6 +284,7 @@ export interface EngineState {
   lastHint: string;
   gameStartTime: number;
   currentRoomId: string;
+  finalElapsedTime: number;
 }
 
 export interface EngineActions {
@@ -336,6 +338,7 @@ export interface EngineActions {
   };
   switchRoom: (roomId: string) => void;
   setGameStartTime: (time: number) => void;
+  setFinalElapsedTime: (ms: number) => void;
   getRecommendedPuzzles: () => RecommendedPuzzle[];
 }
 

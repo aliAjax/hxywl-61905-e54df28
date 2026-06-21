@@ -101,6 +101,7 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
       lastHint: "",
       gameStartTime: 0,
       currentRoomId: config.rooms[0]?.id ?? "",
+      finalElapsedTime: 0,
     };
   }, [config]);
 
@@ -857,6 +858,7 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
       combineCount: state.combineCount,
       hintUsage: { ...state.hintUsage },
       currentRoomId: state.currentRoomId,
+      finalElapsedTime: state.finalElapsedTime,
     };
   }, [config.saveVersion, state]);
 
@@ -876,6 +878,7 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
         combineCount: data.combineCount || 0,
         hintUsage: data.hintUsage || {},
         currentRoomId: data.currentRoomId || config.rooms[0]?.id || "",
+        finalElapsedTime: data.finalElapsedTime || 0,
       });
       return true;
     },
@@ -910,6 +913,13 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
     setState((prev) => {
       if (prev.gameStartTime !== 0) return prev;
       return { ...prev, gameStartTime: time };
+    });
+  }, []);
+
+  const setFinalElapsedTime = useCallback((ms: number) => {
+    setState((prev) => {
+      if (prev.finalElapsedTime !== 0) return prev;
+      return { ...prev, finalElapsedTime: ms };
     });
   }, []);
 
@@ -1022,6 +1032,7 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
     submitHiddenPassword,
     switchRoom,
     setGameStartTime,
+    setFinalElapsedTime,
     getRecommendedPuzzles,
   };
 }

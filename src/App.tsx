@@ -18,6 +18,93 @@ import type {
 
 const CONFIG: GameConfig = ESCAPE_ROOM_CONFIG;
 
+type EvalGrade = "S" | "A" | "B" | "C" | "D";
+
+interface EscapeEvaluation {
+  grade: EvalGrade;
+  score: number;
+  title: string;
+  comment: string;
+  breakdown: {
+    time: { score: number; max: number; label: string };
+    hints: { score: number; max: number; label: string };
+    hiddenClues: { score: number; max: number; label: string };
+    trueEnding: { score: number; max: number; label: string };
+    combines: { score: number; max: number; label: string };
+  };
+}
+
+function computeEscapeEvaluation(params: {
+  elapsedMs: number;
+  hintCount: number;
+  hiddenClueCount: number;
+  totalHiddenClues: number;
+  isTrueEnding: boolean;
+  combineCount: number;
+}): EscapeEvaluation {
+  const { elapsedMs, hintCount, hiddenClueCount, totalHiddenClues, isTrueEnding, combineCount } = params;
+  const minutes = elapsedMs / 60000;
+
+  let timeScore = 4;
+  if (minutes < 5) timeScore = 25;
+  else if (minutes < 10) timeScore = 20;
+  else if (minutes < 15) timeScore = 16;
+  else if (minutes < 20) timeScore = 12;
+  else if (minutes < 30) timeScore = 8;
+
+  let hintScore = 0;
+  if (hintCount === 0) hintScore = 25;
+  else if (hintCount <= 3) hintScore = 18;
+  else if (hintCount <= 6) hintScore = 10;
+  else if (hintCount <= 9) hintScore = 5;
+
+  let hiddenScore = Math.round((hiddenClueCount / totalHiddenClues) * 25);
+
+  const trueEndingScore = isTrueEnding ? 15 : 0;
+
+  let combineScore = 0;
+  if (combineCount >= 3) combineScore = 10;
+  else if (combineCount === 2) combineScore = 7;
+  else if (combineCount === 1) combineScore = 4;
+
+  const total = timeScore + hintScore + hiddenScore + trueEndingScore + combineScore;
+
+  let grade: EvalGrade = "D";
+  let title = "顽强逃脱者";
+  let comment = "密室给了你不少考验，但你从未放弃。每一次失败都是通往成功的基石。";
+  if (total >= 90) {
+    grade = "S";
+    title = "大师级逃脱者";
+    comment = "完美的逃脱！你以超凡的洞察力和效率揭开了密室的所有秘密，堪称逃脱大师！";
+  } else if (total >= 75) {
+    grade = "A";
+    title = "专家级逃脱者";
+    comment = "出色的表现！你展现了优秀的解谜能力，距离完美只差一步之遥。";
+  } else if (total >= 55) {
+    grade = "B";
+    title = "熟练级逃脱者";
+    comment = "不错的逃脱！你稳步解开了谜题，仍有一些隐藏的秘密等待你来发掘。";
+  } else if (total >= 35) {
+    grade = "C";
+    title = "新手级逃脱者";
+    comment = "成功逃脱！虽然遇到了一些困难，但你最终找到了出路。下次可以试试不用提示？";
+  }
+
+  return {
+    grade,
+    score: total,
+    title,
+    comment,
+    breakdown: {
+      time: { score: timeScore, max: 25, label: "通关速度" },
+      hints: { score: hintScore, max: 25, label: "提示控制" },
+      hiddenClues: { score: hiddenScore, max: 25, label: "隐藏探索" },
+      trueEnding: { score: trueEndingScore, max: 15, label: "真结局" },
+      combines: { score: combineScore, max: 10, label: "道具组合" },
+    },
+  };
+}
+
 function App() {
   const engine = usePuzzleEngine(CONFIG);
 
@@ -195,6 +282,7 @@ function App() {
     engine.combineCount,
     engine.hintUsage,
     engine.currentRoomId,
+    engine.finalElapsedTime,
     saveGame,
   ]);
 
@@ -207,6 +295,15 @@ function App() {
     }, 1000);
     return () => clearInterval(timer);
   }, [gameStarted, engine.escaped, gameStartTime]);
+
+  useEffect(() => {
+    if (engine.escaped && engine.finalElapsedTime === 0 && gameStartTime > 0) {
+      const elapsed = (currentTime > 0 ? currentTime : Date.now()) - gameStartTime;
+      if (elapsed > 0) {
+        engine.setFinalElapsedTime(elapsed);
+      }
+    }
+  }, [engine.escaped, engine.finalElapsedTime, gameStartTime, currentTime, engine]);
 
   const formatTime = useCallback((ms: number): string => {
     if (ms <= 0) return "00:00";
@@ -530,7 +627,39 @@ function App() {
   if (engine.escaped) {
     const ending = engine.endingId ? CONFIG.endings[engine.endingId] : null;
     const isTrueEnding = ending?.isTrueEnding ?? false;
-    const displayTime = formatTime(elapsedTime);
+    const effectiveElapsed = engine.finalElapsedTime > 0 ? engine.finalElapsedTime : elapsedTime;
+    const displayTime = formatTime(effectiveElapsed);
+
+    const evaluation = computeEscapeEvaluation({
+      elapsedMs: effectiveElapsed,
+      hintCount: totalHintCount,
+      hiddenClueCount,
+      totalHiddenClues: 5,
+      isTrueEnding,
+      combineCount: engine.combineCount,
+    });
+
+    const gradeColorMap: Record<EvalGrade, string> = {
+      S: "#fbbf24",
+      A: "#a855f7",
+      B: "#3b82f6",
+      C: "#22d3ee",
+      D: "#94a3b8",
+    };
+    const gradeBgMap: Record<EvalGrade, string> = {
+      S: "rgba(251, 191, 36, 0.15)",
+      A: "rgba(168, 85, 247, 0.15)",
+      B: "rgba(59, 130, 246, 0.15)",
+      C: "rgba(34, 211, 238, 0.12)",
+      D: "rgba(148, 163, 184, 0.12)",
+    };
+    const gradeBorderMap: Record<EvalGrade, string> = {
+      S: "rgba(251, 191, 36, 0.4)",
+      A: "rgba(168, 85, 247, 0.4)",
+      B: "rgba(59, 130, 246, 0.35)",
+      C: "rgba(34, 211, 238, 0.3)",
+      D: "rgba(148, 163, 184, 0.25)",
+    };
 
     return (
       <main className="game-shell">
@@ -553,6 +682,54 @@ function App() {
             {(ending?.story ?? []).map((para, i) => (
               <p key={i}>{para}</p>
             ))}
+          </div>
+          <div
+            className="eval-section"
+            style={{
+              background: gradeBgMap[evaluation.grade],
+              borderColor: gradeBorderMap[evaluation.grade],
+            }}
+          >
+            <div className="eval-header">
+              <div
+                className="eval-grade"
+                style={{
+                  color: gradeColorMap[evaluation.grade],
+                  background: gradeBgMap[evaluation.grade],
+                  borderColor: gradeBorderMap[evaluation.grade],
+                }}
+              >
+                {evaluation.grade}
+              </div>
+              <div className="eval-title-area">
+                <span className="eval-title" style={{ color: gradeColorMap[evaluation.grade] }}>
+                  {evaluation.title}
+                </span>
+                <span className="eval-score">
+                  综合评分 {evaluation.score}/100
+                </span>
+              </div>
+            </div>
+            <p className="eval-comment">{evaluation.comment}</p>
+            <div className="eval-breakdown">
+              {Object.values(evaluation.breakdown).map((item) => (
+                <div key={item.label} className="eval-bar-row">
+                  <span className="eval-bar-label">{item.label}</span>
+                  <div className="eval-bar-track">
+                    <div
+                      className="eval-bar-fill"
+                      style={{
+                        width: `${(item.score / item.max) * 100}%`,
+                        background: gradeColorMap[evaluation.grade],
+                      }}
+                    />
+                  </div>
+                  <span className="eval-bar-score">
+                    {item.score}/{item.max}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="victory-stats-grid victory-stats-grid-6">
             <div className="stat-card">

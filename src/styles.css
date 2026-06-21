@@ -1788,6 +1788,106 @@ button {
   margin-top: 10px;
 }
 
+.eval-section {
+  margin: 0 auto 24px;
+  padding: 22px 24px;
+  border-radius: 16px;
+  border: 1px solid;
+  max-width: 520px;
+  text-align: left;
+}
+
+.eval-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.eval-grade {
+  font-size: 48px;
+  font-weight: 900;
+  line-height: 1;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  border: 2px solid;
+  flex-shrink: 0;
+  text-shadow: 0 0 20px currentColor;
+}
+
+.eval-title-area {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.eval-title {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.eval-score {
+  font-size: 14px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.eval-comment {
+  color: #cbd5e1;
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 0 0 16px;
+}
+
+.eval-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.eval-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eval-bar-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  width: 64px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.eval-bar-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.eval-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  min-width: 0;
+}
+
+.eval-bar-score {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  width: 40px;
+  flex-shrink: 0;
+  text-align: left;
+}
+
 .victory-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
