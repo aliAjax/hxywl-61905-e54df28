@@ -271,6 +271,20 @@ export interface SaveData {
   finalElapsedTime: number;
 }
 
+export interface SaveSlotMeta {
+  slotIndex: number;
+  roomId: string;
+  roomName: string;
+  elapsedMs: number;
+  clueCount: number;
+  escaped: boolean;
+  endingId: string | null;
+  savedAt: number;
+  hasData: boolean;
+}
+
+export type SaveSlotStorage = Record<string, SaveData>;
+
 export interface EngineState {
   inventory: string[];
   investigatedCellIds: Set<string>;
