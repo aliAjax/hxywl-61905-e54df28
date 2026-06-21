@@ -139,6 +139,7 @@ export interface GameConfig {
   combineRecipes: CombineRecipe[];
   endings: Record<string, EndingDef>;
   hintPuzzles: HintPuzzleDef[];
+  autoAdvanceCellIds: string[];
   intro: {
     title: string;
     description: string;

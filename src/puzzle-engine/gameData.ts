@@ -370,6 +370,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
     },
   },
   hintPuzzles: HINT_PUZZLES,
+  autoAdvanceCellIds: ["carpet", "door"],
   rooms: [
     {
       id: "room_01",
@@ -664,16 +665,93 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           id: "door",
           label: "门锁",
           icon: "🔒",
-          initialStageId: "locked",
+          initialStageId: "need_drawer",
           stages: {
-            locked: {
-              id: "locked",
+            need_drawer: {
+              id: "need_drawer",
               description: "一扇铁门上的密码锁，需要完成全部探索才能开启。",
               clueDetail:
-                "厚重的铁门牢牢锁住了出口。门上有一个四位数字密码锁，锁旁还有一个钥匙孔。锁下方刻着一行小字：「须尽搜此间所有机关，方可开启此门。」",
-              nextHint: "继续探索房间，完成所有关键步骤后再来。",
+                "厚重的铁门牢牢锁住了出口。门上有一个四位数字密码锁，锁旁还有一个钥匙孔。锁下方刻着一行小字：「须尽搜此间所有机关，方可开启此门。",
+              nextHint: "密室的秘密藏在各处——先去打开抽屉看看，那里应该能找到你需要的工具和线索。",
               isLocked: true,
-              lockReason: "需要密码或钥匙",
+              lockReason: "未完成探索：打开抽屉",
+              requires: flagTrue("drawerUnlocked"),
+              requiresMet: {
+                description: "一扇铁门上的密码锁，需要完成全部探索才能开启。",
+                clueDetail:
+                  "厚重的铁门牢牢锁住了出口。门上有一个四位数字密码锁，锁旁还有一个钥匙孔。锁下方刻着一行小字：「须尽搜此间所有机关，方可开启此门。",
+                nextHint: "抽屉已打开！接下来去取下挂画——墙上的挂画，看看背后藏着什么！",
+                lockReason: "未完成探索：取下挂画",
+              },
+              moveToStage: "need_painting",
+            },
+            need_painting: {
+              id: "need_painting",
+              description: "一扇铁门上的密码锁，需要完成全部探索才能开启。",
+              clueDetail:
+                "厚重的铁门牢牢锁住了出口。门上有一个四位数字密码锁，锁旁还有一个钥匙孔。锁下方刻着一行小字：「须尽搜此间所有机关，方可开启此门。",
+              nextHint: "挂画被螺丝牢牢固定在墙上，需要螺丝刀才能取下——你应该能找到螺丝刀！",
+              isLocked: true,
+              lockReason: "未完成探索：取下挂画",
+              requires: flagTrue("paintingRemoved"),
+              requiresMet: {
+                description: "一扇铁门上的密码锁，需要完成全部探索才能开启。",
+                clueDetail:
+                  "厚重的铁门牢牢锁住了出口。门上有一个四位数字密码锁，锁旁还有一个钥匙孔。锁下方刻着一行小字：「须尽搜此间所有机关，方可开启此门。",
+                nextHint: "挂画已取下！接下来去撬开箱子——铁皮箱子里藏着重要的东西！",
+                lockReason: "未完成探索：撬开箱子",
+              },
+              moveToStage: "need_box",
+            },
+            need_box: {
+              id: "need_box",
+              description: "一扇铁门上的密码锁，需要完成全部探索才能开启。",
+              clueDetail:
+                "厚重的铁门牢牢锁住了出口。门上有一个四位数字密码锁，锁旁还有一个钥匙孔。锁下方刻着一行小字：「须尽搜此间所有机关，方可开启此门。",
+              nextHint: "箱子被封条封死了，需要螺丝刀才能撬开——你找到螺丝刀了吗？",
+              isLocked: true,
+              lockReason: "未完成探索：撬开箱子",
+              requires: flagTrue("boxOpened"),
+              requiresMet: {
+                description: "一扇铁门上的密码锁，需要完成全部探索才能开启。",
+                lockReason: "未完成探索：收集开锁线索",
+                clueDetail:
+                  "厚重的铁门牢牢锁住了出口。门上有一个四位数字密码锁，锁旁还有一个钥匙孔。锁下方刻着一行小字：「须尽搜此间所有机关，方可开启此门。",
+                nextHint:
+                  "所有主要探索都完成了！现在需要：要么找到地毯上的四位密码暗号，要么集齐钥匙碎片组合完整钥匙并查看窗帘上的使用说明！",
+              },
+              moveToStage: "need_clue",
+            },
+            need_clue: {
+              id: "need_clue",
+              description: "一扇铁门上的密码锁，就差最后的开锁线索了！",
+              clueDetail:
+                "厚重的铁门牢牢锁住了出口。门上有一个四位数字密码锁，锁旁还有一个钥匙孔。主要机关均已开启！现在只差最后的线索了！",
+              nextHint:
+                "两条路任选其一：①找到地毯上的暗号（需要能发光的手电筒)，或②集齐3片钥匙碎片组合成完整钥匙并查看窗帘上的使用说明！",
+              isLocked: true,
+              lockReason: "还差开锁线索",
+              requires: any(
+                hasItem("note_carpet"),
+                all(hasItem("note_curtain"), hasItem("complete_key"))
+              ),
+              requiresMet: {
+                description: "一扇铁门上的密码锁——所有条件全部就绪，可以开锁了！",
+                clueDetail:
+                  "厚重的铁门就在眼前——所有条件都已满足！是时候逃出去了！",
+                nextHint:
+                  "一切就绪！点击门锁选择你的方式开锁——可以用密码开锁或用钥匙开锁！",
+                lockReason: "一切就绪，可以开启！",
+              },
+              moveToStage: "ready",
+            },
+            ready: {
+              id: "ready",
+              description: "一扇铁门——所有条件全部就绪，可以开锁了！",
+              clueDetail:
+                "厚重的铁门就在眼前，所有条件都已满足！是时候逃出去了！点击门锁选择开锁方式！",
+              nextHint: "一切就绪！可以输入密码或使用钥匙！",
+              isLocked: true,
               lockTargetId: "door",
             },
           },

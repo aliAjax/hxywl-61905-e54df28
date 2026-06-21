@@ -272,59 +272,9 @@ function App() {
 
   const getEnrichedCellContent = useCallback(
     (cellId: string) => {
-      const content = engine.getCellContent(cellId);
-      if (cellId === "door") {
-        const missingSteps: string[] = [];
-        if (!drawerUnlocked) missingSteps.push("打开抽屉");
-        if (!paintingRemoved) missingSteps.push("取下挂画");
-        if (!boxOpened) missingSteps.push("撬开箱子");
-        if (!engine.hasItem("note_curtain")) missingSteps.push("查看窗帘刻字");
-        if (!engine.hasItem("note_carpet")) missingSteps.push("找到地毯密码");
-        const canUseKey =
-          hasCompleteKey &&
-          engine.hasItem("note_curtain") &&
-          drawerUnlocked &&
-          boxOpened &&
-          paintingRemoved;
-        const canUsePassword =
-          engine.hasItem("note_carpet") && drawerUnlocked && boxOpened && paintingRemoved;
-        const allExplored = drawerUnlocked && boxOpened && paintingRemoved;
-        let hintText = "";
-        if (missingSteps.length > 0) {
-          hintText = `还需完成：${missingSteps.join("、")}。`;
-        }
-        if (canUseKey && canUsePassword) {
-          hintText += " 一切就绪！可以用完整钥匙开锁，或输入密码 1-3-7-9 开门。";
-        } else if (canUsePassword) {
-          hintText += " 地毯暗号已知：1-3-7-9，可以输入密码开门了！";
-        } else if (canUseKey) {
-          hintText += " 完整钥匙和使用方法都已齐备，可以用钥匙开锁了！";
-        } else if (allExplored && fragmentCount < 3) {
-          hintText += ` 还需收集 ${3 - fragmentCount} 片钥匙碎片。`;
-        } else if (allExplored && fragmentCount === 3 && !hasCompleteKey) {
-          hintText += " 三枚碎片已齐，到物品栏组合成完整钥匙！";
-        } else if (allExplored && hasCompleteKey && !engine.hasItem("note_curtain")) {
-          hintText += " 钥匙已组合好，但还需要查看窗帘上的使用方法。";
-        }
-        return {
-          ...content,
-          nextHint: hintText || content.nextHint,
-          lockReason:
-            missingSteps.length > 0
-              ? `未完成：${missingSteps.join("、")}`
-              : content.lockReason,
-        };
-      }
-      return content;
+      return engine.getCellContent(cellId);
     },
-    [
-      engine,
-      drawerUnlocked,
-      paintingRemoved,
-      boxOpened,
-      hasCompleteKey,
-      fragmentCount,
-    ]
+    [engine]
   );
 
   const handleCellClick = useCallback(
@@ -338,18 +288,13 @@ function App() {
         engine.markInvestigated(cellId);
       }
 
-      if (cellId === "door") {
-        setLockTargetId("door");
+      if (content.lockTargetId) {
+        setLockTargetId(content.lockTargetId);
         setLockDigits([]);
         setLockError(false);
-        return;
-      }
-
-      if (cellId === "drawer" && content.lockTargetId === "drawer") {
-        setLockTargetId("drawer");
-        setLockDigits([]);
-        setLockError(false);
-        setClueModalCellId(cellId);
+        if (cellId === "drawer") {
+          setClueModalCellId(cellId);
+        }
         return;
       }
 

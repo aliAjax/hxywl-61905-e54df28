@@ -196,60 +196,95 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
   function autoAdvanceCell(
     cellId: string,
     stateSnapshot: EngineState
-  ): { advanced: boolean; newStageId?: string; newState?: Partial<EngineState> } {
+  ): { advanced: boolean; stagesAdvanced: number; newState?: Partial<EngineState> } {
     const cell = getCell(cellId);
-    if (!cell) return { advanced: false };
+    if (!cell) return { advanced: false, stagesAdvanced: 0 };
 
-    const currentStageId = stateSnapshot.cellStageIds[cellId] ?? cell.initialStageId;
-    const stage = cell.stages[currentStageId];
-    if (!stage) return { advanced: false };
+    let currentState = { ...stateSnapshot };
+    let stagesAdvanced = 0;
+    let anyAdvanced = false;
+    let safetyCounter = 0;
+    const MAX_ADVANCES = 20;
 
-    if (stage.isLocked && stage.requires && checkCondition(stage.requires, { inventory: stateSnapshot.inventory, flags: stateSnapshot.flags })) {
-      let newInventory = [...stateSnapshot.inventory];
-      let newFlags = { ...stateSnapshot.flags };
-      let newEscaped = stateSnapshot.escaped;
-      let newEndingId = stateSnapshot.endingId;
-      let newLastHint = stateSnapshot.lastHint;
+    while (safetyCounter < MAX_ADVANCES) {
+      safetyCounter++;
+      const currentStageId = currentState.cellStageIds[cellId] ?? cell.initialStageId;
+      const stage = cell.stages[currentStageId];
+      if (!stage) break;
+
+      if (!stage.isLocked || !stage.requires) break;
+      if (!checkCondition(stage.requires, { inventory: currentState.inventory, flags: currentState.flags })) break;
 
       if (stage.onUnlock) {
-        const result = applyEffects(stage.onUnlock, stateSnapshot, config);
-        newInventory = result.newInventory;
-        newFlags = result.newFlags;
-        newEscaped = result.newEscaped;
-        newEndingId = result.newEndingId;
-        newLastHint = stage.onUnlock.showMessage ?? stateSnapshot.lastHint;
+        const result = applyEffects(stage.onUnlock, currentState, config);
+        currentState = {
+          ...currentState,
+          inventory: result.newInventory,
+          flags: result.newFlags,
+          escaped: result.newEscaped,
+          endingId: result.newEndingId,
+          lastHint: stage.onUnlock.showMessage ?? currentState.lastHint,
+        };
       }
 
       if (stage.moveToStage) {
-        return {
-          advanced: true,
-          newStageId: stage.moveToStage,
-          newState: {
-            inventory: newInventory,
-            flags: newFlags,
-            escaped: newEscaped,
-            endingId: newEndingId,
-            lastHint: newLastHint,
-            cellStageIds: { ...stateSnapshot.cellStageIds, [cellId]: stage.moveToStage },
-          },
+        currentState = {
+          ...currentState,
+          cellStageIds: { ...currentState.cellStageIds, [cellId]: stage.moveToStage },
         };
-      }
-
-      if (stage.onUnlock) {
-        return {
-          advanced: true,
-          newState: {
-            inventory: newInventory,
-            flags: newFlags,
-            escaped: newEscaped,
-            endingId: newEndingId,
-            lastHint: newLastHint,
-          },
-        };
+        stagesAdvanced++;
+        anyAdvanced = true;
+      } else {
+        anyAdvanced = true;
+        break;
       }
     }
 
-    return { advanced: false };
+    if (!anyAdvanced) {
+      return { advanced: false, stagesAdvanced: 0 };
+    }
+
+    const newState: Partial<EngineState> = {
+      inventory: currentState.inventory,
+      flags: currentState.flags,
+      escaped: currentState.escaped,
+      endingId: currentState.endingId,
+      lastHint: currentState.lastHint,
+      cellStageIds: currentState.cellStageIds,
+    };
+
+    return { advanced: true, stagesAdvanced, newState };
+  }
+
+  function autoAdvanceAllCells(
+    stateSnapshot: EngineState
+  ): { advanced: boolean; newState?: Partial<EngineState> } {
+    if (!config.autoAdvanceCellIds || config.autoAdvanceCellIds.length === 0) {
+      return { advanced: false };
+    }
+    let currentState = { ...stateSnapshot };
+    let anyAdvanced = false;
+    for (const cellId of config.autoAdvanceCellIds) {
+      const result = autoAdvanceCell(cellId, currentState);
+      if (result.advanced && result.newState) {
+        currentState = { ...currentState, ...result.newState };
+        anyAdvanced = true;
+      }
+    }
+    if (!anyAdvanced) {
+      return { advanced: false };
+    }
+    return {
+      advanced: true,
+      newState: {
+        inventory: currentState.inventory,
+        flags: currentState.flags,
+        escaped: currentState.escaped,
+        endingId: currentState.endingId,
+        lastHint: currentState.lastHint,
+        cellStageIds: currentState.cellStageIds,
+      },
+    };
   }
 
   const collectItem = useCallback(
@@ -261,7 +296,7 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
           inventory: [...prev.inventory, itemId],
           lastHint: customMessage ?? prev.lastHint,
         };
-        const result = autoAdvanceCell("carpet", nextState);
+        const result = autoAdvanceAllCells(nextState);
         if (result.advanced && result.newState) {
           return { ...nextState, ...result.newState };
         }
@@ -285,9 +320,6 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
       if (stage.isLocked && stage.requires && !checkCond(stage.requires)) {
         if (stage.onUnlock) {
           effectsList.push(stage.onUnlock);
-        }
-        if (stage.lockTargetId) {
-          return { effects: effectsList, openLockId: stage.lockTargetId, showClue: true };
         }
         return { effects: effectsList, showClue: true };
       }
@@ -388,7 +420,7 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
           combineCount: prev.combineCount + 1,
           lastHint: recipe.successMessage,
         };
-        const result = autoAdvanceCell("carpet", nextState);
+        const result = autoAdvanceAllCells(nextState);
         if (result.advanced && result.newState) {
           return { ...nextState, ...result.newState };
         }
@@ -428,20 +460,27 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
           showMessage: lock.onSuccess.successMessage,
           messageType: "collect",
         };
-        const result = applyEffects(effects, state, config);
-        const cellStageIds = { ...state.cellStageIds };
-        if (lock.onSuccess.setCellStage) {
-          cellStageIds[lock.onSuccess.setCellStage.cellId] = lock.onSuccess.setCellStage.stageId;
-        }
-        setState((prev) => ({
-          ...prev,
-          inventory: result.newInventory,
-          flags: result.newFlags,
-          escaped: result.newEscaped,
-          endingId: result.newEndingId,
-          lastHint: lock.onSuccess.successMessage,
-          cellStageIds: lock.onSuccess.setCellStage ? cellStageIds : prev.cellStageIds,
-        }));
+        setState((prev) => {
+          const result = applyEffects(effects, prev, config);
+          const cellStageIds = { ...prev.cellStageIds };
+          if (lock.onSuccess.setCellStage) {
+            cellStageIds[lock.onSuccess.setCellStage.cellId] = lock.onSuccess.setCellStage.stageId;
+          }
+          const nextState: EngineState = {
+            ...prev,
+            inventory: result.newInventory,
+            flags: result.newFlags,
+            escaped: result.newEscaped,
+            endingId: result.newEndingId,
+            lastHint: lock.onSuccess.successMessage,
+            cellStageIds,
+          };
+          const advResult = autoAdvanceAllCells(nextState);
+          if (advResult.advanced && advResult.newState) {
+            return { ...nextState, ...advResult.newState };
+          }
+          return nextState;
+        });
         return { success: true, effects };
       }
 
@@ -502,7 +541,7 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
         lastHint: nextFlashlightActive ? "🔦 手电筒已打开，暗处的线索将显现！" : "手电筒已关闭",
       };
 
-      const result = autoAdvanceCell("carpet", nextState);
+      const result = autoAdvanceAllCells(nextState);
       if (result.advanced && result.newState) {
         return { ...nextState, ...result.newState };
       }
