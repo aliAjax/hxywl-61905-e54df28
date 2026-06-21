@@ -403,12 +403,18 @@ function App() {
       setLockDigits([]);
     } else {
       if (result.errorMessage) {
-        showMsg(result.errorMessage, "error");
+        const lock = CONFIG.rooms.flatMap((r) => r.locks).find((l) => l.id === lockTargetId);
+        const hasAnyClue = lock?.clueItemIds?.some((id) => engine.hasItem(id)) ?? false;
+        if (hasAnyClue || !lock?.clueItemIds || lock.clueItemIds.length === 0) {
+          showMsg(result.errorMessage, "error");
+        } else {
+          showMsg("密码错误，请重新输入。", "error");
+        }
       }
       setLockError(true);
       setTimeout(() => setLockError(false), 600);
     }
-  }, [lockDigits, lockTargetId, engine, applyEffects, showMsg]);
+  }, [lockDigits, lockTargetId, engine, applyEffects, showMsg, CONFIG]);
 
   const allLocks = CONFIG.rooms.flatMap((r) => r.locks);
 
@@ -1272,7 +1278,13 @@ function App() {
                 </div>
                 {lockError && (
                   <p className="lock-error-text">
-                    {lock.errorHint ?? "密码错误"}
+                    {(() => {
+                      const hasAnyClue = lock.clueItemIds?.some((id) => engine.hasItem(id)) ?? false;
+                      if (hasAnyClue || !lock.clueItemIds || lock.clueItemIds.length === 0) {
+                        return lock.errorHint ?? "密码错误";
+                      }
+                      return "密码错误，请重新输入。";
+                    })()}
                   </p>
                 )}
                 <div className="lock-numpad">
