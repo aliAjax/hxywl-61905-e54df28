@@ -150,6 +150,16 @@ export interface HintPuzzleDef {
   hints: [string, string, string];
   completedCondition: Condition;
   availableCondition: Condition;
+  relatedRoomId?: string;
+  relatedCellId?: string;
+  priorityWeight?: number;
+}
+
+export interface RecommendedPuzzle {
+  puzzle: HintPuzzleDef;
+  score: number;
+  reasons: string[];
+  urgency: "immediate" | "soon" | "explore";
 }
 
 export interface RoomDef {
@@ -323,6 +333,7 @@ export interface EngineActions {
   };
   switchRoom: (roomId: string) => void;
   setGameStartTime: (time: number) => void;
+  getRecommendedPuzzles: () => RecommendedPuzzle[];
 }
 
 export type PuzzleEngine = EngineState & EngineActions;

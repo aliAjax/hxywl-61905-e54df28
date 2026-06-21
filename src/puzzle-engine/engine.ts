@@ -813,6 +813,74 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
     });
   }, []);
 
+  const getRecommendedPuzzles = useCallback(() => {
+    const ctx = { inventory: state.inventory, flags: state.flags };
+    const currentRoomId = state.currentRoomId;
+    const hintUsage = state.hintUsage;
+    const flashlightActive = state.flashlightActive;
+
+    const candidates = [];
+
+    for (const puzzle of config.hintPuzzles) {
+      const isCompleted = checkCondition(puzzle.completedCondition, ctx);
+      const isAvailable = checkCondition(puzzle.availableCondition, ctx);
+
+      if (isCompleted || !isAvailable) continue;
+
+      let score = 0;
+      const reasons: string[] = [];
+
+      score += puzzle.priorityWeight ?? 50;
+
+      if (puzzle.relatedRoomId === currentRoomId) {
+        score += 50;
+        reasons.push("📍 在当前房间");
+      }
+
+      const usedLevels = hintUsage[puzzle.id] || 0;
+      if (usedLevels > 0) {
+        score -= usedLevels * 10;
+        reasons.push(`💡 已查看 ${usedLevels} 层提示`);
+      } else {
+        score += 15;
+      }
+
+      if (puzzle.id === "carpet_clue" || puzzle.id === "dark_corner_explore") {
+        if (flashlightActive && state.inventory.includes("powered_flashlight")) {
+          score += 25;
+          reasons.push("🔦 手电筒已打开，可立即探索");
+        } else if (state.inventory.includes("powered_flashlight")) {
+          score += 10;
+          reasons.push("🔦 需要打开手电筒");
+        }
+      }
+
+      const reqMet = !puzzle.availableCondition || checkCondition(puzzle.availableCondition, ctx);
+      if (reqMet) {
+        score += 30;
+        reasons.push("✅ 条件就绪，可立即行动");
+      }
+
+      let urgency: "immediate" | "soon" | "explore" = "explore";
+      if (score >= 150) {
+        urgency = "immediate";
+      } else if (score >= 100) {
+        urgency = "soon";
+      }
+
+      candidates.push({
+        puzzle,
+        score,
+        reasons,
+        urgency,
+      });
+    }
+
+    candidates.sort((a, b) => b.score - a.score);
+
+    return candidates;
+  }, [config.hintPuzzles, state, checkCond]);
+
   return {
     ...state,
     hasItem,
@@ -840,6 +908,7 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
     submitHiddenPassword,
     switchRoom,
     setGameStartTime,
+    getRecommendedPuzzles,
   };
 }
 

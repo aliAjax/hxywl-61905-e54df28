@@ -13,6 +13,7 @@ import type {
   HintPuzzleDef,
   RoomDef,
   CellDef,
+  RecommendedPuzzle,
 } from "./puzzle-engine/types";
 
 const CONFIG: GameConfig = ESCAPE_ROOM_CONFIG;
@@ -39,6 +40,7 @@ function App() {
 
   const [hintPanelOpen, setHintPanelOpen] = useState(false);
   const [hintDetailId, setHintDetailId] = useState<string | null>(null);
+  const [hintMode, setHintMode] = useState<"browse" | "recommend">("browse");
   const [clueBookOpen, setClueBookOpen] = useState(false);
   const [clueBookDetailItemId, setClueBookDetailItemId] = useState<string | null>(null);
   const [roomProgressModalRoomId, setRoomProgressModalRoomId] = useState<string | null>(null);
@@ -140,6 +142,7 @@ function App() {
     setClueModalCellId(null);
     setHintPanelOpen(false);
     setHintDetailId(null);
+    setHintMode("browse");
     setClueBookOpen(false);
     setClueBookDetailItemId(null);
     setRoomProgressModalRoomId(null);
@@ -1333,9 +1336,39 @@ function App() {
             const done = checkCondition(p.completedCondition, ctx);
             return avail && !done;
           });
+          const recommendedPuzzles = engine.getRecommendedPuzzles();
           const selectedPuzzle: HintPuzzleDef | undefined = hintDetailId
             ? CONFIG.hintPuzzles.find((p) => p.id === hintDetailId)
             : undefined;
+
+          const handleJumpToCell = (rec: RecommendedPuzzle) => {
+            if (!rec.puzzle.relatedCellId) return;
+            const cellId = rec.puzzle.relatedCellId;
+            if (rec.puzzle.relatedRoomId && rec.puzzle.relatedRoomId !== engine.currentRoomId) {
+              engine.switchRoom(rec.puzzle.relatedRoomId);
+            }
+            setTimeout(() => {
+              setHintPanelOpen(false);
+              setClueModalCellId(cellId);
+            }, 50);
+          };
+
+          const getUrgencyLabel = (urgency: string) => {
+            switch (urgency) {
+              case "immediate": return "⚡ 立即行动";
+              case "soon": return "⏳ 即将到来";
+              default: return "🔍 探索中";
+            }
+          };
+
+          const getUrgencyColor = (urgency: string) => {
+            switch (urgency) {
+              case "immediate": return "linear-gradient(135deg, #ef4444, #f97316)";
+              case "soon": return "linear-gradient(135deg, #f59e0b, #eab308)";
+              default: return "linear-gradient(135deg, #3b82f6, #6366f1)";
+            }
+          };
+
           if (selectedPuzzle) {
             const levelsUnlocked = engine.hintUsage[selectedPuzzle.id] || 0;
             return (
@@ -1410,7 +1443,7 @@ function App() {
                     className="action-btn clue-close-btn"
                     onClick={() => setHintDetailId(null)}
                   >
-                    返回谜题列表
+                    返回
                   </button>
                 </div>
               </div>
@@ -1427,7 +1460,7 @@ function App() {
                   <div>
                     <h3>提示中心</h3>
                     <span className="clue-status-tag">
-                      卡住了？选择一个谜题查看渐进式提示
+                      卡住了？选择查看方式获取帮助
                     </span>
                   </div>
                   <button
@@ -1437,6 +1470,22 @@ function App() {
                     ✕
                   </button>
                 </div>
+
+                <div className="hint-mode-tabs">
+                  <button
+                    className={`hint-mode-tab ${hintMode === "browse" ? "hint-mode-tab-active" : ""}`}
+                    onClick={() => setHintMode("browse")}
+                  >
+                    📋 按谜题浏览
+                  </button>
+                  <button
+                    className={`hint-mode-tab ${hintMode === "recommend" ? "hint-mode-tab-active" : ""}`}
+                    onClick={() => setHintMode("recommend")}
+                  >
+                    🎯 下一步推荐
+                  </button>
+                </div>
+
                 <div className="hint-panel-summary hint-panel-summary-2">
                   <div className="hint-summary-item">
                     <span className="hint-summary-icon">📊</span>
@@ -1453,53 +1502,141 @@ function App() {
                     </div>
                   </div>
                 </div>
-                {availablePuzzles.length > 0 && (
+
+                {hintMode === "recommend" && (
                   <>
-                    <h4 className="hint-section-subtitle">🔍 当前可求助的谜题</h4>
-                    <div className="hint-puzzle-list">
-                      {availablePuzzles.map((puzzle) => {
-                        const used = engine.hintUsage[puzzle.id] || 0;
-                        return (
-                          <button
-                            key={puzzle.id}
-                            className="hint-puzzle-item"
-                            onClick={() => setHintDetailId(puzzle.id)}
-                          >
-                            <span className="hint-puzzle-icon">{puzzle.icon}</span>
-                            <div className="hint-puzzle-info">
-                              <span className="hint-puzzle-title">{puzzle.title}</span>
-                              <span className="hint-puzzle-progress">
-                                {used > 0 ? `已查看 ${used}/3 层` : "尚未查看提示"}
-                              </span>
-                            </div>
-                            <div className="hint-puzzle-dots">
-                              {[0, 1, 2].map((i) => (
-                                <span
-                                  key={i}
-                                  className={`hint-dot ${i < used ? "hint-dot-used" : ""}`}
-                                />
-                              ))}
-                            </div>
-                            <span className="hint-puzzle-arrow">›</span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                    {recommendedPuzzles.length > 0 ? (
+                      <>
+                        <h4 className="hint-section-subtitle">🎯 为你推荐的下一步</h4>
+                        <div className="hint-recommend-list">
+                          {recommendedPuzzles.map((rec, index) => {
+                            const used = engine.hintUsage[rec.puzzle.id] || 0;
+                            return (
+                              <div
+                                key={rec.puzzle.id}
+                                className="hint-recommend-item"
+                              >
+                                <div className="hint-recommend-header">
+                                  {index === 0 && (
+                                    <span className="hint-recommend-badge hint-recommend-top">🏆 最佳推荐</span>
+                                  )}
+                                  <span
+                                    className="hint-recommend-urgency"
+                                    style={{ background: getUrgencyColor(rec.urgency) }}
+                                  >
+                                    {getUrgencyLabel(rec.urgency)}
+                                  </span>
+                                </div>
+                                <div className="hint-recommend-main">
+                                  <span className="hint-puzzle-icon">{rec.puzzle.icon}</span>
+                                  <div className="hint-puzzle-info">
+                                    <span className="hint-puzzle-title">{rec.puzzle.title}</span>
+                                    <div className="hint-recommend-reasons">
+                                      {rec.reasons.map((reason, i) => (
+                                        <span key={i} className="hint-reason-tag">{reason}</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="hint-recommend-actions">
+                                  <button
+                                    className="action-btn hint-action-btn hint-action-primary"
+                                    onClick={() => setHintDetailId(rec.puzzle.id)}
+                                  >
+                                    💡 查看提示
+                                  </button>
+                                  {rec.puzzle.relatedCellId && (
+                                    <button
+                                      className="action-btn hint-action-btn hint-action-secondary"
+                                      onClick={() => handleJumpToCell(rec)}
+                                    >
+                                      🚀 立即前往
+                                    </button>
+                                  )}
+                                </div>
+                                <div className="hint-recommend-footer">
+                                  <div className="hint-puzzle-dots">
+                                    {[0, 1, 2].map((i) => (
+                                      <span
+                                        key={i}
+                                        className={`hint-dot ${i < used ? "hint-dot-used" : ""}`}
+                                      />
+                                    ))}
+                                  </div>
+                                  <span className="hint-score-text">
+                                    推荐度: {rec.score}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="hint-empty-state">
+                        <span className="hint-empty-icon">🎉</span>
+                        <p className="hint-empty-text">
+                          太棒了！当前没有需要推荐的谜题。
+                          <br />
+                          继续探索，或者直接前往最终大门逃脱！
+                        </p>
+                      </div>
+                    )}
                   </>
                 )}
-                {availablePuzzles.length === 0 && (
-                  <div className="hint-empty-state">
-                    <span className="hint-empty-icon">🎉</span>
-                    <p className="hint-empty-text">
-                      太棒了！当前没有需要求助的谜题。
-                      <br />
-                      继续探索，或者直接前往最终大门逃脱！
-                    </p>
-                  </div>
+
+                {hintMode === "browse" && (
+                  <>
+                    {availablePuzzles.length > 0 && (
+                      <>
+                        <h4 className="hint-section-subtitle">🔍 当前可求助的谜题</h4>
+                        <div className="hint-puzzle-list">
+                          {availablePuzzles.map((puzzle) => {
+                            const used = engine.hintUsage[puzzle.id] || 0;
+                            return (
+                              <button
+                                key={puzzle.id}
+                                className="hint-puzzle-item"
+                                onClick={() => setHintDetailId(puzzle.id)}
+                              >
+                                <span className="hint-puzzle-icon">{puzzle.icon}</span>
+                                <div className="hint-puzzle-info">
+                                  <span className="hint-puzzle-title">{puzzle.title}</span>
+                                  <span className="hint-puzzle-progress">
+                                    {used > 0 ? `已查看 ${used}/3 层` : "尚未查看提示"}
+                                  </span>
+                                </div>
+                                <div className="hint-puzzle-dots">
+                                  {[0, 1, 2].map((i) => (
+                                    <span
+                                      key={i}
+                                      className={`hint-dot ${i < used ? "hint-dot-used" : ""}`}
+                                    />
+                                  ))}
+                                </div>
+                                <span className="hint-puzzle-arrow">›</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
+                    {availablePuzzles.length === 0 && (
+                      <div className="hint-empty-state">
+                        <span className="hint-empty-icon">🎉</span>
+                        <p className="hint-empty-text">
+                          太棒了！当前没有需要求助的谜题。
+                          <br />
+                          继续探索，或者直接前往最终大门逃脱！
+                        </p>
+                      </div>
+                    )}
+                  </>
                 )}
+
                 <p className="hint-footer-note">
-                  💡 提示系统按层级渐进解锁：先看最模糊的提示，
-                  实在不行再解锁更深层的提示，尽量保持解谜的乐趣！
+                  💡 「下一步推荐」会根据你当前的房间、物品栏、机关状态自动推荐最适合的谜题。
+                  提示系统按层级渐进解锁，尽量保持解谜的乐趣！
                 </p>
               </div>
             </div>

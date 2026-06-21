@@ -292,6 +292,9 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
     ],
     completedCondition: hasItem("note_bookshelf"),
     availableCondition: { type: "all", conditions: [] },
+    relatedRoomId: "room_study",
+    relatedCellId: "bookshelf",
+    priorityWeight: 100,
   },
   {
     id: "drawer_unlock",
@@ -304,6 +307,9 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
     ],
     completedCondition: flagTrue("drawerUnlocked"),
     availableCondition: { type: "all", conditions: [] },
+    relatedRoomId: "room_study",
+    relatedCellId: "drawer",
+    priorityWeight: 95,
   },
   {
     id: "screwdriver_use",
@@ -316,6 +322,9 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
     ],
     completedCondition: all(flagTrue("paintingRemoved"), flagTrue("boxOpened")),
     availableCondition: hasItem("screwdriver"),
+    relatedRoomId: "room_study",
+    relatedCellId: "painting",
+    priorityWeight: 90,
   },
   {
     id: "fragments_collect",
@@ -331,6 +340,9 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
       flagId: "_fragment_count_3",
     } as Condition),
     availableCondition: { type: "flagTrue", flagId: "_has_any_fragment" } as Condition,
+    relatedRoomId: "room_study",
+    relatedCellId: "vase",
+    priorityWeight: 85,
   },
   {
     id: "combine_items",
@@ -343,6 +355,8 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
     ],
     completedCondition: any(hasItem("complete_key"), hasItem("powered_flashlight")),
     availableCondition: { type: "flagTrue", flagId: "_inventory_size_ge_2" } as Condition,
+    relatedRoomId: "room_study",
+    priorityWeight: 80,
   },
   {
     id: "flashlight_power",
@@ -355,6 +369,9 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
     ],
     completedCondition: hasItem("powered_flashlight"),
     availableCondition: hasItem("flashlight"),
+    relatedRoomId: "room_study",
+    relatedCellId: "lamp",
+    priorityWeight: 85,
   },
   {
     id: "carpet_clue",
@@ -367,6 +384,9 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
     ],
     completedCondition: hasItem("note_carpet"),
     availableCondition: all(flagTrue("drawerUnlocked"), hasItem("flashlight")),
+    relatedRoomId: "room_study",
+    relatedCellId: "carpet",
+    priorityWeight: 75,
   },
   {
     id: "curtain_instruction",
@@ -379,6 +399,9 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
     ],
     completedCondition: hasItem("note_curtain"),
     availableCondition: flagTrue("drawerUnlocked"),
+    relatedRoomId: "room_study",
+    relatedCellId: "curtain",
+    priorityWeight: 70,
   },
   {
     id: "hidden_clues",
@@ -397,6 +420,8 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
       hasItem("powered_flashlight"),
       flagTrue("secretDoorOpened")
     ),
+    relatedRoomId: "room_study",
+    priorityWeight: 40,
   },
   {
     id: "secret_door_open",
@@ -413,6 +438,9 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
       flagTrue("paintingRemoved"),
       flagTrue("boxOpened")
     ),
+    relatedRoomId: "room_study",
+    relatedCellId: "secret_door",
+    priorityWeight: 88,
   },
   {
     id: "storage_workbench",
@@ -425,6 +453,9 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
     ],
     completedCondition: flagTrue("workbenchOpened"),
     availableCondition: flagTrue("secretDoorOpened"),
+    relatedRoomId: "room_storage",
+    relatedCellId: "workbench",
+    priorityWeight: 92,
   },
   {
     id: "filing_cabinet_code",
@@ -437,6 +468,9 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
     ],
     completedCondition: flagTrue("cabinetOpened"),
     availableCondition: flagTrue("secretDoorOpened"),
+    relatedRoomId: "room_storage",
+    relatedCellId: "filing_cabinet",
+    priorityWeight: 85,
   },
   {
     id: "vent_open",
@@ -449,6 +483,9 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
     ],
     completedCondition: flagTrue("ventOpened"),
     availableCondition: hasItem("wire_cutters"),
+    relatedRoomId: "room_storage",
+    relatedCellId: "vent",
+    priorityWeight: 78,
   },
   {
     id: "dark_corner_explore",
@@ -461,6 +498,9 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
     ],
     completedCondition: hasItem("note_dark"),
     availableCondition: all(flagTrue("secretDoorOpened"), hasItem("powered_flashlight")),
+    relatedRoomId: "room_storage",
+    relatedCellId: "dark_corner",
+    priorityWeight: 72,
   },
   {
     id: "final_door_escape",
@@ -476,6 +516,9 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
       flagTrue("secretDoorOpened"),
       hasItem("circuit_board")
     ),
+    relatedRoomId: "room_storage",
+    relatedCellId: "final_door",
+    priorityWeight: 95,
   },
   {
     id: "key_assembly",
@@ -488,6 +531,8 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
     ],
     completedCondition: hasItem("assembled_key"),
     availableCondition: any(hasItem("complete_key"), hasItem("key_core")),
+    relatedRoomId: "room_storage",
+    priorityWeight: 88,
   },
 ];
 
