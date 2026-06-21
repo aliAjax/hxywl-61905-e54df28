@@ -335,11 +335,8 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
       "花瓶里、挂画后面、铁皮箱里——这三个地方似乎都和钥匙碎片有关。看看你已经去了哪里，还缺哪里。",
       "三片碎片分别藏在三个不同的容器里：一个是瓷器里、一个是挂画背后、一个是箱子暗格。对照一下你已有的，去找缺的那几片。",
     ],
-    completedCondition: any(hasItem("complete_key"), {
-      type: "flagTrue",
-      flagId: "_fragment_count_3",
-    } as Condition),
-    availableCondition: { type: "flagTrue", flagId: "_has_any_fragment" } as Condition,
+    completedCondition: hasItem("complete_key"),
+    availableCondition: any(hasItem("frag_a"), hasItem("frag_b"), hasItem("frag_c")),
     relatedRoomId: "room_study",
     relatedCellId: "vase",
     priorityWeight: 85,
@@ -353,8 +350,14 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
       "三枚钥匙碎片肯定是要组合的。还有手电筒——它现在亮不起来，是不是缺了什么能源？",
       "打开组合模式，试试把看起来相关的东西放在一起。钥匙碎片有三片，手电筒需要一节电池。",
     ],
-    completedCondition: any(hasItem("complete_key"), hasItem("powered_flashlight")),
-    availableCondition: { type: "flagTrue", flagId: "_inventory_size_ge_2" } as Condition,
+    completedCondition: all(hasItem("complete_key"), hasItem("powered_flashlight")),
+    availableCondition: any(
+      hasItem("frag_a"),
+      hasItem("frag_b"),
+      hasItem("frag_c"),
+      all(hasItem("flashlight"), hasItem("battery")),
+      all(hasItem("complete_key"), hasItem("key_core"))
+    ),
     relatedRoomId: "room_study",
     priorityWeight: 80,
   },
@@ -412,7 +415,13 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
       "这五处各自藏着一位数字，藏得非常隐蔽：窗帘的折缝最深处、画框的隐秘角落、台灯底座的下面，还有储物间的储物架和工作台。",
       "五处暗码分别藏在窗帘、挂画、台灯、储物架、工作台。按「窗帘→挂画→台灯→储物架→工作台」的顺序排起来就是隐藏密码。五位数字，你可以自己去发掘。",
     ],
-    completedCondition: { type: "flagTrue", flagId: "_all_hidden_clues" } as Condition,
+    completedCondition: all(
+      hasItem("note_hidden_curtain"),
+      hasItem("note_hidden_painting"),
+      hasItem("note_hidden_lamp"),
+      hasItem("note_hidden_shelf"),
+      hasItem("note_hidden_workbench")
+    ),
     availableCondition: any(
       hasItem("note_curtain"),
       flagTrue("paintingRemoved"),
@@ -511,7 +520,7 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
       "先从工作台取下电路板插入大门，然后从档案柜的机密文件里找到四位密码。或者，如果你有组合钥匙和窗帘上的使用说明，也可以用钥匙开锁。",
       "两条路线任选其一：①插入电路板后输入四位密码（档案柜文件中有记录）；②组合完整钥匙与钥匙核心成组合钥匙，配合窗帘使用说明开锁。",
     ],
-    completedCondition: { type: "flagTrue", flagId: "_escaped" } as Condition,
+    completedCondition: flagTrue("escaped"),
     availableCondition: all(
       flagTrue("secretDoorOpened"),
       hasItem("circuit_board")

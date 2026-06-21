@@ -74,6 +74,7 @@ function applyEffects(
   if (effects.triggerEnding) {
     newEscaped = true;
     newEndingId = effects.triggerEnding;
+    newFlags.escaped = true;
   }
 
   return { newInventory, newFlags, newEscaped, newEndingId, collectedItemIds };
@@ -855,10 +856,21 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
         }
       }
 
-      const reqMet = !puzzle.availableCondition || checkCondition(puzzle.availableCondition, ctx);
-      if (reqMet) {
-        score += 30;
-        reasons.push("✅ 条件就绪，可立即行动");
+      let readiness = 0;
+      if (puzzle.id === "drawer_unlock" && state.inventory.includes("note_bookshelf")) readiness += 20;
+      if (puzzle.id === "screwdriver_use" && state.inventory.includes("screwdriver")) readiness += 20;
+      if (puzzle.id === "flashlight_power" && state.inventory.includes("battery")) readiness += 20;
+      if (puzzle.id === "carpet_clue" && state.inventory.includes("powered_flashlight")) readiness += 20;
+      if (puzzle.id === "secret_door_open" && state.flags.drawerUnlocked && state.flags.paintingRemoved && state.flags.boxOpened) readiness += 20;
+      if (puzzle.id === "storage_workbench" && state.inventory.includes("screwdriver")) readiness += 20;
+      if (puzzle.id === "filing_cabinet_code" && state.inventory.includes("note_shelf")) readiness += 20;
+      if (puzzle.id === "vent_open" && state.inventory.includes("wire_cutters")) readiness += 20;
+      if (puzzle.id === "dark_corner_explore" && state.inventory.includes("powered_flashlight")) readiness += 20;
+      if (puzzle.id === "final_door_escape" && state.inventory.includes("note_cabinet")) readiness += 20;
+      if (puzzle.id === "key_assembly" && state.inventory.includes("complete_key") && state.inventory.includes("key_core")) readiness += 20;
+      if (readiness > 0) {
+        score += readiness;
+        reasons.push("✅ 核心条件就绪");
       }
 
       let urgency: "immediate" | "soon" | "explore" = "explore";
