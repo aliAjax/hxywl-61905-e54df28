@@ -263,11 +263,41 @@ function App() {
     []
   );
 
-  const saveGame = useCallback(() => {
-    if (currentSlot !== null) {
-      saveGameToSlot(currentSlot);
+  const handleQuickSave = useCallback(() => {
+    if (currentSlot === null) {
+      showMsg("⚠️ 当前没有活动存档位，请先在存档管理中选择一个槽位", "error");
+      setSaveSlotPanelOpen(true);
+      return;
     }
-  }, [currentSlot, saveGameToSlot]);
+    saveGameToSlot(currentSlot);
+    showMsg(`💾 已快速保存到存档 ${currentSlot + 1}`, "info");
+  }, [currentSlot, saveGameToSlot, showMsg]);
+
+  const handleLoadSlotInGame = useCallback(
+    (slotIndex: number) => {
+      if (!confirm(`确定要读取存档 ${slotIndex + 1} 吗？当前未保存的进度将丢失。`)) {
+        return;
+      }
+      if (loadGameFromSlot(slotIndex)) {
+        setCurrentSlot(slotIndex);
+        setSaveSlotPanelOpen(false);
+        setLockTargetId(null);
+        setLockDigits([]);
+        setLockError(false);
+        setCombineMode(false);
+        setSelectedForCombine([]);
+        setClueModalCellId(null);
+        setHintPanelOpen(false);
+        setHintDetailId(null);
+        setDetailItemId(null);
+        setRoomProgressModalRoomId(null);
+        setTimeout(() => showMsg(`📂 已读取存档 ${slotIndex + 1}`, "info"), 0);
+      } else {
+        showMsg("⚠️ 读取存档失败", "error");
+      }
+    },
+    [loadGameFromSlot, showMsg]
+  );
 
   const resetAllState = useCallback(() => {
     engine.reset();
@@ -331,28 +361,6 @@ function App() {
       showMsg("🔄 游戏已重置，开始新的冒险！", "info");
     }
   }, [currentSlot, clearSlot, resetAllState, engine, showMsg]);
-
-  useEffect(() => {
-    if (gameStarted && currentSlot !== null) {
-      saveGame();
-    }
-  }, [
-    gameStarted,
-    currentSlot,
-    engine.inventory,
-    engine.investigatedCellIds,
-    engine.cellStageIds,
-    engine.flags,
-    engine.escaped,
-    engine.endingId,
-    engine.flashlightActive,
-    engine.lastHint,
-    engine.combineCount,
-    engine.hintUsage,
-    engine.currentRoomId,
-    engine.finalElapsedTime,
-    saveGame,
-  ]);
 
   const gameStartTime = engine.gameStartTime;
 
@@ -1246,9 +1254,12 @@ function App() {
               </button>
             )}
           </div>
-          <div className="game-menu">
-            <button className="action-btn menu-btn save-btn" onClick={() => setSaveSlotPanelOpen(true)}>
-              💾 存档 {currentSlot !== null ? `(${currentSlot + 1})` : ""}
+          <div className="game-menu game-menu-4">
+            <button className="action-btn menu-btn quick-save-btn" onClick={handleQuickSave}>
+              💾 快速保存
+            </button>
+            <button className="action-btn menu-btn save-manage-btn" onClick={() => setSaveSlotPanelOpen(true)}>
+              � 存档管理
             </button>
             <button className="action-btn menu-btn restart-btn" onClick={handleRestart}>
               🔄 重新开始
@@ -2223,11 +2234,12 @@ function App() {
                   <div>
                     <h3>存档管理</h3>
                     <span className="clue-status-tag">
-                      当前存档位：{currentSlot !== null ? "存档 " + (currentSlot + 1) : "未选择"}
+                      当前活动槽位：{currentSlot !== null ? "存档 " + (currentSlot + 1) : "未选择"}
                     </span>
                   </div>
                   <button className="modal-close" onClick={() => setSaveSlotPanelOpen(false)}>✕</button>
                 </div>
+                <p className="save-panel-hint">手动保存模式：游戏不会自动存档，请随时保存进度。</p>
                 <div className="save-slot-modal-list">
                   {slotMetas.map((meta) => {
                     const isCurrent = meta.slotIndex === currentSlot;
@@ -2235,7 +2247,7 @@ function App() {
                       <div key={meta.slotIndex} className={`save-slot-modal-card ${isCurrent ? "save-slot-modal-current" : ""}`}>
                         <div className="save-slot-modal-top">
                           <span className="save-slot-number">存档 {meta.slotIndex + 1}</span>
-                          {isCurrent && <span className="save-slot-current-tag">当前</span>}
+                          {isCurrent && <span className="save-slot-current-tag">活动中</span>}
                           {meta.hasData && !isCurrent && <span className="save-slot-badge save-slot-badge-used">已有存档</span>}
                           {!meta.hasData && <span className="save-slot-badge save-slot-badge-empty">空</span>}
                         </div>
@@ -2245,7 +2257,7 @@ function App() {
                             <div className="save-slot-info-row"><span className="save-slot-info-icon">⏱️</span><span>{formatElapsed(meta.elapsedMs)}</span></div>
                             <div className="save-slot-info-row"><span className="save-slot-info-icon">📝</span><span>线索 {meta.clueCount}</span></div>
                             <div className="save-slot-info-row"><span className="save-slot-info-icon">{meta.escaped ? "🚪" : "🔒"}</span><span>{meta.escaped ? "已逃脱" : "未逃脱"}</span></div>
-                            <div className="save-slot-info-row save-slot-time"><span className="save-slot-info-icon">💾</span><span>{formatSaveTime(meta.savedAt)}</span></div>
+                            <div className="save-slot-info-row save-slot-time"><span className="save-slot-info-icon">💾</span><span>保存于 {formatSaveTime(meta.savedAt)}</span></div>
                           </div>
                         ) : (
                           <div className="save-slot-empty-info">空存档位</div>
@@ -2254,20 +2266,32 @@ function App() {
                           <button
                             className="action-btn save-slot-btn save-slot-save-btn"
                             onClick={() => {
+                              if (meta.hasData && !confirm(`确定覆盖存档 ${meta.slotIndex + 1} 吗？`)) {
+                                return;
+                              }
                               saveGameToSlot(meta.slotIndex);
                               setCurrentSlot(meta.slotIndex);
-                              setSaveSlotPanelOpen(false);
                               showMsg("💾 已保存到存档 " + (meta.slotIndex + 1), "info");
                             }}
                           >
-                            💾 {isCurrent ? "覆盖保存" : meta.hasData ? "覆盖保存" : "保存至此"}
+                            💾 {meta.hasData ? "覆盖保存" : "保存至此"}
                           </button>
-                          {meta.hasData && !isCurrent && (
+                          <button
+                            className="action-btn save-slot-btn save-slot-load-btn"
+                            disabled={!meta.hasData}
+                            onClick={() => handleLoadSlotInGame(meta.slotIndex)}
+                          >
+                            📂 读取
+                          </button>
+                          {meta.hasData && (
                             <button
                               className="action-btn save-slot-btn save-slot-delete-btn"
                               onClick={() => {
                                 if (confirm("确定删除存档 " + (meta.slotIndex + 1) + " 吗？")) {
                                   clearSlot(meta.slotIndex);
+                                  if (isCurrent) {
+                                    setCurrentSlot(null);
+                                  }
                                   showMsg("🗑️ 存档 " + (meta.slotIndex + 1) + " 已删除", "info");
                                 }
                               }}
