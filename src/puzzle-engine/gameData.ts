@@ -386,7 +386,11 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
       "打开手电筒，然后仔细检查地毯的角落。你会发现一串数字，那是门锁的密码——位数比抽屉密码多一位。",
     ],
     completedCondition: hasItem("note_carpet"),
-    availableCondition: all(flagTrue("drawerUnlocked"), hasItem("flashlight")),
+    availableCondition: all(
+      flagTrue("drawerUnlocked"),
+      hasItem("powered_flashlight"),
+      flagTrue("flashlightActive")
+    ),
     relatedRoomId: "room_study",
     relatedCellId: "carpet",
     priorityWeight: 75,
