@@ -190,6 +190,23 @@ export interface LockUIInfo {
   } | null;
 }
 
+export interface ClueEntry {
+  id: string;
+  title: string;
+  icon: string;
+  description: string;
+  sourceItemId?: string;
+  sourceLockId?: string;
+  revealCondition?: Condition;
+}
+
+export interface ClueGroup {
+  id: string;
+  name: string;
+  icon: string;
+  entries: ClueEntry[];
+}
+
 export interface GameConfig {
   id: string;
   title: string;
@@ -205,6 +222,7 @@ export interface GameConfig {
   endings: Record<string, EndingDef>;
   hintPuzzles: HintPuzzleDef[];
   autoAdvanceCellIds: string[];
+  clueBook: ClueGroup[];
   intro: {
     title: string;
     description: string;

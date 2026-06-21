@@ -39,6 +39,9 @@ function App() {
 
   const [hintPanelOpen, setHintPanelOpen] = useState(false);
   const [hintDetailId, setHintDetailId] = useState<string | null>(null);
+  const [clueBookOpen, setClueBookOpen] = useState(false);
+  const [clueBookDetailItemId, setClueBookDetailItemId] = useState<string | null>(null);
+  const [roomProgressModalRoomId, setRoomProgressModalRoomId] = useState<string | null>(null);
 
   const currentRoom = CONFIG.rooms.find((r) => r.id === engine.currentRoomId) ?? CONFIG.rooms[0];
   const CELLS = currentRoom.cells;
@@ -137,6 +140,9 @@ function App() {
     setClueModalCellId(null);
     setHintPanelOpen(false);
     setHintDetailId(null);
+    setClueBookOpen(false);
+    setClueBookDetailItemId(null);
+    setRoomProgressModalRoomId(null);
   }, [engine]);
 
   const handleNewGame = useCallback(() => {
@@ -234,6 +240,19 @@ function App() {
 
   const totalHintCount = Object.values(engine.hintUsage).reduce((sum, n) => sum + n, 0);
   const puzzlesHintedCount = Object.keys(engine.hintUsage).length;
+
+  const totalClueCount = CONFIG.clueBook.reduce((sum, g) => sum + g.entries.length, 0);
+  const foundClueCount = CONFIG.clueBook.reduce(
+    (sum, g) =>
+      sum +
+      g.entries.filter((e) => e.revealCondition && checkCondition(e.revealCondition, { inventory: engine.inventory, flags: engine.flags })).length,
+    0
+  );
+
+  const isClueRevealed = (entry: any) => {
+    if (!entry.revealCondition) return true;
+    return checkCondition(entry.revealCondition, { inventory: engine.inventory, flags: engine.flags });
+  };
 
   const buildHintContext = () => ({
     inventory: engine.inventory,
@@ -421,11 +440,38 @@ function App() {
 
   const getRoomProgress = (room: RoomDef) => {
     const total = room.cells.length;
-    const checked = room.cells.filter((c) => {
+    const uncheckedCells: { id: string; label: string; icon: string; isLocked: boolean; lockReason?: string }[] = [];
+    const checkedCells: { id: string; label: string; icon: string }[] = [];
+    for (const c of room.cells) {
       const content = engine.getCellContent(c.id);
-      return content.alreadyChecked;
-    }).length;
-    return { checked, total };
+      if (content.alreadyChecked) {
+        checkedCells.push({ id: c.id, label: c.label, icon: c.icon });
+      } else {
+        uncheckedCells.push({
+          id: c.id,
+          label: c.label,
+          icon: c.icon,
+          isLocked: !!content.isLocked,
+          lockReason: content.lockReason,
+        });
+      }
+    }
+    return {
+      checked: checkedCells.length,
+      total,
+      remaining: uncheckedCells.length,
+      uncheckedCells,
+      checkedCells,
+    };
+  };
+
+  const getSecretDoorUnlockReason = () => {
+    const reasons: string[] = [];
+    if (!drawerUnlocked) reasons.push("打开抽屉");
+    if (!paintingRemoved) reasons.push("取下挂画");
+    if (!boxOpened) reasons.push("撬开铁皮箱");
+    if (reasons.length === 0) return null;
+    return reasons;
   };
 
   if (!gameStarted) {
@@ -598,9 +644,9 @@ function App() {
           <small>用时</small>
           <strong>⏱️ {formatTime(elapsedTime)}</strong>
         </article>
-        <article>
-          <small>线索</small>
-          <strong>📝 {noteCount}</strong>
+        <article onClick={() => setClueBookOpen(true)} style={{ cursor: "pointer" }}>
+          <small>线索册</small>
+          <strong>� {foundClueCount}/{totalClueCount}</strong>
         </article>
         <article>
           <small>道具</small>
@@ -628,17 +674,54 @@ function App() {
               const progress = getRoomProgress(room);
               const isActive = room.id === engine.currentRoomId;
               const isLocked = room.id !== CONFIG.rooms[0]?.id && !secretDoorOpened;
+              const secretDoorReasons = isLocked ? getSecretDoorUnlockReason() : null;
               return (
-                <button
+                <div
                   key={room.id}
-                  className={`room-tab ${isActive ? "room-tab-active" : ""} ${isLocked ? "room-tab-locked" : ""}`}
-                  onClick={() => !isLocked && handleSwitchRoom(room.id)}
-                  disabled={isLocked}
+                  className={`room-tab-wrapper ${isActive ? "room-tab-wrapper-active" : ""}`}
                 >
-                  <span className="room-tab-name">{room.name}</span>
-                  <span className="room-tab-progress">{progress.checked}/{progress.total}</span>
-                  {isLocked && <span className="room-tab-lock">🔒</span>}
-                </button>
+                  <button
+                    className={`room-tab ${isActive ? "room-tab-active" : ""} ${isLocked ? "room-tab-locked" : ""}`}
+                    onClick={() => !isLocked && handleSwitchRoom(room.id)}
+                    disabled={isLocked}
+                  >
+                    <span className="room-tab-name">{room.name}</span>
+                    {isLocked ? (
+                      <span className="room-tab-progress room-tab-locked-hint">
+                        🔒 暗门未开启
+                      </span>
+                    ) : (
+                      <span
+                        className={`room-tab-progress room-tab-progress-clickable ${progress.remaining > 0 ? "has-remaining" : "all-checked"}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!isLocked) {
+                            setRoomProgressModalRoomId(room.id);
+                          }
+                        }}
+                        title={`还剩 ${progress.remaining} 处未彻底调查，点击查看详情`}
+                      >
+                        {progress.remaining > 0 ? (
+                          <>⏳ 剩 {progress.remaining}</>
+                        ) : (
+                          <>✓ {progress.checked}/{progress.total}</>
+                        )}
+                      </span>
+                    )}
+                  </button>
+                  {isLocked && secretDoorReasons && secretDoorReasons.length > 0 && (
+                    <div className="room-tab-lock-reason">
+                      <div className="lock-reason-title">� 暗门开启条件：</div>
+                      <div className="lock-reason-list">
+                        {secretDoorReasons.map((reason, idx) => (
+                          <div key={idx} className="lock-reason-item">
+                            ⬜ {reason}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -1376,6 +1459,220 @@ function App() {
                   💡 提示系统按层级渐进解锁：先看最模糊的提示，
                   实在不行再解锁更深层的提示，尽量保持解谜的乐趣！
                 </p>
+              </div>
+            </div>
+          );
+        })()}
+      {clueBookOpen &&
+        (() => {
+          if (clueBookDetailItemId) {
+            const detailItem = CONFIG.items[clueBookDetailItemId];
+            if (!detailItem) return null;
+            return (
+              <div className="modal-overlay" onClick={() => setClueBookDetailItemId(null)}>
+                <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+                  <div className="modal-header">
+                    <span className="modal-icon">{detailItem.icon}</span>
+                    <div>
+                      <h3>{detailItem.name}</h3>
+                      <span
+                        className="item-tag"
+                        style={{ color: CONFIG.categoryColors[detailItem.category] }}
+                      >
+                        {CONFIG.categoryLabels[detailItem.category]}
+                      </span>
+                    </div>
+                    <button className="modal-close" onClick={() => setClueBookDetailItemId(null)}>
+                      ✕
+                    </button>
+                  </div>
+                  <p className="modal-desc">{detailItem.description}</p>
+                  <div className="modal-detail">
+                    {detailItem.detail.split("\n").map((line, i) => (
+                      <p key={i}>{line}</p>
+                    ))}
+                  </div>
+                  <button
+                    className="action-btn clue-close-btn"
+                    onClick={() => setClueBookDetailItemId(null)}
+                  >
+                    返回线索册
+                  </button>
+                </div>
+              </div>
+            );
+          }
+          return (
+            <div className="modal-overlay" onClick={() => setClueBookOpen(false)}>
+              <div
+                className="modal-card clue-book-card"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="modal-header">
+                  <span className="modal-icon clue-book-icon">📖</span>
+                  <div>
+                    <h3>线索册</h3>
+                    <span className="clue-status-tag">
+                      已发现 {foundClueCount}/{totalClueCount} 条线索
+                    </span>
+                  </div>
+                  <button
+                    className="modal-close"
+                    onClick={() => setClueBookOpen(false)}
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="clue-book-groups">
+                  {CONFIG.clueBook.map((group) => {
+                    const groupFoundCount = group.entries.filter((e) => isClueRevealed(e)).length;
+                    return (
+                      <div key={group.id} className="clue-book-group">
+                        <div className="clue-book-group-header">
+                          <span className="clue-book-group-icon">{group.icon}</span>
+                          <span className="clue-book-group-name">{group.name}</span>
+                          <span className="clue-book-group-count">
+                            {groupFoundCount}/{group.entries.length}
+                          </span>
+                        </div>
+                        <div className="clue-book-entry-list">
+                          {group.entries.map((entry) => {
+                            const revealed = isClueRevealed(entry);
+                            const sourceItem = entry.sourceItemId ? CONFIG.items[entry.sourceItemId] : null;
+                            return (
+                              <button
+                                key={entry.id}
+                                className={`clue-book-entry ${revealed ? "clue-revealed" : "clue-hidden"}`}
+                                disabled={!revealed}
+                                onClick={() => {
+                                  if (revealed && entry.sourceItemId) {
+                                    setClueBookDetailItemId(entry.sourceItemId);
+                                  }
+                                }}
+                              >
+                                <span className="clue-entry-icon">
+                                  {revealed ? entry.icon : "❓"}
+                                </span>
+                                <div className="clue-entry-info">
+                                  <span className="clue-entry-title">
+                                    {revealed ? entry.title : "??? 未发现"}
+                                  </span>
+                                  <span className="clue-entry-desc">
+                                    {revealed
+                                      ? entry.description
+                                      : "继续探索以发现这条线索..."}
+                                  </span>
+                                </div>
+                                {revealed && entry.sourceItemId && (
+                                  <span className="clue-entry-arrow">›</span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+      {roomProgressModalRoomId &&
+        (() => {
+          const room = CONFIG.rooms.find((r) => r.id === roomProgressModalRoomId);
+          if (!room) return null;
+          const progress = getRoomProgress(room);
+          return (
+            <div
+              className="modal-overlay"
+              onClick={() => setRoomProgressModalRoomId(null)}
+            >
+              <div
+                className="modal-card room-progress-card"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="modal-header">
+                  <span className="modal-icon">📊</span>
+                  <div>
+                    <h3>{room.name} · 探索进度</h3>
+                    <span className="clue-status-tag">
+                      已完成 {progress.checked}/{progress.total}，剩余 {progress.remaining} 处未彻底调查
+                    </span>
+                  </div>
+                  <button
+                    className="modal-close"
+                    onClick={() => setRoomProgressModalRoomId(null)}
+                  >
+                    ✕
+                  </button>
+                </div>
+                {progress.uncheckedCells.length > 0 && (
+                  <div className="room-progress-section">
+                    <h4 className="room-progress-section-title">
+                      ⏳ 尚未彻底调查的区域（{progress.uncheckedCells.length}）
+                    </h4>
+                    <div className="room-progress-cell-list">
+                      {progress.uncheckedCells.map((cell) => (
+                        <div
+                          key={cell.id}
+                          className={`room-progress-cell-item ${cell.isLocked ? "cell-item-locked" : "cell-item-investigating"}`}
+                          onClick={() => {
+                            setRoomProgressModalRoomId(null);
+                            if (engine.currentRoomId !== room.id) {
+                              engine.switchRoom(room.id);
+                            }
+                            setClueModalCellId(cell.id);
+                          }}
+                        >
+                          <span className="cell-item-icon">{cell.icon}</span>
+                          <div className="cell-item-info">
+                            <span className="cell-item-label">{cell.label}</span>
+                            <span className={`cell-item-status ${cell.isLocked ? "status-locked" : "status-pending"}`}>
+                              {cell.isLocked
+                                ? `🔒 ${cell.lockReason || "暂未解锁"}`
+                                : "👁️ 可继续探索"}
+                            </span>
+                          </div>
+                          <span className="cell-item-arrow">›</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {progress.checkedCells.length > 0 && (
+                  <div className="room-progress-section">
+                    <h4 className="room-progress-section-title room-progress-section-done">
+                      ✓ 已彻底调查的区域（{progress.checkedCells.length}）
+                    </h4>
+                    <div className="room-progress-cell-list room-progress-cell-list-done">
+                      {progress.checkedCells.map((cell) => (
+                        <div
+                          key={cell.id}
+                          className="room-progress-cell-item cell-item-done"
+                        >
+                          <span className="cell-item-icon">{cell.icon}</span>
+                          <div className="cell-item-info">
+                            <span className="cell-item-label">{cell.label}</span>
+                            <span className="cell-item-status status-done">✓ 已完成</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {progress.remaining === 0 && (
+                  <div className="room-progress-all-done">
+                    <div className="all-done-icon">🎉</div>
+                    <p className="all-done-text">太棒了！这个房间的所有区域都已被你彻底调查完毕！</p>
+                  </div>
+                )}
+                <button
+                  className="action-btn clue-close-btn"
+                  onClick={() => setRoomProgressModalRoomId(null)}
+                >
+                  知道了
+                </button>
               </div>
             </div>
           );

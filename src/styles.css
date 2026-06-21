@@ -174,6 +174,214 @@ button {
   pointer-events: none;
 }
 
+.room-tab-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.room-tab-wrapper-active .room-tab {
+  border-bottom: 2px solid var(--secondary);
+}
+
+.room-tab-locked-hint {
+  color: #f87171;
+  opacity: 1;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.room-tab-progress-clickable {
+  pointer-events: auto !important;
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 10px;
+  transition: all 160ms ease;
+}
+
+.room-tab-progress-clickable:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 12px rgba(148, 163, 184, 0.25);
+}
+
+.room-tab-progress-clickable.has-remaining {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.18), rgba(249, 115, 22, 0.12));
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  opacity: 1;
+}
+
+.room-tab-progress-clickable.has-remaining:hover {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(249, 115, 22, 0.2));
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.3);
+}
+
+.room-tab-progress-clickable.all-checked {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.18), rgba(16, 185, 129, 0.12));
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  opacity: 1;
+}
+
+.room-tab-progress-clickable.all-checked:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(16, 185, 129, 0.2));
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.3);
+}
+
+.room-tab-lock-reason {
+  background: linear-gradient(180deg, rgba(127, 29, 29, 0.35), rgba(15, 23, 42, 0.9));
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  border-top: none;
+  padding: 10px 12px;
+  font-size: 12px;
+}
+
+.lock-reason-title {
+  color: #fca5a5;
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+
+.lock-reason-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lock-reason-item {
+  color: #fecaca;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.room-progress-card {
+  max-width: 480px;
+}
+
+.room-progress-section {
+  margin-bottom: 18px;
+}
+
+.room-progress-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fbbf24;
+  margin: 0 0 10px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.15);
+}
+
+.room-progress-section-done {
+  color: #22c55e;
+  border-bottom-color: rgba(34, 197, 94, 0.15);
+}
+
+.room-progress-cell-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.room-progress-cell-list-done {
+  opacity: 0.75;
+}
+
+.room-progress-cell-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  transition: all 160ms ease;
+}
+
+.room-progress-cell-item.cell-item-investigating {
+  cursor: pointer;
+  border-color: rgba(251, 191, 36, 0.2);
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.08), rgba(249, 115, 22, 0.04));
+}
+
+.room-progress-cell-item.cell-item-investigating:hover {
+  border-color: rgba(251, 191, 36, 0.4);
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(249, 115, 22, 0.08));
+  transform: translateX(2px);
+}
+
+.room-progress-cell-item.cell-item-locked {
+  border-color: rgba(248, 113, 113, 0.2);
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.08), rgba(127, 29, 29, 0.04));
+}
+
+.room-progress-cell-item.cell-item-done {
+  opacity: 0.65;
+}
+
+.cell-item-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.cell-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cell-item-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.cell-item-status {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.cell-item-status.status-pending {
+  color: #fbbf24;
+}
+
+.cell-item-status.status-locked {
+  color: #f87171;
+}
+
+.cell-item-status.status-done {
+  color: #22c55e;
+}
+
+.cell-item-arrow {
+  font-size: 18px;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.room-progress-all-done {
+  text-align: center;
+  padding: 24px 16px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.05));
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.all-done-icon {
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+
+.all-done-text {
+  color: #22c55e;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.6;
+}
+
 .board {
   min-height: 470px;
   border-radius: 0 0 18px 18px;
@@ -1957,4 +2165,171 @@ button {
 .hint-reveal-btn:hover {
   box-shadow: 0 6px 28px rgba(251, 191, 36, 0.4);
   background: linear-gradient(135deg, #f59e0b, #ea580c) !important;
+}
+
+.clue-book-card {
+  width: min(560px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+.clue-book-icon {
+  font-size: 40px;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(34, 211, 238, 0.1));
+  border: 1px solid rgba(168, 85, 247, 0.25);
+}
+
+.clue-book-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.clue-book-group {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.clue-book-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(249, 115, 22, 0.06));
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.clue-book-group-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.clue-book-group-name {
+  flex: 1;
+  font-weight: 800;
+  font-size: 15px;
+  color: #f8fafc;
+}
+
+.clue-book-group-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: #22d3ee;
+  background: rgba(34, 211, 238, 0.12);
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(34, 211, 238, 0.2);
+}
+
+.clue-book-entry-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.clue-book-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+  color: #f8fafc;
+  cursor: pointer;
+  text-align: left;
+  transition: background 160ms ease;
+}
+
+.clue-book-entry:last-child {
+  border-bottom: none;
+}
+
+.clue-book-entry.clue-revealed:hover {
+  background: rgba(168, 85, 247, 0.08);
+}
+
+.clue-book-entry.clue-revealed:hover .clue-entry-arrow {
+  color: #a855f7;
+  transform: translateX(3px);
+}
+
+.clue-book-entry.clue-hidden {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.clue-entry-icon {
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.8);
+  flex-shrink: 0;
+}
+
+.clue-revealed .clue-entry-icon {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(249, 115, 22, 0.08));
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+
+.clue-entry-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.clue-entry-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #f8fafc;
+}
+
+.clue-hidden .clue-entry-title {
+  color: #64748b;
+}
+
+.clue-entry-desc {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.clue-hidden .clue-entry-desc {
+  color: #475569;
+  font-style: italic;
+}
+
+.clue-entry-arrow {
+  font-size: 22px;
+  color: #64748b;
+  font-weight: 700;
+  line-height: 1;
+  transition: color 160ms ease, transform 160ms ease;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .clue-book-card {
+    padding: 20px;
+  }
+
+  .clue-book-group-header {
+    padding: 10px 12px;
+  }
+
+  .clue-book-entry {
+    padding: 10px 12px;
+  }
 }
