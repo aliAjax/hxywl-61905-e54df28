@@ -219,6 +219,7 @@ export interface EngineActions {
   useKeyOnLock: (lockId: string, keyItemId: string, requiredItemId: string) => void;
   toggleFlashlight: () => void;
   markInvestigated: (cellId: string) => void;
+  autoAdvanceCell: (cellId: string) => boolean;
   revealHint: (puzzleId: string) => { level: number; title: string } | null;
   reset: () => void;
   getState: () => EngineState;

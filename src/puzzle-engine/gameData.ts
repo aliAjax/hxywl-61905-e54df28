@@ -534,18 +534,62 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           id: "carpet",
           label: "地毯",
           icon: "🧶",
-          initialStageId: "locked",
+          initialStageId: "need_flashlight",
           stages: {
-            locked: {
-              id: "locked",
+            need_flashlight: {
+              id: "need_flashlight",
               description: "厚实的波斯地毯，边角微微翘起，下面似乎压着东西。",
               clueDetail:
                 "波斯地毯图案繁复，织工精细。地毯边角微微翘起，下面似乎压着什么东西。凑近仔细看，地毯角落隐约有一些痕迹，但光线太暗看不清楚。",
               nextHint:
                 "地毯下似乎有痕迹但看不清楚。也许需要一盏能照亮暗处的工具——台灯旁边是不是有什么？",
               isLocked: true,
-              lockReason: "需要可用的手电筒",
-              requires: all(hasItem("powered_flashlight"), flagTrue("flashlightActive")),
+              lockReason: "需要能照亮暗处的工具",
+              requires: hasItem("flashlight"),
+              requiresMet: {
+                description: "厚实的波斯地毯，边角微微翘起，下面似乎压着东西。",
+                clueDetail:
+                  "波斯地毯图案繁复，织工精细。地毯边角微微翘起，下面似乎压着什么东西。你有手电筒，但好像没装电池，亮不起来。",
+                nextHint: "手电筒没有电池，亮不起来。需要找到电池后组合使用。去抽屉里找找电池吧！",
+                lockReason: "手电筒缺少电池",
+              },
+              moveToStage: "need_battery",
+            },
+            need_battery: {
+              id: "need_battery",
+              description: "厚实的波斯地毯，边角微微翘起，下面似乎压着东西。",
+              clueDetail:
+                "波斯地毯图案繁复，织工精细。地毯边角微微翘起，下面似乎压着什么东西。你有手电筒，但好像没装电池，亮不起来。",
+              nextHint: "手电筒没有电池，亮不起来。需要找到电池后组合使用。去抽屉里找找电池吧！",
+              isLocked: true,
+              lockReason: "手电筒缺少电池",
+              requires: hasItem("powered_flashlight"),
+              requiresMet: {
+                description: "厚实的波斯地毯，边角微微翘起，下面似乎压着东西。",
+                clueDetail:
+                  "波斯地毯图案繁复，织工精细。地毯边角微微翘起，下面似乎压着什么东西。你有手电筒但好像没打开——先打开它再看看！",
+                nextHint: "地毯下似乎藏着荧光墨水书写的暗号。先打开手电筒照照看！",
+                lockReason: "需要打开手电筒",
+              },
+              moveToStage: "need_turn_on",
+            },
+            need_turn_on: {
+              id: "need_turn_on",
+              description: "厚实的波斯地毯，边角微微翘起，下面似乎压着东西。",
+              clueDetail:
+                "波斯地毯图案繁复，织工精细。地毯边角微微翘起，下面似乎压着什么东西。你有手电筒但好像没打开——先打开它再看看！",
+              nextHint: "地毯下似乎藏着荧光墨水书写的暗号。先打开手电筒照照看！",
+              isLocked: true,
+              lockReason: "需要打开手电筒",
+              requires: flagTrue("flashlightActive"),
+              requiresMet: {
+                description: "厚实的波斯地毯，角落有荧光字迹在手电筒光下若隐若现。",
+                clueDetail:
+                  "波斯地毯图案繁复，织工精细。在手电筒的强光照射下，地毯角落的荧光墨水逐渐显现——那是一串数字和一些说明文字！",
+                nextHint:
+                  "荧光暗号显示密码是1-3-7-9！这就是门锁的四位密码！如果你集齐了钥匙碎片和窗帘上的使用说明，也可以选择用钥匙开锁。",
+              },
+              moveToStage: "lit",
             },
             lit: {
               id: "lit",

@@ -273,31 +273,6 @@ function App() {
   const getEnrichedCellContent = useCallback(
     (cellId: string) => {
       const content = engine.getCellContent(cellId);
-      if (cellId === "carpet" && content.isLocked) {
-        const hasLight = engine.hasItem("powered_flashlight");
-        const hasBareFlashlight = engine.hasItem("flashlight");
-        const isFlashlightOn = engine.flashlightActive;
-        if (hasLight && !isFlashlightOn) {
-          return {
-            ...content,
-            description: "厚实的波斯地毯，边角微微翘起，下面似乎压着东西。",
-            clueDetail:
-              "波斯地毯图案繁复，织工精细。地毯边角微微翘起，下面似乎压着什么东西。你有手电筒但好像没打开——先打开它再看看！",
-            nextHint: "地毯下似乎藏着荧光墨水书写的暗号。先打开手电筒照照看！",
-            lockReason: "需要打开手电筒",
-          };
-        }
-        if (hasBareFlashlight && !hasLight) {
-          return {
-            ...content,
-            description: "厚实的波斯地毯，边角微微翘起，下面似乎压着东西。",
-            clueDetail:
-              "波斯地毯图案繁复，织工精细。地毯边角微微翘起，下面似乎压着什么东西。你有手电筒，但好像没装电池，亮不起来。",
-            nextHint: "手电筒没有电池，亮不起来。需要找到电池后组合使用。去抽屉里找找电池吧！",
-            lockReason: "手电筒缺少电池",
-          };
-        }
-      }
       if (cellId === "door") {
         const missingSteps: string[] = [];
         if (!drawerUnlocked) missingSteps.push("打开抽屉");
@@ -379,19 +354,7 @@ function App() {
       }
 
       if (content.isLocked && !content.lockTargetId) {
-        if (cellId === "painting") {
-          showMsg("挂画被螺丝固定，需要螺丝刀才能取下。", "error");
-        } else if (cellId === "box") {
-          showMsg("箱子封条太牢固，需要螺丝刀才能撬开。", "error");
-        } else if (cellId === "carpet") {
-          if (hasPoweredFlashlight && !engine.flashlightActive) {
-            showMsg("光线太暗，先打开手电筒看看。", "info");
-          } else if (hasFlashlight && !hasPoweredFlashlight) {
-            showMsg("手电筒没有电池，亮不起来。需要找到电池后组合使用。", "info");
-          } else {
-            showMsg("太暗了看不清，需要找到能发光的工具。", "info");
-          }
-        }
+        showMsg(content.lockReason || "暂时无法操作，也许需要某个道具或先完成其他步骤。", "error");
         setClueModalCellId(cellId);
         return;
       }
@@ -412,8 +375,6 @@ function App() {
       getEnrichedCellContent,
       applyEffects,
       showMsg,
-      hasPoweredFlashlight,
-      hasFlashlight,
     ]
   );
 
@@ -430,73 +391,11 @@ function App() {
         } else {
           showMsg("手电筒已关闭", "info");
         }
-        if (
-          engine.hasItem("powered_flashlight") &&
-          !engine.hasItem("note_carpet")
-        ) {
-          const carpetStageId = (engine as any).cellStageIds?.carpet;
-          if (carpetStageId === "locked") {
-            const cell = CELLS.find((c) => c.id === "carpet");
-            if (cell) {
-              engine.interactCell("carpet");
-              (engine as any).cellStageIds = {
-                ...(engine as any).cellStageIds,
-                carpet: "lit",
-              };
-              const setState = (engine as any).setState;
-              if (setState) {
-                setState((prev: any) => ({
-                  ...prev,
-                  cellStageIds: { ...prev.cellStageIds, carpet: "lit" },
-                }));
-              }
-            }
-          }
-        }
       }
       setDetailItemId(itemId);
     },
     [combineMode, toggleCombineSelect, engine, showMsg]
   );
-
-  useEffect(() => {
-    if (
-      engine.flashlightActive &&
-      engine.hasItem("powered_flashlight") &&
-      !engine.hasItem("note_carpet")
-    ) {
-      const currentStageId = (engine as any).cellStageIds?.carpet;
-      if (currentStageId === "locked") {
-        const setState = (engine as any).setState;
-        if (setState) {
-          setState((prev: any) => ({
-            ...prev,
-            cellStageIds: { ...prev.cellStageIds, carpet: "lit" },
-          }));
-        }
-      }
-    } else if (
-      (!engine.flashlightActive || !engine.hasItem("powered_flashlight")) &&
-      !engine.hasItem("note_carpet")
-    ) {
-      const currentStageId = (engine as any).cellStageIds?.carpet;
-      if (currentStageId === "lit") {
-        const setState = (engine as any).setState;
-        if (setState) {
-          setState((prev: any) => ({
-            ...prev,
-            cellStageIds: { ...prev.cellStageIds, carpet: "locked" },
-          }));
-        }
-      }
-    }
-  }, [
-    engine.flashlightActive,
-    engine.hasItem,
-    (engine as any).cellStageIds?.carpet,
-    (engine as any).setState,
-    engine,
-  ]);
 
   const handleLockDigit = useCallback(
     (digit: string) => {

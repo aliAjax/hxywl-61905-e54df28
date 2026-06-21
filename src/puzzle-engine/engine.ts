@@ -193,15 +193,79 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
     [getCellStage, checkCond, state.inventory, state.cellStageIds, _resolveStageItem]
   );
 
+  function autoAdvanceCell(
+    cellId: string,
+    stateSnapshot: EngineState
+  ): { advanced: boolean; newStageId?: string; newState?: Partial<EngineState> } {
+    const cell = getCell(cellId);
+    if (!cell) return { advanced: false };
+
+    const currentStageId = stateSnapshot.cellStageIds[cellId] ?? cell.initialStageId;
+    const stage = cell.stages[currentStageId];
+    if (!stage) return { advanced: false };
+
+    if (stage.isLocked && stage.requires && checkCondition(stage.requires, { inventory: stateSnapshot.inventory, flags: stateSnapshot.flags })) {
+      let newInventory = [...stateSnapshot.inventory];
+      let newFlags = { ...stateSnapshot.flags };
+      let newEscaped = stateSnapshot.escaped;
+      let newEndingId = stateSnapshot.endingId;
+      let newLastHint = stateSnapshot.lastHint;
+
+      if (stage.onUnlock) {
+        const result = applyEffects(stage.onUnlock, stateSnapshot, config);
+        newInventory = result.newInventory;
+        newFlags = result.newFlags;
+        newEscaped = result.newEscaped;
+        newEndingId = result.newEndingId;
+        newLastHint = stage.onUnlock.showMessage ?? stateSnapshot.lastHint;
+      }
+
+      if (stage.moveToStage) {
+        return {
+          advanced: true,
+          newStageId: stage.moveToStage,
+          newState: {
+            inventory: newInventory,
+            flags: newFlags,
+            escaped: newEscaped,
+            endingId: newEndingId,
+            lastHint: newLastHint,
+            cellStageIds: { ...stateSnapshot.cellStageIds, [cellId]: stage.moveToStage },
+          },
+        };
+      }
+
+      if (stage.onUnlock) {
+        return {
+          advanced: true,
+          newState: {
+            inventory: newInventory,
+            flags: newFlags,
+            escaped: newEscaped,
+            endingId: newEndingId,
+            lastHint: newLastHint,
+          },
+        };
+      }
+    }
+
+    return { advanced: false };
+  }
+
   const collectItem = useCallback(
     (itemId: string, customMessage?: string) => {
       setState((prev) => {
         if (prev.inventory.includes(itemId)) return prev;
-        return {
+        const nextState = {
           ...prev,
           inventory: [...prev.inventory, itemId],
           lastHint: customMessage ?? prev.lastHint,
         };
+        const result = autoAdvanceCell("carpet", nextState);
+        if (result.advanced && result.newState) {
+          return { ...nextState, ...result.newState };
+        }
+        return nextState;
       });
     },
     []
@@ -318,12 +382,17 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
         if (!nextInventory.includes(recipe.output)) {
           nextInventory.push(recipe.output);
         }
-        return {
+        const nextState = {
           ...prev,
           inventory: nextInventory,
           combineCount: prev.combineCount + 1,
           lastHint: recipe.successMessage,
         };
+        const result = autoAdvanceCell("carpet", nextState);
+        if (result.advanced && result.newState) {
+          return { ...nextState, ...result.newState };
+        }
+        return nextState;
       });
     },
     []
@@ -424,12 +493,21 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
   );
 
   const toggleFlashlight = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
-      flashlightActive: !prev.flashlightActive,
-      flags: { ...prev.flags, flashlightActive: !prev.flashlightActive },
-      lastHint: !prev.flashlightActive ? "🔦 手电筒已打开，暗处的线索将显现！" : "手电筒已关闭",
-    }));
+    setState((prev) => {
+      const nextFlashlightActive = !prev.flashlightActive;
+      const nextState: EngineState = {
+        ...prev,
+        flashlightActive: nextFlashlightActive,
+        flags: { ...prev.flags, flashlightActive: nextFlashlightActive },
+        lastHint: nextFlashlightActive ? "🔦 手电筒已打开，暗处的线索将显现！" : "手电筒已关闭",
+      };
+
+      const result = autoAdvanceCell("carpet", nextState);
+      if (result.advanced && result.newState) {
+        return { ...nextState, ...result.newState };
+      }
+      return nextState;
+    });
   }, []);
 
   const markInvestigated = useCallback((cellId: string) => {
@@ -502,6 +580,17 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
     [config.saveVersion, initialState.cellStageIds]
   );
 
+  const autoAdvanceCellPublic = useCallback(
+    (cellId: string): boolean => {
+      const result = autoAdvanceCell(cellId, state);
+      if (result.advanced && result.newState) {
+        setState((prev) => ({ ...prev, ...result.newState! }));
+      }
+      return result.advanced;
+    },
+    [state]
+  );
+
   return {
     ...state,
     hasItem,
@@ -518,6 +607,7 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
     useKeyOnLock,
     toggleFlashlight,
     markInvestigated,
+    autoAdvanceCell: autoAdvanceCellPublic,
     revealHint,
     reset,
     getState,
