@@ -14,5 +14,20 @@
   "devDependencies": {
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3"
-  }
+  },
+  "name": "hxywl-61905",
+  "version": "1.0.0",
+  "description": "我想做一个H5文字解谜逃脱游戏，玩家在一个房间场景里点击物品、收集线索、组合道具并输入密码开锁。游戏需要有房间主画面、物品栏、线索详情弹窗、密码锁界面和结局页。所有谜题和道具逻辑先写在前端本地，要求流程完整，玩家能从开始一路解到逃脱成功。",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aliAjax/hxywl-61905-e54df28.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aliAjax/hxywl-61905-e54df28/issues"
+  },
+  "homepage": "https://github.com/aliAjax/hxywl-61905-e54df28#readme"
 }

@@ -100,17 +100,92 @@ button {
   gap: 16px;
 }
 
+.board-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.room-tabs {
+  display: flex;
+  gap: 0;
+  border-radius: 18px 18px 0 0;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-bottom: none;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.room-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: none;
+  border-right: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(15, 23, 42, 0.5);
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.room-tab:last-child {
+  border-right: none;
+}
+
+.room-tab:hover:not(:disabled) {
+  background: rgba(148, 163, 184, 0.1);
+  color: #f8fafc;
+}
+
+.room-tab-active {
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.15), rgba(15, 23, 42, 0.7));
+  color: #f8fafc;
+  border-bottom: 2px solid var(--secondary);
+}
+
+.room-tab-locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.room-tab-locked:hover {
+  background: rgba(15, 23, 42, 0.5);
+  color: #94a3b8;
+}
+
+.room-tab-name {
+  pointer-events: none;
+}
+
+.room-tab-progress {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.room-tab-lock {
+  font-size: 14px;
+  pointer-events: none;
+}
+
 .board {
   min-height: 470px;
-  border-radius: 18px;
+  border-radius: 0 0 18px 18px;
   padding: 16px;
   display: grid;
   gap: 10px;
   background: linear-gradient(180deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
   border: 1px solid rgba(148, 163, 184, 0.22);
+  border-top: none;
 }
 
-.escape .board {
+.escape .board-wrapper .board {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
@@ -956,8 +1031,22 @@ button {
     padding: 24px;
   }
 
-  .board {
+  .board-wrapper .board {
     min-height: 390px;
+  }
+
+  .room-tabs {
+    border-radius: 14px 14px 0 0;
+  }
+
+  .board-wrapper .board {
+    border-radius: 0 0 14px 14px;
+  }
+
+  .room-tab {
+    padding: 10px 8px;
+    font-size: 13px;
+    gap: 4px;
   }
 
   .modal-card {

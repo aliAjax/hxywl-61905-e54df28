@@ -11,12 +11,11 @@ import type {
   MessageType,
   SaveData,
   HintPuzzleDef,
+  RoomDef,
+  CellDef,
 } from "./puzzle-engine/types";
 
 const CONFIG: GameConfig = ESCAPE_ROOM_CONFIG;
-const ROOM = CONFIG.rooms[0];
-const CELLS = ROOM.cells;
-const LOCKS = ROOM.locks;
 
 function App() {
   const engine = usePuzzleEngine(CONFIG);
@@ -40,6 +39,10 @@ function App() {
 
   const [hintPanelOpen, setHintPanelOpen] = useState(false);
   const [hintDetailId, setHintDetailId] = useState<string | null>(null);
+
+  const currentRoom = CONFIG.rooms.find((r) => r.id === engine.currentRoomId) ?? CONFIG.rooms[0];
+  const CELLS = currentRoom.cells;
+  const LOCKS = currentRoom.locks;
 
   const showMsg = useCallback(
     (text: string, type: MessageType = "info") => {
@@ -176,6 +179,7 @@ function App() {
     engine.lastHint,
     engine.combineCount,
     engine.hintUsage,
+    engine.currentRoomId,
     saveGame,
   ]);
 
@@ -203,22 +207,24 @@ function App() {
     engine.inventory.filter((id) => CONFIG.items[id]?.category === cat).length;
 
   const fragmentCount = engine.inventory.filter(
-    (id) => CONFIG.items[id]?.category === "key_fragment" && id !== "complete_key"
+    (id) => CONFIG.items[id]?.category === "key_fragment" && id !== "complete_key" && id !== "assembled_key"
   ).length;
   const noteCount = itemCount("note");
   const toolCount = itemCount("tool");
   const hasCompleteKey = engine.hasItem("complete_key");
   const hasPoweredFlashlight = engine.hasItem("powered_flashlight");
   const hasFlashlight = engine.hasItem("flashlight");
+  const hasAssembledKey = engine.hasItem("assembled_key");
 
-  const hiddenClueIds = ["note_hidden_curtain", "note_hidden_painting", "note_hidden_lamp"];
+  const hiddenClueIds = ["note_hidden_curtain", "note_hidden_painting", "note_hidden_lamp", "note_hidden_shelf", "note_hidden_workbench"];
   const hiddenClueCount = hiddenClueIds.filter((id) => engine.hasItem(id)).length;
-  const hasAllHiddenClues = hiddenClueCount === 3;
+  const hasAllHiddenClues = hiddenClueCount === 5;
 
   const drawerUnlocked = !!engine.flags.drawerUnlocked;
   const boxOpened = !!engine.flags.boxOpened;
   const paintingRemoved = !!engine.flags.paintingRemoved;
   const curtainChecked = !!engine.flags.curtainChecked;
+  const secretDoorOpened = !!engine.flags.secretDoorOpened;
 
   const totalHintCount = Object.values(engine.hintUsage).reduce((sum, n) => sum + n, 0);
   const puzzlesHintedCount = Object.keys(engine.hintUsage).length;
@@ -292,7 +298,7 @@ function App() {
         setLockTargetId(content.lockTargetId);
         setLockDigits([]);
         setLockError(false);
-        if (cellId === "drawer") {
+        if (cellId === "drawer" || cellId === "filing_cabinet") {
           setClueModalCellId(cellId);
         }
         return;
@@ -320,6 +326,7 @@ function App() {
       getEnrichedCellContent,
       applyEffects,
       showMsg,
+      CELLS,
     ]
   );
 
@@ -345,7 +352,7 @@ function App() {
   const handleLockDigit = useCallback(
     (digit: string) => {
       if (!lockTargetId) return;
-      const lock = LOCKS.find((l) => l.id === lockTargetId);
+      const lock = CONFIG.rooms.flatMap((r) => r.locks).find((l) => l.id === lockTargetId);
       const maxLen = lock?.digits ?? 4;
       if (lockDigits.length < maxLen) {
         setLockDigits((prev) => [...prev, digit]);
@@ -378,17 +385,26 @@ function App() {
     }
   }, [lockDigits, lockTargetId, engine, applyEffects, showMsg]);
 
-  const doorUIInfo = engine.getLockUIInfo("door");
+  const allLocks = CONFIG.rooms.flatMap((r) => r.locks);
+
+  const doorUIInfo = engine.getLockUIInfo("final_door");
   const canUseKeyOnDoor = doorUIInfo.keyUnlock?.canUse ?? false;
   const keyUseReason = doorUIInfo.keyUnlock?.reason;
   const keySidebarLabel = doorUIInfo.keyUnlock?.sidebarLabel;
-  const keyButtonText = doorUIInfo.keyUnlock?.buttonText ?? "🔑 使用完整钥匙开锁";
+  const keyButtonText = doorUIInfo.keyUnlock?.buttonText ?? "🔑 使用组合钥匙开锁";
 
   const handleUseKeyOnDoor = useCallback(() => {
     if (!canUseKeyOnDoor) return;
-    engine.useKeyOnLock("door");
+    engine.useKeyOnLock("final_door");
     setLockTargetId(null);
   }, [canUseKeyOnDoor, engine]);
+
+  const handleSwitchRoom = useCallback(
+    (roomId: string) => {
+      engine.switchRoom(roomId);
+    },
+    [engine]
+  );
 
   const filteredInventory =
     filterTab === "all"
@@ -396,6 +412,15 @@ function App() {
       : engine.inventory.filter((id) => CONFIG.items[id]?.category === filterTab);
 
   const detailItem = detailItemId ? CONFIG.items[detailItemId] : null;
+
+  const getRoomProgress = (room: RoomDef) => {
+    const total = room.cells.length;
+    const checked = room.cells.filter((c) => {
+      const content = engine.getCellContent(c.id);
+      return content.alreadyChecked;
+    }).length;
+    return { checked, total };
+  };
 
   if (!gameStarted) {
     return (
@@ -474,7 +499,7 @@ function App() {
               <span className="stat-icon">
                 {isTrueEnding ? "🌟" : hiddenClueCount > 0 ? "🗝️" : "🔒"}
               </span>
-              <span className="stat-value">{hiddenClueCount}/3</span>
+              <span className="stat-value">{hiddenClueCount}/5</span>
               <span className="stat-label">隐藏线索</span>
             </div>
             <div className="stat-card">
@@ -542,10 +567,10 @@ function App() {
   const getCellStatus = (cellId: string) => {
     const content = getEnrichedCellContent(cellId);
     const isLit =
-      cellId === "carpet" &&
+      (cellId === "carpet" || cellId === "dark_corner") &&
       engine.flashlightActive &&
       hasPoweredFlashlight &&
-      !engine.hasItem("note_carpet");
+      !engine.hasItem(cellId === "carpet" ? "note_carpet" : "note_dark");
     return {
       isLocked: content.isLocked,
       alreadyChecked: content.alreadyChecked,
@@ -560,7 +585,7 @@ function App() {
       <section className="hero">
         <p>密室文字逃脱 · H5Game</p>
         <h1>{CONFIG.title}</h1>
-        <span>按顺序解开谜题：书架 → 抽屉 → 挂画/箱子 → 窗帘/地毯 → 门锁</span>
+        <span>书房→暗门→储物间→最终大门 | 两个房间共享物品栏和进度</span>
       </section>
       <section className="hud hud-6">
         <article>
@@ -582,7 +607,7 @@ function App() {
         <article>
           <small>隐藏</small>
           <strong>
-            {hiddenClueCount > 0 ? `🗝️ ${hiddenClueCount}/3` : "🔒 0/3"}
+            {hiddenClueCount > 0 ? `🗝️ ${hiddenClueCount}/5` : "🔒 0/5"}
           </strong>
         </article>
         <article onClick={() => setHintPanelOpen(true)} style={{ cursor: "pointer" }}>
@@ -591,41 +616,62 @@ function App() {
         </article>
       </section>
       <section className="playground escape">
-        <div className="board">
-          {CELLS.map((cell) => {
-            const status = getCellStatus(cell.id);
-            const content = getEnrichedCellContent(cell.id);
-            const isInvestigated = engine.investigatedCellIds.has(cell.id);
-            return (
-              <button
-                className={`board-cell ${status.alreadyChecked ? "collected" : ""} ${
-                  status.isLit ? "flashlight-lit" : ""
-                } ${isInvestigated ? "investigated" : ""} ${
-                  status.isLocked ? "locked-cell" : ""
-                }`}
-                key={cell.id}
-                onClick={() => handleCellClick(cell.id)}
-                title={status.isLocked ? content.lockReason : ""}
-              >
-                <span className="cell-icon">{cell.icon}</span>
-                <span className="cell-label">{cell.label}</span>
-                {status.alreadyChecked && <span className="cell-check">✓</span>}
-                {status.isLit && <span className="cell-glow">💡</span>}
-                {status.isLocked && !status.alreadyChecked && (
-                  <span className="cell-locked">🔒</span>
-                )}
-                {isInvestigated && !status.alreadyChecked && !status.isLocked && (
-                  <span className="cell-investigated">👁️</span>
-                )}
-              </button>
-            );
-          })}
+        <div className="board-wrapper">
+          <div className="room-tabs">
+            {CONFIG.rooms.map((room) => {
+              const progress = getRoomProgress(room);
+              const isActive = room.id === engine.currentRoomId;
+              const isLocked = room.id !== CONFIG.rooms[0]?.id && !secretDoorOpened;
+              return (
+                <button
+                  key={room.id}
+                  className={`room-tab ${isActive ? "room-tab-active" : ""} ${isLocked ? "room-tab-locked" : ""}`}
+                  onClick={() => !isLocked && handleSwitchRoom(room.id)}
+                  disabled={isLocked}
+                >
+                  <span className="room-tab-name">{room.name}</span>
+                  <span className="room-tab-progress">{progress.checked}/{progress.total}</span>
+                  {isLocked && <span className="room-tab-lock">🔒</span>}
+                </button>
+              );
+            })}
+          </div>
+          <div className="board">
+            {CELLS.map((cell) => {
+              const status = getCellStatus(cell.id);
+              const content = getEnrichedCellContent(cell.id);
+              const isInvestigated = engine.investigatedCellIds.has(cell.id);
+              return (
+                <button
+                  className={`board-cell ${status.alreadyChecked ? "collected" : ""} ${
+                    status.isLit ? "flashlight-lit" : ""
+                  } ${isInvestigated ? "investigated" : ""} ${
+                    status.isLocked ? "locked-cell" : ""
+                  }`}
+                  key={cell.id}
+                  onClick={() => handleCellClick(cell.id)}
+                  title={status.isLocked ? content.lockReason : ""}
+                >
+                  <span className="cell-icon">{cell.icon}</span>
+                  <span className="cell-label">{cell.label}</span>
+                  {status.alreadyChecked && <span className="cell-check">✓</span>}
+                  {status.isLit && <span className="cell-glow">💡</span>}
+                  {status.isLocked && !status.alreadyChecked && (
+                    <span className="cell-locked">🔒</span>
+                  )}
+                  {isInvestigated && !status.alreadyChecked && !status.isLocked && (
+                    <span className="cell-investigated">👁️</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
         <aside className="side-panel">
           <h2>物品栏</h2>
           <div className="inventory-summary">
             <span style={{ color: CONFIG.categoryColors.key_fragment }}>
-              🗝️ {hasCompleteKey ? 1 : fragmentCount}
+              🗝️ {hasAssembledKey ? 1 : hasCompleteKey ? 1 : fragmentCount}
             </span>
             <span style={{ color: CONFIG.categoryColors.note }}>📝 {noteCount}</span>
             <span style={{ color: CONFIG.categoryColors.tool }}>
@@ -747,14 +793,16 @@ function App() {
                 </button>
               </>
             )}
-            <button
-              className="action-btn"
-              disabled={!canUseKeyOnDoor}
-              onClick={canUseKeyOnDoor ? handleUseKeyOnDoor : undefined}
-              title={keyUseReason ?? ""}
-            >
-              {keySidebarLabel ?? "🔑 用钥匙开锁"}
-            </button>
+            {secretDoorOpened && (
+              <button
+                className="action-btn"
+                disabled={!canUseKeyOnDoor}
+                onClick={canUseKeyOnDoor ? handleUseKeyOnDoor : undefined}
+                title={keyUseReason ?? ""}
+              >
+                {keySidebarLabel ?? "🔑 用钥匙开锁"}
+              </button>
+            )}
           </div>
           <div className="game-menu">
             <button className="action-btn menu-btn restart-btn" onClick={handleRestart}>
@@ -826,12 +874,27 @@ function App() {
                 💡 提示：也许能和某个电子设备组合使用——比如台灯旁边那把手电筒？
               </p>
             )}
+            {detailItem.id === "key_core" && (
+              <p className="modal-hint">
+                💡 提示：钥匙核心可以嵌入完整钥匙的握柄中心，尝试将它们组合！
+              </p>
+            )}
+            {detailItem.id === "complete_key" && !engine.hasItem("key_core") && (
+              <p className="modal-hint">
+                💡 提示：完整钥匙已组合好，但储物间的通风口里也许藏着钥匙的关键组件……
+              </p>
+            )}
+            {detailItem.id === "circuit_board" && (
+              <p className="modal-hint">
+                💡 提示：这是最终大门门锁系统的核心模块。去储物间的最终大门处找到插槽插入！
+              </p>
+            )}
           </div>
         </div>
       )}
       {clueModalCellId !== null &&
         (() => {
-          const cell = CELLS.find((c) => c.id === clueModalCellId);
+          const cell = CONFIG.rooms.flatMap((r) => r.cells).find((c) => c.id === clueModalCellId);
           if (!cell) return null;
           const content = getEnrichedCellContent(clueModalCellId);
           const gotClue = content.itemId ? CONFIG.items[content.itemId] : null;
@@ -897,17 +960,31 @@ function App() {
                   ) : content.isLocked ? (
                     <p className="clue-status-text hint-text">
                       {content.lockReason === "三位密码锁"
-                        ? "这个抽屉被三位密码锁锁住了。需要输入正确的密码才能打开。"
+                        ? clueModalCellId === "filing_cabinet"
+                          ? "档案柜被三位密码锁锁住了。需要输入正确的密码才能打开。储物架上的纸条也许有线索……"
+                          : "这个抽屉被三位密码锁锁住了。需要输入正确的密码才能打开。"
                         : content.lockReason === "需要螺丝刀"
-                        ? "需要螺丝刀才能操作这里。先去找到螺丝刀吧——抽屉里似乎有工具。"
+                        ? clueModalCellId === "workbench"
+                          ? "工作台抽屉被螺丝固定住了。需要螺丝刀才能打开——你在书房找到的螺丝刀也许能派上用场！"
+                          : "需要螺丝刀才能操作这里。先去找到螺丝刀吧——抽屉里似乎有工具。"
                         : content.lockReason === "需要螺丝刀撬开"
                         ? "箱子封条太牢固了，需要螺丝刀才能撬开。"
+                        : content.lockReason === "需要钢丝钳"
+                        ? "通风口被铁丝网封住了，需要钢丝钳才能剪开。工作台抽屉里应该有！"
                         : content.lockReason === "需要打开手电筒"
                         ? "这里似乎藏着荧光墨水书写的暗号。打开手电筒照照看！"
                         : content.lockReason === "手电筒缺少电池"
                         ? "你有手电筒，但没有电池亮不起来。去抽屉里找找电池，然后组合使用！"
+                        : content.lockReason === "需要能照亮暗处的工具"
+                        ? "角落太暗了看不清楚，需要找到能发光的工具。"
+                        : content.lockReason === "未完成书房探索"
+                        ? "暗门机关需要集齐书房所有机关之钥——打开抽屉、取下挂画、撬开箱子！"
+                        : content.lockReason === "门锁系统未启动：需要电路板"
+                        ? "最终大门的门锁系统没有供电。需要找到电路板插入插槽——工作台里有！"
+                        : content.lockReason === "需要开锁方法"
+                        ? "门锁系统已启动，但还需要开锁方法：找到档案柜中的密码线索，或组合出钥匙。"
                         : "这里暂时无法操作。"}
-                      {content.lockReason === "三位密码锁" && (
+                      {(content.lockReason === "三位密码锁" && clueModalCellId === "drawer") && (
                         <button
                           className="action-btn clue-close-btn"
                           style={{ marginTop: "12px" }}
@@ -921,11 +998,25 @@ function App() {
                           🔢 输入密码
                         </button>
                       )}
+                      {(content.lockReason === "三位密码锁" && clueModalCellId === "filing_cabinet") && (
+                        <button
+                          className="action-btn clue-close-btn"
+                          style={{ marginTop: "12px" }}
+                          onClick={() => {
+                            setClueModalCellId(null);
+                            setLockTargetId("filing_cabinet");
+                            setLockDigits([]);
+                            setLockError(false);
+                          }}
+                        >
+                          🔢 输入密码
+                        </button>
+                      )}
                     </p>
-                  ) : clueModalCellId === "carpet" &&
+                  ) : (clueModalCellId === "carpet" || clueModalCellId === "dark_corner") &&
                     engine.flashlightActive &&
                     hasPoweredFlashlight ? (
-                    <p className="clue-status-text">地毯的线索已经被你记录下来了。</p>
+                    <p className="clue-status-text">此处的线索已经被你记录下来了。</p>
                   ) : clueModalCellId === "curtain" && curtainChecked ? (
                     <p className="clue-status-text">窗帘上的刻字你已经记下了。</p>
                   ) : (
@@ -948,17 +1039,12 @@ function App() {
         })()}
       {lockTargetId &&
         (() => {
-          const lock = LOCKS.find((l) => l.id === lockTargetId);
+          const lock = allLocks.find((l) => l.id === lockTargetId);
           if (!lock) return null;
           const isDrawer = lock.id === "drawer";
-          const isHidden = lock.id === "hidden";
-          const isDoor = lock.id === "door";
-          const canUsePasswordInModal =
-            isDoor &&
-            engine.hasItem("note_carpet") &&
-            drawerUnlocked &&
-            boxOpened &&
-            paintingRemoved;
+          const isFilingCabinet = lock.id === "filing_cabinet";
+          const isHidden = lock.id === "final_hidden";
+          const isFinalDoor = lock.id === "final_door";
           const lockUIInfo = engine.getLockUIInfo(lockTargetId);
           return (
             <div className="modal-overlay" onClick={() => setLockTargetId(null)}>
@@ -978,7 +1064,7 @@ function App() {
                     ✕
                   </button>
                 </div>
-                {isDoor && (
+                {isFinalDoor && (
                   <div style={{ marginBottom: "12px" }}>
                     {lockUIInfo.modalHints
                       .filter((h) => h.type === "warning")
@@ -1276,7 +1362,7 @@ function App() {
                     <p className="hint-empty-text">
                       太棒了！当前没有需要求助的谜题。
                       <br />
-                      继续探索，或者直接前往门锁逃脱！
+                      继续探索，或者直接前往最终大门逃脱！
                     </p>
                   </div>
                 )}

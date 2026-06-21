@@ -99,6 +99,7 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
       hintUsage: {},
       lastHint: "",
       gameStartTime: 0,
+      currentRoomId: config.rooms[0]?.id ?? "",
     };
   }, [config]);
 
@@ -755,6 +756,7 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
       gameStartTime: state.gameStartTime,
       combineCount: state.combineCount,
       hintUsage: { ...state.hintUsage },
+      currentRoomId: state.currentRoomId,
     };
   }, [config.saveVersion, state]);
 
@@ -773,10 +775,11 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
         gameStartTime: data.gameStartTime || 0,
         combineCount: data.combineCount || 0,
         hintUsage: data.hintUsage || {},
+        currentRoomId: data.currentRoomId || config.rooms[0]?.id || "",
       });
       return true;
     },
-    [config.saveVersion, initialState.cellStageIds]
+    [config.saveVersion, initialState.cellStageIds, config.rooms]
   );
 
   const autoAdvanceCellPublic = useCallback(
@@ -788,6 +791,19 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
       return result.advanced;
     },
     [state]
+  );
+
+  const switchRoom = useCallback(
+    (roomId: string) => {
+      const roomExists = config.rooms.some((r) => r.id === roomId);
+      if (!roomExists) return;
+      if (roomId !== config.rooms[0]?.id && !state.flags.secretDoorOpened) return;
+      setState((prev) => ({
+        ...prev,
+        currentRoomId: roomId,
+      }));
+    },
+    [config.rooms, state.flags.secretDoorOpened]
   );
 
   return {
@@ -815,6 +831,7 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
     getProgressText,
     getLockUIInfo,
     submitHiddenPassword,
+    switchRoom,
   };
 }
 

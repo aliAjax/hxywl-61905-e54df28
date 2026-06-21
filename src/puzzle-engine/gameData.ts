@@ -136,6 +136,105 @@ export const ITEMS: Record<string, ItemDef> = {
     detail:
       "将台灯轻轻抬起，底座下方贴着一张几乎看不见的微型标签，上面用极小的字体印着一个数字：\n\n「2」\n\n标签边缘有胶水残留的痕迹，似乎是匆忙贴上的。窗帘「4」、挂画「8」、台灯「2」——按此顺序排列，就是三位隐藏密码：4-8-2。",
   },
+  note_shelf: {
+    id: "note_shelf",
+    name: "纸条·储物架密码",
+    category: "note",
+    icon: "📝",
+    description: "储物架上夹着的破旧纸条，字迹潦草。",
+    detail:
+      "纸条上歪歪扭扭地写着：\n\n「档案柜密码：5 - 2 - 7」\n\n背面还有一行被水渍模糊的小字：「第三个数字……看不清了……应该是7吧？」\n\n这是储物间档案柜的三位密码！",
+  },
+  wire_cutters: {
+    id: "wire_cutters",
+    name: "钢丝钳",
+    category: "tool",
+    icon: "✂️",
+    description: "一把坚固的钢丝钳，刃口锋利。",
+    detail:
+      "钢丝钳手感沉甸甸的，刃口闪着寒光，足以剪断粗铁丝。储物间的通风口似乎被铁丝网封住了——也许用得上这个。",
+  },
+  circuit_board: {
+    id: "circuit_board",
+    name: "电路板",
+    category: "tool",
+    icon: "💠",
+    description: "一块精密的电子电路板，似乎是大门的控制组件。",
+    detail:
+      "电路板上密布着芯片和线路，边缘有标准的插槽接口。背面贴着标签：「最终大门·主控电路」。看来需要将这块电路板插入最终大门的控制面板。",
+  },
+  note_workbench: {
+    id: "note_workbench",
+    name: "纸条·工作台记录",
+    category: "note",
+    icon: "📝",
+    description: "工作台上散落的便签纸，记录着某些实验数据。",
+    detail:
+      "便签纸上用蓝色圆珠笔写着：\n\n「电路板已从工作台拆下，可用于修复最终大门的控制面板。」\n\n「通风口铁丝网需要钢丝钳才能剪开，里面藏着重要的东西。」\n\n「润滑油可以用于……算了，先不管这个。」",
+  },
+  oil_can: {
+    id: "oil_can",
+    name: "润滑油",
+    category: "tool",
+    icon: "🛢️",
+    description: "一小罐工业润滑油，瓶身标注「高渗透配方」。",
+    detail:
+      "润滑油罐身印着产品型号，密封完好。也许某些生锈或卡住的机械装置需要用到它？",
+  },
+  note_cabinet: {
+    id: "note_cabinet",
+    name: "纸条·档案柜档案",
+    category: "note",
+    icon: "📝",
+    description: "从档案柜中取出的机密文件，记录着最终大门的密码。",
+    detail:
+      "文件上方盖着「机密」印章，内容如下：\n\n「最终大门紧急密码：8 - 5 - 2 - 3」\n\n「此密码仅在电路板正常工作时方可使用。如电路板损坏，需更换后方可输入。」\n\n「另外，若持有组合钥匙与窗帘上的使用说明，也可选择用钥匙开锁。」",
+  },
+  key_core: {
+    id: "key_core",
+    name: "钥匙核心",
+    category: "key_fragment",
+    icon: "💎",
+    description: "一块晶莹的金属核心，似乎是某种高级钥匙的内部组件。",
+    detail:
+      "钥匙核心通体散发着淡蓝色的光泽，表面刻着精密的齿纹和定位槽。它的大小恰好能嵌入完整钥匙的握柄——也许可以组合成更强大的钥匙？",
+  },
+  note_dark: {
+    id: "note_dark",
+    name: "纸条·暗角留言",
+    category: "note",
+    icon: "📝",
+    description: "在暗角中发现的旧信封，里面有一封信。",
+    detail:
+      "信封已经泛黄，但信纸保存完好。上面写着：\n\n「如果你能看到这封信，说明你已经走到了这一步。」\n\n「最终大门不仅需要电路板和密码，如果你拥有更强大的钥匙，也可以用它开启另一条路。」\n\n「通风口里的东西，是钥匙的关键组成部分。」",
+  },
+  note_hidden_shelf: {
+    id: "note_hidden_shelf",
+    name: "暗码·储物架",
+    category: "note",
+    icon: "📜",
+    description: "储物架深处贴着的微型数字暗号。",
+    detail:
+      "在储物架的最里层，有一张几乎与木板融为一体的标签。凑近辨认，上面用极小的字体印着一个数字：\n\n「5」\n\n这是隐藏密码的第四位数字！窗帘「4」、挂画「8」、台灯「2」、储物架「5」——还有一处暗码未找到……",
+  },
+  note_hidden_workbench: {
+    id: "note_hidden_workbench",
+    name: "暗码·工作台",
+    category: "note",
+    icon: "📜",
+    description: "工作台底部刻下的数字暗号。",
+    detail:
+      "趴下身子查看工作台底部，在一块松动的木板后面，发现了被人用烙铁刻下的数字：\n\n「6」\n\n这是隐藏密码的第五位数字！窗帘「4」、挂画「8」、台灯「2」、储物架「5」、工作台「6」——五处暗码集齐，按此顺序排列就是隐藏密码：4-8-2-5-6！",
+  },
+  assembled_key: {
+    id: "assembled_key",
+    name: "组合钥匙",
+    category: "key_fragment",
+    icon: "🏆",
+    description: "完整钥匙与钥匙核心组合而成的超级钥匙，散发着耀眼的光芒。",
+    detail:
+      "将完整钥匙的握柄与钥匙核心精密嵌合，形成一把散发着淡蓝色光芒的组合钥匙。核心的能量渗透入钥匙的每一道齿纹，使其不仅能开启普通门锁，还能打开最终大门的特殊锁孔。",
+  },
 };
 
 export const COMBINE_RECIPES: CombineRecipe[] = [
@@ -153,6 +252,14 @@ export const COMBINE_RECIPES: CombineRecipe[] = [
     output: "powered_flashlight",
     consumesInputs: true,
     successMessage: "🔦 手电筒装上电池，亮了！可以照亮暗处了！",
+    failMessage: "这两样东西似乎没法组合在一起。",
+  },
+  {
+    id: "assembled_key",
+    inputs: ["complete_key", "key_core"],
+    output: "assembled_key",
+    consumesInputs: true,
+    successMessage: "🏆 完整钥匙与钥匙核心成功组合成组合钥匙！",
     failMessage: "这两样东西似乎没法组合在一起。",
   },
 ];
@@ -269,38 +376,118 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
     title: "隐藏暗码（真结局）",
     icon: "🌟",
     hints: [
-      "窗帘、挂画、台灯——你已经在这三个地方找到过东西了。但它们的秘密也许不止这些，再回头看看？",
-      "这三处各自藏着一位数字，藏得非常隐蔽：窗帘的折缝最深处、画框的隐秘角落、台灯底座的下面。",
-      "三位数字分别藏在窗帘、挂画、台灯处。按「窗帘→挂画→台灯」的顺序排起来就是隐藏密码。三位数字，你可以自己去发掘。",
+      "窗帘、挂画、台灯——你已经在这三个地方找到过东西了。但它们的秘密也许不止这些，再回头看看？储物间里似乎也有类似的暗码……",
+      "这五处各自藏着一位数字，藏得非常隐蔽：窗帘的折缝最深处、画框的隐秘角落、台灯底座的下面，还有储物间的储物架和工作台。",
+      "五处暗码分别藏在窗帘、挂画、台灯、储物架、工作台。按「窗帘→挂画→台灯→储物架→工作台」的顺序排起来就是隐藏密码。五位数字，你可以自己去发掘。",
     ],
     completedCondition: { type: "flagTrue", flagId: "_all_hidden_clues" } as Condition,
     availableCondition: any(
       hasItem("note_curtain"),
       flagTrue("paintingRemoved"),
       hasItem("flashlight"),
-      hasItem("powered_flashlight")
+      hasItem("powered_flashlight"),
+      flagTrue("secretDoorOpened")
     ),
   },
   {
-    id: "door_escape",
-    title: "开启门锁逃脱",
-    icon: "🔒",
+    id: "secret_door_open",
+    title: "暗门开启",
+    icon: "🚪",
     hints: [
-      "门锁有两种开启方式：用钥匙，或者输密码。你现在收集到的东西更倾向于哪一条路线？",
-      "用钥匙的话，你需要先凑齐三片碎片组合成完整钥匙，还需要知道怎么转动它——窗帘上有说明。用密码的话，你需要从地毯的荧光暗号里找到那串数字。",
-      "不管走哪条路线，基础探索都得做完：抽屉、挂画、箱子，这三个地方是关键。把这些都搞定后，再根据你收集到的东西选择用钥匙还是密码开门。",
+      "这面墙后面似乎有一扇暗门，但需要完成书房的全部探索才能开启。",
+      "抽屉、挂画、铁皮箱——这三个地方的机关都与暗门有关。把它们全部解开，暗门自然会打开。",
+      "打开抽屉、取下挂画、撬开铁皮箱——完成这三件事后，暗门就会自动开启。",
+    ],
+    completedCondition: flagTrue("secretDoorOpened"),
+    availableCondition: any(
+      flagTrue("drawerUnlocked"),
+      flagTrue("paintingRemoved"),
+      flagTrue("boxOpened")
+    ),
+  },
+  {
+    id: "storage_workbench",
+    title: "工作台探索",
+    icon: "🛠️",
+    hints: [
+      "储物间的工作台似乎被螺丝锁住了，需要工具才能打开。",
+      "你在书房里是不是找到过一把螺丝刀？储物间的工作台正好需要它！",
+      "用螺丝刀打开工作台，里面应该有有用的工具和零件。",
+    ],
+    completedCondition: flagTrue("workbenchOpened"),
+    availableCondition: flagTrue("secretDoorOpened"),
+  },
+  {
+    id: "filing_cabinet_code",
+    title: "档案柜密码",
+    icon: "📁",
+    hints: [
+      "档案柜被三位密码锁锁住了，储物间的某个地方应该有密码线索。",
+      "储物架上有一张破旧的纸条，上面似乎写着什么数字……",
+      "储物架上的纸条明确写着档案柜密码是5-2-7，直接输入即可。",
+    ],
+    completedCondition: flagTrue("cabinetOpened"),
+    availableCondition: flagTrue("secretDoorOpened"),
+  },
+  {
+    id: "vent_open",
+    title: "通风口开启",
+    icon: "🔲",
+    hints: [
+      "通风口被铁丝网封住了，徒手打不开。需要什么工具才能剪开？",
+      "工作台里可能藏着能剪铁丝的工具。先想办法打开工作台吧。",
+      "用钢丝钳剪开通风口的铁丝网，里面藏着重要的东西——和钥匙有关的组件。",
+    ],
+    completedCondition: flagTrue("ventOpened"),
+    availableCondition: hasItem("wire_cutters"),
+  },
+  {
+    id: "dark_corner_explore",
+    title: "暗角探索",
+    icon: "🌑",
+    hints: [
+      "储物间的暗角漆黑一片，什么也看不见。需要光源才能探索那里。",
+      "你在书房找到的手电筒可以照亮暗角——记得打开它。",
+      "打开手电筒后去暗角，那里有一封信，里面写着关于最终大门的重要提示。",
+    ],
+    completedCondition: hasItem("note_dark"),
+    availableCondition: all(flagTrue("secretDoorOpened"), hasItem("powered_flashlight")),
+  },
+  {
+    id: "final_door_escape",
+    title: "最终大门逃脱",
+    icon: "🚪",
+    hints: [
+      "最终大门需要电路板才能激活控制面板，还需要密码或更强大的钥匙才能开启。",
+      "先从工作台取下电路板插入大门，然后从档案柜的机密文件里找到四位密码。或者，如果你有组合钥匙和窗帘上的使用说明，也可以用钥匙开锁。",
+      "两条路线任选其一：①插入电路板后输入四位密码（档案柜文件中有记录）；②组合完整钥匙与钥匙核心成组合钥匙，配合窗帘使用说明开锁。",
     ],
     completedCondition: { type: "flagTrue", flagId: "_escaped" } as Condition,
-    availableCondition: all(flagTrue("drawerUnlocked"), flagTrue("paintingRemoved"), flagTrue("boxOpened")),
+    availableCondition: all(
+      flagTrue("secretDoorOpened"),
+      hasItem("circuit_board")
+    ),
+  },
+  {
+    id: "key_assembly",
+    title: "组合钥匙",
+    icon: "🏆",
+    hints: [
+      "完整钥匙似乎还有提升的空间——也许可以和其他组件组合？",
+      "通风口里藏着一块「钥匙核心」，它恰好能嵌入完整钥匙的握柄。",
+      "用组合道具把完整钥匙和钥匙核心拼在一起，就能得到能开启最终大门的组合钥匙！",
+    ],
+    completedCondition: hasItem("assembled_key"),
+    availableCondition: any(hasItem("complete_key"), hasItem("key_core")),
   },
 ];
 
 export const ESCAPE_ROOM_CONFIG: GameConfig = {
-  id: "classic_room_01",
+  id: "dual_room_escape_01",
   title: "密室文字逃脱",
-  subtitle: "点击场景收集线索，按顺序解开谜题，最终逃出密室",
-  saveKey: "escape_room_save_v1",
-  saveVersion: 1,
+  subtitle: "书房→暗门→储物间→最终大门，两个房间共享物品栏和进度",
+  saveKey: "escape_room_save_v2",
+  saveVersion: 2,
   categoryLabels: {
     key_fragment: "钥匙",
     note: "纸条",
@@ -320,14 +507,14 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
   intro: {
     title: "欢迎来到密室逃脱",
     description:
-      "你醒来时发现自己被困在一间神秘的房间里。仔细观察四周，收集线索和道具，解开层层谜题，找到逃出密室的方法！",
+      "你醒来时发现自己被困在一间神秘的书房里。仔细观察四周，收集线索和道具，解开层层谜题，找到暗门通往储物间，最终逃出密室！",
   },
   progressSummary: [
     { key: "time", icon: "⏱️", label: "用时", countMode: "custom" },
     { key: "notes", icon: "📝", label: "线索", countMode: "inventoryCategory", category: "note" },
     { key: "items", icon: "🎒", label: "道具", countMode: "inventorySize" },
     { key: "combine", icon: "🔧", label: "组合", countMode: "combineCount" },
-    { key: "hidden", icon: "🗝️", label: "隐藏", countMode: "flag", flagId: "_hidden_clue_count", total: 3 },
+    { key: "hidden", icon: "🗝️", label: "隐藏", countMode: "flag", flagId: "_hidden_clue_count", total: 5 },
     { key: "hints", icon: "💡", label: "提示", countMode: "custom" },
   ],
   items: ITEMS,
@@ -339,9 +526,9 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
       icon: "🎉",
       tag: "🗝️ 钥匙逃脱路线",
       story: [
-        "你集齐了三枚钥匙碎片，将它们按「⊙」符号、「右转两次」刻字、「三合一」提示的顺序小心翼翼地拼合在一起，形成了一把散发着冷光的完整钥匙。",
-        "按照窗帘背面刻下的指示——「向左三圈，再向右一圈」——你深吸一口气，将钥匙插入门锁，伴随着清脆的\"咔哒\"声，沉重的铁门缓缓打开。",
-        "你走出密室，重获自由。但在门关上的瞬间，你隐约觉得——这个房间里，似乎还有什么秘密没有被揭开……",
+        "你将组合钥匙插入最终大门的锁孔，按照窗帘背面刻下的指示——「向左三圈，再向右一圈」——小心翼翼地转动钥匙。",
+        "随着最后一圈转动，钥匙核心爆发出一阵耀眼的光芒，大门深处的机械结构应声解锁。沉重的铁门缓缓向两侧分开，一股新鲜的空气扑面而来。",
+        "你跨出大门，重获自由。阳光洒在脸上，但回望那扇关闭的铁门，你隐约觉得——这个密室里，似乎还有更深的秘密没有被揭开……",
       ],
     },
     normal_password: {
@@ -350,9 +537,9 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
       icon: "🎉",
       tag: "🔢 密码逃脱路线",
       story: [
-        "你通过缜密的推理，依次解开了书架纸条暗示的抽屉密码「1-3-7」，用螺丝刀取下挂画、撬开铁皮箱，收集齐所有关键线索。",
-        "最终，你用手电筒照亮地毯角落，发现了用荧光墨水写下的四位密码「1-3-7-9」。当最后一位数字输入完毕，门锁应声而开。",
-        "你走出密室，呼吸着新鲜的空气。但回望那扇关闭的铁门时，一丝疑虑涌上心头——窗帘、挂画、台灯，那三个被你匆匆略过的角落，是否还藏着更深的秘密？",
+        "你将电路板插入控制面板，面板上的指示灯依次亮起。根据档案柜中机密文件的记录，你依次输入了四位密码「8-5-2-3」。",
+        "随着最后一位数字确认，控制面板发出一声清脆的提示音，大门的电子锁应声解锁。沉重的铁门缓缓向两侧分开，走廊尽头透来微弱的光线。",
+        "你跨出大门，呼吸着新鲜的空气。但回望那扇关闭的铁门时，一丝疑虑涌上心头——窗帘、挂画、台灯、储物架、工作台，那些被你匆匆略过的角落，是否还藏着更深的秘密？",
       ],
     },
     true_ending: {
@@ -362,165 +549,159 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
       tag: "✨ 你揭开了所有隐藏的秘密",
       isTrueEnding: true,
       story: [
-        "当你输入隐藏密码「4-8-2」的那一刻，铁门深处传来一阵低沉的机械转动声。伴随着尘土簌簌落下，墙面缓缓移开，露出了一条从未被人发现的暗道。",
+        "当你输入五位隐藏密码「4-8-2-5-6」的那一刻，最终大门深处传来一阵低沉的机械转动声。不仅门锁应声而开，大门右侧的墙壁也缓缓移开，露出了一条从未被人发现的暗道。",
         "你穿过暗道，走进了一间被刻意隐藏的密室。墙上贴满了照片、剪报和手绘的地图——这一切都指向多年前那桩悬而未决的失踪案。",
-        "书桌上摊着一本日记，最后一页写着：「如果你能读到这里，说明你比我更聪明。窗帘、挂画、台灯——这三个地方留下的线索，是我留给这个世界最后的真相。」",
+        "书桌上摊着一本日记，最后一页写着：「如果你能读到这里，说明你比我更聪明。窗帘、挂画、台灯、储物架、工作台——这五个地方留下的线索，是我留给这个世界最后的真相。」",
         "你紧紧握住日记，走出了暗道。阳光洒在脸上，你知道——这不仅仅是一场逃脱，更是一段尘封真相的揭开。",
       ],
     },
   },
   hintPuzzles: HINT_PUZZLES,
-  autoAdvanceCellIds: ["carpet", "door"],
+  autoAdvanceCellIds: ["carpet", "secret_door", "final_door", "dark_corner"],
   progressHints: [
     {
       priority: 1,
-      condition: { type: "all", conditions: [
-        { type: "flagFalse", flagId: "drawerUnlocked" },
-        { type: "notHasItem", itemId: "note_bookshelf" }
-      ]},
-      text: "🔍 先从书架开始调查吧，也许能找到抽屉的密码线索。"
+      condition: all(flagFalse("drawerUnlocked"), notHasItem("note_bookshelf")),
+      text: "🔍 先从书架开始调查吧，也许能找到抽屉的密码线索。",
     },
     {
       priority: 2,
-      condition: { type: "all", conditions: [
-        { type: "flagFalse", flagId: "drawerUnlocked" },
-        { type: "hasItem", itemId: "note_bookshelf" }
-      ]},
-      text: "🔢 书架纸条提示密码7-3-1倒序即1-3-7，去打开抽屉吧！"
+      condition: all(flagFalse("drawerUnlocked"), hasItem("note_bookshelf")),
+      text: "🔢 书架纸条提示密码7-3-1倒序即1-3-7，去打开抽屉吧！",
     },
     {
       priority: 3,
-      condition: { type: "all", conditions: [
-        { type: "flagTrue", flagId: "drawerUnlocked" },
-        { type: "flagFalse", flagId: "paintingRemoved" },
-        { type: "hasItem", itemId: "screwdriver" }
-      ]},
-      text: "🔧 有螺丝刀了，去取下挂画看看背后有什么！"
+      condition: all(flagTrue("drawerUnlocked"), flagFalse("paintingRemoved"), hasItem("screwdriver")),
+      text: "🔧 有螺丝刀了，去取下挂画看看背后有什么！",
     },
     {
       priority: 4,
-      condition: { type: "all", conditions: [
-        { type: "flagTrue", flagId: "drawerUnlocked" },
-        { type: "flagFalse", flagId: "boxOpened" },
-        { type: "hasItem", itemId: "screwdriver" },
-        { type: "flagTrue", flagId: "paintingRemoved" }
-      ]},
-      text: "🔧 挂画已取下，再去撬开箱子看看！"
+      condition: all(flagTrue("drawerUnlocked"), flagFalse("boxOpened"), hasItem("screwdriver"), flagTrue("paintingRemoved")),
+      text: "🔧 挂画已取下，再去撬开箱子看看！",
     },
     {
       priority: 5,
-      condition: { type: "all", conditions: [
-        { type: "flagTrue", flagId: "drawerUnlocked" },
-        { type: "flagTrue", flagId: "paintingRemoved" },
-        { type: "flagTrue", flagId: "boxOpened" },
-        { type: "notHasItem", itemId: "flashlight" }
-      ]},
-      text: "💡 挂画和箱子都探索完了，去台灯那里看看有什么工具！"
+      condition: all(flagTrue("drawerUnlocked"), flagTrue("paintingRemoved"), flagTrue("boxOpened"), notHasItem("flashlight")),
+      text: "💡 挂画和箱子都探索完了，去台灯那里看看有什么工具！",
     },
     {
       priority: 6,
-      condition: { type: "all", conditions: [
-        { type: "flagTrue", flagId: "drawerUnlocked" },
-        { type: "flagTrue", flagId: "paintingRemoved" },
-        { type: "flagTrue", flagId: "boxOpened" },
-        { type: "hasItem", itemId: "flashlight" },
-        { type: "notHasItem", itemId: "battery" },
-        { type: "notHasItem", itemId: "powered_flashlight" }
-      ]},
-      text: "🔦 找到手电筒了，但没有电池亮不起来。去抽屉里找找有没有电池？"
+      condition: all(flagTrue("drawerUnlocked"), flagTrue("paintingRemoved"), flagTrue("boxOpened"), hasItem("flashlight"), notHasItem("battery"), notHasItem("powered_flashlight")),
+      text: "🔦 找到手电筒了，但没有电池亮不起来。去抽屉里找找有没有电池？",
     },
     {
       priority: 7,
-      condition: { type: "all", conditions: [
-        { type: "hasItem", itemId: "flashlight" },
-        { type: "hasItem", itemId: "battery" },
-        { type: "notHasItem", itemId: "powered_flashlight" }
-      ]},
-      text: "🔋 手电筒和电池都有了！去物品栏组合一下，让手电筒亮起来！"
+      condition: all(hasItem("flashlight"), hasItem("battery"), notHasItem("powered_flashlight")),
+      text: "🔋 手电筒和电池都有了！去物品栏组合一下，让手电筒亮起来！",
     },
     {
       priority: 8,
-      condition: { type: "all", conditions: [
-        { type: "hasItem", itemId: "powered_flashlight" },
-        { type: "flagFalse", flagId: "flashlightActive" },
-        { type: "notHasItem", itemId: "note_carpet" }
-      ]},
-      text: "🔦 打开手电筒，去地毯那里找找荧光暗号！"
+      condition: all(hasItem("powered_flashlight"), flagFalse("flashlightActive"), notHasItem("note_carpet")),
+      text: "🔦 打开手电筒，去地毯那里找找荧光暗号！",
     },
     {
       priority: 9,
-      condition: { type: "all", conditions: [
-        { type: "flagTrue", flagId: "flashlightActive" },
-        { type: "hasItem", itemId: "powered_flashlight" },
-        { type: "notHasItem", itemId: "note_carpet" }
-      ]},
-      text: "🔦 手电筒已开，去地毯那里找找荧光暗号！"
+      condition: all(flagTrue("flashlightActive"), hasItem("powered_flashlight"), notHasItem("note_carpet")),
+      text: "🔦 手电筒已开，去地毯那里找找荧光暗号！",
     },
     {
       priority: 10,
-      condition: { type: "all", conditions: [
-        { type: "flagTrue", flagId: "drawerUnlocked" },
-        { type: "flagTrue", flagId: "paintingRemoved" },
-        { type: "flagTrue", flagId: "boxOpened" },
-        { type: "flagFalse", flagId: "curtainChecked" }
-      ]},
-      text: "🪟 别忘了查看窗帘背后有没有刻字！"
+      condition: all(flagTrue("drawerUnlocked"), flagTrue("paintingRemoved"), flagTrue("boxOpened"), flagFalse("curtainChecked")),
+      text: "🪟 别忘了查看窗帘背后有没有刻字！",
     },
     {
       priority: 11,
-      condition: { type: "all", conditions: [
-        { type: "flagTrue", flagId: "fragment1Found" },
-        { type: "flagTrue", flagId: "fragment2Found" },
-        { type: "flagTrue", flagId: "fragment3Found" },
-        { type: "notHasItem", itemId: "complete_key" }
-      ]},
-      text: "🗝️ 三枚碎片已齐，可以组合成完整钥匙了！"
+      condition: all(flagTrue("fragment1Found"), flagTrue("fragment2Found"), flagTrue("fragment3Found"), notHasItem("complete_key")),
+      text: "🗝️ 三枚碎片已齐，可以组合成完整钥匙了！",
     },
     {
       priority: 12,
-      condition: { type: "all", conditions: [
-        { type: "hasItem", itemId: "complete_key" },
-        { type: "notHasItem", itemId: "note_curtain" }
-      ]},
-      text: "🪟 钥匙已组合好，但还需要查看窗帘上的使用方法！"
+      condition: all(hasItem("complete_key"), notHasItem("note_curtain")),
+      text: "🪟 钥匙已组合好，但还需要查看窗帘上的使用方法！",
     },
     {
       priority: 13,
-      condition: { type: "all", conditions: [
-        { type: "flagTrue", flagId: "drawerUnlocked" },
-        { type: "flagTrue", flagId: "paintingRemoved" },
-        { type: "flagTrue", flagId: "boxOpened" },
-        { type: "hasItem", itemId: "complete_key" },
-        { type: "hasItem", itemId: "note_curtain" },
-        { type: "hasItem", itemId: "note_carpet" },
-        { type: "any", conditions: [
-          { type: "notHasItem", itemId: "note_hidden_curtain" },
-          { type: "notHasItem", itemId: "note_hidden_painting" },
-          { type: "notHasItem", itemId: "note_hidden_lamp" }
-        ]}
-      ]},
-      text: "✅ 基础线索已集齐！可逃脱，或继续探索隐藏线索。窗帘、挂画、台灯处似乎还有更深的秘密…"
+      condition: all(flagTrue("drawerUnlocked"), flagTrue("paintingRemoved"), flagTrue("boxOpened"), flagFalse("secretDoorOpened")),
+      text: "🚪 书房三个机关都解开了！暗门应该已经可以开启了，去检查暗门吧！",
     },
     {
       priority: 14,
-      condition: { type: "all", conditions: [
-        { type: "flagTrue", flagId: "drawerUnlocked" },
-        { type: "flagTrue", flagId: "paintingRemoved" },
-        { type: "flagTrue", flagId: "boxOpened" },
-        { type: "hasItem", itemId: "complete_key" },
-        { type: "hasItem", itemId: "note_curtain" },
-        { type: "hasItem", itemId: "note_carpet" },
-        { type: "hasItem", itemId: "note_hidden_curtain" },
-        { type: "hasItem", itemId: "note_hidden_painting" },
-        { type: "hasItem", itemId: "note_hidden_lamp" }
-      ]},
-      text: "🌟 全部线索与隐藏暗码已集齐！去门锁处尝试隐藏密码 482 解锁真结局！"
-    }
+      condition: all(flagTrue("secretDoorOpened"), flagFalse("workbenchOpened"), hasItem("screwdriver")),
+      text: "🔧 进入储物间了！用螺丝刀打开工作台，里面应该有有用的工具！",
+    },
+    {
+      priority: 15,
+      condition: all(flagTrue("secretDoorOpened"), flagFalse("workbenchOpened"), notHasItem("screwdriver")),
+      text: "🛠️ 工作台需要螺丝刀才能打开——回书房的抽屉里找找？",
+    },
+    {
+      priority: 16,
+      condition: all(flagTrue("secretDoorOpened"), hasItem("note_shelf"), flagFalse("cabinetOpened")),
+      text: "📁 储物架纸条上有档案柜密码5-2-7，去打开档案柜吧！",
+    },
+    {
+      priority: 17,
+      condition: all(flagTrue("secretDoorOpened"), notHasItem("note_shelf"), flagFalse("cabinetOpened")),
+      text: "📦 先检查储物架，也许有档案柜的密码线索！",
+    },
+    {
+      priority: 18,
+      condition: all(hasItem("wire_cutters"), flagFalse("ventOpened")),
+      text: "✂️ 有钢丝钳了，去剪开通风口的铁丝网吧！",
+    },
+    {
+      priority: 19,
+      condition: all(flagTrue("secretDoorOpened"), hasItem("powered_flashlight"), notHasItem("note_dark"), flagFalse("flashlightActive")),
+      text: "🌑 打开手电筒，去暗角那里照亮看看！",
+    },
+    {
+      priority: 20,
+      condition: all(hasItem("circuit_board"), flagFalse("circuitBoardInserted")),
+      text: "💠 把电路板插入最终大门的控制面板！",
+    },
+    {
+      priority: 21,
+      condition: all(hasItem("complete_key"), hasItem("key_core"), notHasItem("assembled_key")),
+      text: "🏆 完整钥匙和钥匙核心都有了！去物品栏组合成组合钥匙！",
+    },
+    {
+      priority: 22,
+      condition: all(
+        flagTrue("drawerUnlocked"),
+        flagTrue("paintingRemoved"),
+        flagTrue("boxOpened"),
+        hasItem("complete_key"),
+        hasItem("note_curtain"),
+        hasItem("note_carpet"),
+        any(
+          notHasItem("note_hidden_curtain"),
+          notHasItem("note_hidden_painting"),
+          notHasItem("note_hidden_lamp"),
+          notHasItem("note_hidden_shelf"),
+          notHasItem("note_hidden_workbench")
+        )
+      ),
+      text: "✅ 基础线索已集齐！可继续探索隐藏线索。窗帘、挂画、台灯、储物架、工作台处似乎还有更深的秘密…",
+    },
+    {
+      priority: 23,
+      condition: all(
+        flagTrue("drawerUnlocked"),
+        flagTrue("paintingRemoved"),
+        flagTrue("boxOpened"),
+        hasItem("note_hidden_curtain"),
+        hasItem("note_hidden_painting"),
+        hasItem("note_hidden_lamp"),
+        hasItem("note_hidden_shelf"),
+        hasItem("note_hidden_workbench")
+      ),
+      text: "🌟 全部隐藏暗码已集齐！去最终大门尝试隐藏密码 48256 解锁真结局！",
+    },
   ],
   rooms: [
     {
-      id: "room_01",
-      name: "主密室",
+      id: "room_study",
+      name: "书房",
       cells: [
         {
           id: "bookshelf",
@@ -808,101 +989,6 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           },
         },
         {
-          id: "door",
-          label: "门锁",
-          icon: "🔒",
-          initialStageId: "need_drawer",
-          stages: {
-            need_drawer: {
-              id: "need_drawer",
-              description: "一扇铁门上的密码锁，需要完成全部探索才能开启。",
-              clueDetail:
-                "厚重的铁门牢牢锁住了出口。门上有一个四位数字密码锁，锁旁还有一个钥匙孔。锁下方刻着一行小字：「须尽搜此间所有机关，方可开启此门。",
-              nextHint: "密室的秘密藏在各处——先去打开抽屉看看，那里应该能找到你需要的工具和线索。",
-              isLocked: true,
-              lockReason: "未完成探索：打开抽屉",
-              requires: flagTrue("drawerUnlocked"),
-              requiresMet: {
-                description: "一扇铁门上的密码锁，需要完成全部探索才能开启。",
-                clueDetail:
-                  "厚重的铁门牢牢锁住了出口。门上有一个四位数字密码锁，锁旁还有一个钥匙孔。锁下方刻着一行小字：「须尽搜此间所有机关，方可开启此门。",
-                nextHint: "抽屉已打开！接下来去取下挂画——墙上的挂画，看看背后藏着什么！",
-                lockReason: "未完成探索：取下挂画",
-              },
-              moveToStage: "need_painting",
-            },
-            need_painting: {
-              id: "need_painting",
-              description: "一扇铁门上的密码锁，需要完成全部探索才能开启。",
-              clueDetail:
-                "厚重的铁门牢牢锁住了出口。门上有一个四位数字密码锁，锁旁还有一个钥匙孔。锁下方刻着一行小字：「须尽搜此间所有机关，方可开启此门。",
-              nextHint: "挂画被螺丝牢牢固定在墙上，需要螺丝刀才能取下——你应该能找到螺丝刀！",
-              isLocked: true,
-              lockReason: "未完成探索：取下挂画",
-              requires: flagTrue("paintingRemoved"),
-              requiresMet: {
-                description: "一扇铁门上的密码锁，需要完成全部探索才能开启。",
-                clueDetail:
-                  "厚重的铁门牢牢锁住了出口。门上有一个四位数字密码锁，锁旁还有一个钥匙孔。锁下方刻着一行小字：「须尽搜此间所有机关，方可开启此门。",
-                nextHint: "挂画已取下！接下来去撬开箱子——铁皮箱子里藏着重要的东西！",
-                lockReason: "未完成探索：撬开箱子",
-              },
-              moveToStage: "need_box",
-            },
-            need_box: {
-              id: "need_box",
-              description: "一扇铁门上的密码锁，需要完成全部探索才能开启。",
-              clueDetail:
-                "厚重的铁门牢牢锁住了出口。门上有一个四位数字密码锁，锁旁还有一个钥匙孔。锁下方刻着一行小字：「须尽搜此间所有机关，方可开启此门。",
-              nextHint: "箱子被封条封死了，需要螺丝刀才能撬开——你找到螺丝刀了吗？",
-              isLocked: true,
-              lockReason: "未完成探索：撬开箱子",
-              requires: flagTrue("boxOpened"),
-              requiresMet: {
-                description: "一扇铁门上的密码锁，需要完成全部探索才能开启。",
-                lockReason: "未完成探索：收集开锁线索",
-                clueDetail:
-                  "厚重的铁门牢牢锁住了出口。门上有一个四位数字密码锁，锁旁还有一个钥匙孔。锁下方刻着一行小字：「须尽搜此间所有机关，方可开启此门。",
-                nextHint:
-                  "所有主要探索都完成了！现在需要：要么找到地毯上的四位密码暗号，要么集齐钥匙碎片组合完整钥匙并查看窗帘上的使用说明！",
-              },
-              moveToStage: "need_clue",
-            },
-            need_clue: {
-              id: "need_clue",
-              description: "一扇铁门上的密码锁，就差最后的开锁线索了！",
-              clueDetail:
-                "厚重的铁门牢牢锁住了出口。门上有一个四位数字密码锁，锁旁还有一个钥匙孔。主要机关均已开启！现在只差最后的线索了！",
-              nextHint:
-                "两条路任选其一：①找到地毯上的暗号（需要能发光的手电筒)，或②集齐3片钥匙碎片组合成完整钥匙并查看窗帘上的使用说明！",
-              isLocked: true,
-              lockReason: "还差开锁线索",
-              requires: any(
-                hasItem("note_carpet"),
-                all(hasItem("note_curtain"), hasItem("complete_key"))
-              ),
-              requiresMet: {
-                description: "一扇铁门上的密码锁——所有条件全部就绪，可以开锁了！",
-                clueDetail:
-                  "厚重的铁门就在眼前——所有条件都已满足！是时候逃出去了！",
-                nextHint:
-                  "一切就绪！点击门锁选择你的方式开锁——可以用密码开锁或用钥匙开锁！",
-                lockReason: "一切就绪，可以开启！",
-              },
-              moveToStage: "ready",
-            },
-            ready: {
-              id: "ready",
-              description: "一扇铁门——所有条件全部就绪，可以开锁了！",
-              clueDetail:
-                "厚重的铁门就在眼前，所有条件都已满足！是时候逃出去了！点击门锁选择开锁方式！",
-              nextHint: "一切就绪！可以输入密码或使用钥匙！",
-              isLocked: true,
-              lockTargetId: "door",
-            },
-          },
-        },
-        {
           id: "box",
           label: "箱子",
           icon: "📦",
@@ -1012,6 +1098,48 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
             },
           },
         },
+        {
+          id: "secret_door",
+          label: "暗门",
+          icon: "🚪",
+          initialStageId: "locked",
+          stages: {
+            locked: {
+              id: "locked",
+              description: "墙角处有一道不自然的裂缝，似乎隐藏着一扇暗门。",
+              clueDetail:
+                "仔细观察墙角，你发现一道与周围墙壁纹理不同的区域——这分明是一扇被巧妙伪装的暗门！但门上似乎有三道机关，分别与抽屉、挂画和箱子相关。",
+              nextHint:
+                "暗门被三道机关锁住了。需要打开抽屉、取下挂画、撬开箱子——完成这三件事后，暗门就会开启。",
+              isLocked: true,
+              lockReason: "需要完成书房全部探索",
+              requires: all(
+                flagTrue("drawerUnlocked"),
+                flagTrue("paintingRemoved"),
+                flagTrue("boxOpened")
+              ),
+              requiresMet: {
+                description: "暗门上的三道机关都已解除，门缝中透出微弱的光线。",
+                clueDetail:
+                  "三道机关依次解除，暗门发出低沉的机械声，缓缓向内移开。门后是一条狭长的走廊，尽头隐约可见另一间房间。",
+                nextHint: "暗门打开了！走进去探索储物间吧！",
+              },
+              onUnlock: {
+                setFlags: { secretDoorOpened: true },
+                showMessage: "🚪 暗门缓缓开启！门后是储物间！",
+                messageType: "collect",
+              },
+              moveToStage: "opened",
+            },
+            opened: {
+              id: "opened",
+              description: "暗门已经打开，通往储物间的走廊清晰可见。",
+              clueDetail:
+                "暗门完全敞开，露出一条狭长的走廊。走廊尽头是另一间房间——储物间。那里也许藏着逃出密室的关键道具。",
+              nextHint: "暗门已经打开，前往储物间继续探索吧！",
+            },
+          },
+        },
       ],
       locks: [
         {
@@ -1028,139 +1156,485 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
             successMessage: "🗄️ 抽屉打开了！获得了螺丝刀、纸条和电池！",
           },
         },
+      ],
+    },
+    {
+      id: "room_storage",
+      name: "储物间",
+      cells: [
         {
-          id: "door",
-          label: "门锁密码",
-          icon: "🔒",
-          password: "1379",
+          id: "storage_shelf",
+          label: "储物架",
+          icon: "📦",
+          initialStageId: "has_note",
+          stages: {
+            has_note: {
+              id: "has_note",
+              description: "一个堆满杂物的大型储物架，中间夹着一张破旧的纸条。",
+              clueDetail:
+                "储物架上堆满了落灰的杂物——旧报纸、空罐头、废弃零件。但在一层架板的夹缝中，你发现了一张被压住的破旧纸条，字迹虽然潦草但依稀可辨。",
+              nextHint: "纸条上写着档案柜密码是5-2-7！去试试打开档案柜吧。",
+              onInteract: {
+                giveItems: ["note_shelf"],
+                showMessage: "📝 在储物架上发现了一张破旧纸条！",
+                messageType: "collect",
+              },
+              moveToStage: "has_hidden",
+            },
+            has_hidden: {
+              id: "has_hidden",
+              description: "储物架上杂物已被翻动过，最里层似乎还藏着什么。",
+              clueDetail:
+                "你继续往储物架深处摸索，在最里层的木板上方——一个几乎不可能被注意到的位置——贴着一张与木板颜色相近的微型标签。凑近辨认，上面用极小的字体印着一个数字「5」！",
+              nextHint:
+                "获得了隐藏线索！储物架暗码是「5」。继续寻找其他隐藏暗码——五处暗码集齐后可解出隐藏密码。",
+              onInteract: {
+                giveItems: ["note_hidden_shelf"],
+                showMessage: "🔍 你在储物架最深处摸索，仔细检查着每一寸木板……",
+                messageType: "info",
+              },
+              collectMessage: "📜 获得隐藏线索！储物架暗码是「5」！",
+              moveToStage: "empty",
+            },
+            empty: {
+              id: "empty",
+              description: "储物架上的东西已被你彻底翻遍。",
+              clueDetail:
+                "储物架上堆满了落灰的杂物，但所有有价值的东西都已经被你取走了。最里层的隐藏暗码也已经被你发现。",
+              nextHint: "储物架已经彻底搜索完毕。",
+              alreadyChecked: true,
+            },
+          },
+        },
+        {
+          id: "workbench",
+          label: "工作台",
+          icon: "🛠️",
+          initialStageId: "locked",
+          stages: {
+            locked: {
+              id: "locked",
+              description: "一张重型工作台，台面被螺丝牢牢锁住，无法打开。",
+              clueDetail:
+                "工作台是金属材质的，台面上有多个工具槽和零件位，但台面被四颗大号螺丝锁死了，徒手根本打不开。需要一把合适的螺丝刀才行。",
+              nextHint: "工作台被螺丝锁住了。你需要一把螺丝刀——也许书房的抽屉里有？",
+              isLocked: true,
+              lockReason: "需要螺丝刀",
+              requires: hasItem("screwdriver"),
+              requiresMet: {
+                description: "一张重型工作台，台面用螺丝锁着，可以用螺丝刀打开。",
+                clueDetail:
+                  "工作台是金属材质的，台面上有多个工具槽和零件位。四颗大号螺丝——你的螺丝刀刚好能拧开！",
+                nextHint: "用螺丝刀拧开工作台的螺丝，看看里面藏着什么！",
+              },
+              onUnlock: {
+                setFlags: { workbenchOpened: true },
+                showMessage: "🔧 用螺丝刀拧开了工作台的螺丝！",
+                messageType: "collect",
+              },
+              moveToStage: "opened",
+            },
+            opened: {
+              id: "opened",
+              description: "工作台已经打开，工具槽里整齐地摆放着几样东西。",
+              clueDetail:
+                "工作台台面被掀起，露出内部的工具槽。里面整齐地摆放着一把钢丝钳、一块电路板和一张便签纸——都是重要的道具。",
+              nextHint:
+                "获得了钢丝钳、电路板和工作台记录！钢丝钳可以剪铁丝，电路板是最终大门的组件。记得查看便签上的提示！",
+              onInteract: {
+                giveItems: ["wire_cutters", "circuit_board", "note_workbench"],
+                showMessage: "🛠️ 在工作台中发现了钢丝钳、电路板和便签纸！",
+                messageType: "collect",
+              },
+              moveToStage: "has_hidden",
+            },
+            has_hidden: {
+              id: "has_hidden",
+              description: "工作台底部似乎还有些未被发现的细节。",
+              clueDetail:
+                "你蹲下身子查看工作台底部，在一块松动的木板后面，发现了被人用烙铁刻下的痕迹。凑近辨认，是一个数字「6」！",
+              nextHint:
+                "获得了隐藏线索！工作台暗码是「6」。窗帘「4」、挂画「8」、台灯「2」、储物架「5」、工作台「6」——五处暗码集齐，隐藏密码就是 4-8-2-5-6！",
+              onInteract: {
+                giveItems: ["note_hidden_workbench"],
+                showMessage: "🔍 你趴下身子查看工作台底部，仔细检查着每一块木板……",
+                messageType: "info",
+              },
+              collectMessage: "📜 获得隐藏线索！工作台暗码是「6」！",
+              moveToStage: "empty",
+            },
+            empty: {
+              id: "empty",
+              description: "工作台已被你彻底检查过了。",
+              clueDetail:
+                "工作台台面敞开着，工具槽里的东西都已被你取走，底部的隐藏暗码也已被你发现。这里没有更多东西了。",
+              nextHint: "工作台区域已彻底搜索完毕。",
+              alreadyChecked: true,
+            },
+          },
+        },
+        {
+          id: "filing_cabinet",
+          label: "档案柜",
+          icon: "📁",
+          initialStageId: "locked",
+          stages: {
+            locked: {
+              id: "locked",
+              description: "一只灰色铁皮档案柜，柜门上装着三位数字密码锁。",
+              clueDetail:
+                "铁皮档案柜虽然有些锈迹，但结构依然坚固。柜门正面嵌着一个三位数字密码锁，锁面上有明显的使用痕迹。柜子里应该存放着重要文件。",
+              nextHint: "档案柜被三位密码锁锁住了。也许储物间某个地方藏着密码线索——储物架上的纸条？",
+              isLocked: true,
+              lockReason: "三位密码锁",
+              lockTargetId: "filing_cabinet",
+            },
+            empty: {
+              id: "empty",
+              description: "档案柜门敞开着，里面的文件已被你取走。",
+              clueDetail: "铁皮档案柜的门敞开着，你取走了里面的所有重要文件。柜子深处空空如也。",
+              nextHint: "档案柜已经被彻底搜过了。",
+              alreadyChecked: true,
+            },
+          },
+        },
+        {
+          id: "vent",
+          label: "通风口",
+          icon: "🔲",
+          initialStageId: "sealed",
+          stages: {
+            sealed: {
+              id: "sealed",
+              description: "墙面高处的通风口被铁丝网牢牢封住，徒手无法打开。",
+              clueDetail:
+                "通风口位于墙面高处，铁丝网被牢牢钉在四周的框架上，网格密实。徒手根本撕不开——需要一把能剪断铁丝的工具。",
+              nextHint: "通风口被封死了，需要能剪铁丝的工具。工作台里也许有你需要的东西……",
+              isLocked: true,
+              lockReason: "需要钢丝钳",
+              requires: hasItem("wire_cutters"),
+              requiresMet: {
+                description: "通风口被铁丝网封住，用钢丝钳可以剪开。",
+                clueDetail:
+                  "通风口位于墙面高处，铁丝网被牢牢钉在四周的框架上——不过你的钢丝钳刃口锋利，正好能派上用场！",
+                nextHint: "用钢丝钳剪开通风口的铁丝网，看看里面藏着什么！",
+              },
+              onUnlock: {
+                setFlags: { ventOpened: true },
+                showMessage: "✂️ 用钢丝钳剪开了铁丝网！",
+                messageType: "collect",
+              },
+              moveToStage: "opened",
+            },
+            opened: {
+              id: "opened",
+              description: "通风口的铁丝网已被剪开，里面隐约可见金属光泽。",
+              clueDetail:
+                "铁丝网被剪开后，通风管道内壁干净整洁。在管道深处，你发现了一块散发着淡蓝色光泽的金属物体——似乎是某种精密组件。",
+              nextHint: "获得了钥匙核心！它似乎能和完整钥匙组合——去物品栏试试组合功能！",
+              onInteract: {
+                giveItems: ["key_core"],
+                showMessage: "💎 在通风管道里发现了钥匙核心！",
+                messageType: "collect",
+              },
+              moveToStage: "empty",
+            },
+            empty: {
+              id: "empty",
+              description: "通风口的铁丝网已被剪开，管道里空了。",
+              clueDetail: "通风口的铁丝网已被剪开，管道内部空空如也——那块钥匙核心已经被你取走了。",
+              nextHint: "通风口已经彻底搜过了。",
+              alreadyChecked: true,
+            },
+          },
+        },
+        {
+          id: "dark_corner",
+          label: "暗角",
+          icon: "🌑",
+          initialStageId: "dark",
+          stages: {
+            dark: {
+              id: "dark",
+              description: "储物间最深处的角落，一片漆黑，什么也看不见。",
+              clueDetail:
+                "你朝储物间最深处的角落走去，但那里漆黑一片。你的眼睛逐渐适应了黑暗，隐约能看到角落的轮廓，但完全看不清任何细节。需要光源才能探索这里。",
+              nextHint: "暗角太暗了，需要能发光的工具。你在书房找到的手电筒可以派上用场——但需要装上电池并打开。",
+              isLocked: true,
+              lockReason: "太暗了，需要光源",
+              requires: hasItem("powered_flashlight"),
+              requiresMet: {
+                description: "暗角漆黑一片，你有手电筒但似乎没打开。",
+                clueDetail:
+                  "储物间最深处的角落漆黑一片。你有装好电池的手电筒但还没打开——先打开手电筒再看看！",
+                nextHint: "打开手电筒，去暗角那里照亮看看！",
+                lockReason: "需要打开手电筒",
+              },
+              moveToStage: "need_turn_on",
+            },
+            need_turn_on: {
+              id: "need_turn_on",
+              description: "储物间最深处的角落，一片漆黑，什么也看不见。",
+              clueDetail:
+                "储物间最深处的角落漆黑一片。你有装好电池的手电筒但还没打开——先打开手电筒再看看！",
+              nextHint: "打开手电筒，去暗角那里照亮看看！",
+              isLocked: true,
+              lockReason: "需要打开手电筒",
+              requires: flagTrue("flashlightActive"),
+              requiresMet: {
+                description: "储物间暗角在手电筒光下逐渐清晰，角落里似乎藏着什么东西。",
+                clueDetail:
+                  "储物间最深处的角落，手电筒的强光划破黑暗。在光线照射下，角落里隐约可见一个旧信封——似乎藏着什么重要的留言。",
+                nextHint: "暗角被照亮了！去检查角落里的东西吧！",
+              },
+              moveToStage: "lit",
+            },
+            lit: {
+              id: "lit",
+              description: "储物间暗角在手电筒光下逐渐清晰，角落里似乎藏着什么东西。",
+              clueDetail:
+                "储物间最深处的角落，手电筒的强光划破黑暗。在光线照射下，角落里隐约可见一个旧信封——似乎藏着什么重要的留言。",
+              nextHint: "获得了一封信！里面提到了最终大门的关键信息和通风口里藏着的钥匙组件。",
+              onInteract: {
+                giveItems: ["note_dark"],
+                showMessage: "📝 在暗角里发现了一封旧信！",
+                messageType: "collect",
+              },
+              moveToStage: "empty",
+            },
+            empty: {
+              id: "empty",
+              description: "储物间暗角已被你彻底检查过了。",
+              clueDetail: "储物间最深处的角落，旧信封已经被你取走了。这里没有更多东西了。",
+              nextHint: "暗角已经彻底搜过了。",
+              alreadyChecked: true,
+            },
+          },
+        },
+        {
+          id: "final_door",
+          label: "最终大门",
+          icon: "🚪",
+          initialStageId: "need_circuit",
+          stages: {
+            need_circuit: {
+              id: "need_circuit",
+              description: "一扇厚重的铁门，门旁有一个空的控制面板，需要插入电路板。",
+              clueDetail:
+                "厚重的铁门牢牢封锁着出口。门旁的控制面板指示灯全灭，面板上有一个空的插槽——需要插入电路板才能激活控制系统。",
+              nextHint: "最终大门的控制面板需要电路板才能启动。工作台里应该有电路板！",
+              isLocked: true,
+              lockReason: "需要电路板",
+              requires: hasItem("circuit_board"),
+              requiresMet: {
+                description: "一扇厚重的铁门，控制面板已可插入电路板。",
+                clueDetail:
+                  "厚重的铁门牢牢封锁着出口。你手里有电路板，刚好可以插入控制面板的插槽。但仅靠电路板还不够——还需要密码或者更强大的钥匙才能开启大门。",
+                nextHint: "插入电路板激活控制面板！然后需要找到密码或组合钥匙来开锁。",
+              },
+              onUnlock: {
+                setFlags: { circuitBoardInserted: true },
+                showMessage: "💠 电路板已插入控制面板！",
+                messageType: "collect",
+              },
+              moveToStage: "need_method",
+            },
+            need_method: {
+              id: "need_method",
+              description: "一扇厚重的铁门，控制面板已激活，但还需要开锁方式。",
+              clueDetail:
+                "厚重的铁门牢牢封锁着出口。控制面板已经激活，指示灯闪烁着。但你还需要一种开锁方式——要么找到密码，要么用更强大的钥匙。",
+              nextHint: "两条路任选其一：从档案柜的机密文件中找到四位密码，或用组合钥匙配合窗帘使用说明开锁。",
+              isLocked: true,
+              lockReason: "还需要开锁方式",
+              requires: any(
+                hasItem("note_cabinet"),
+                all(hasItem("assembled_key"), hasItem("note_curtain"))
+              ),
+              requiresMet: {
+                description: "一扇厚重的铁门——控制面板已激活，开锁条件全部就绪！",
+                clueDetail:
+                  "厚重的铁门就在眼前。控制面板已激活，你已具备开锁条件！点击门锁选择你的方式开锁——输入密码或使用组合钥匙！",
+                nextHint: "一切就绪！点击门锁选择你的方式开锁！",
+                lockReason: "开锁条件已满足",
+              },
+              moveToStage: "ready",
+            },
+            ready: {
+              id: "ready",
+              description: "一扇厚重的铁门——所有条件全部就绪，可以开锁了！",
+              clueDetail:
+                "厚重的铁门就在眼前，所有条件都已满足！是时候逃出去了！点击门锁选择开锁方式！",
+              nextHint: "一切就绪！可以输入密码或使用组合钥匙！",
+              isLocked: true,
+              lockTargetId: "final_door",
+            },
+          },
+        },
+      ],
+      locks: [
+        {
+          id: "filing_cabinet",
+          label: "档案柜密码锁",
+          icon: "📁",
+          password: "527",
+          digits: 3,
+          errorHint: "密码错误，请重新输入。提示：储物架纸条——5-2-7！",
+          onSuccess: {
+            giveItems: ["oil_can", "note_cabinet"],
+            setFlags: { cabinetOpened: true },
+            setCellStage: { cellId: "filing_cabinet", stageId: "empty" },
+            successMessage: "📁 档案柜打开了！获得了润滑油和机密文件！",
+          },
+        },
+        {
+          id: "final_door",
+          label: "最终大门密码",
+          icon: "🚪",
+          password: "8523",
           digits: 4,
           beforeSubmit: all(
             flagTrue("drawerUnlocked"),
-            flagTrue("boxOpened"),
             flagTrue("paintingRemoved"),
-            hasItem("note_carpet")
+            flagTrue("boxOpened"),
+            flagTrue("circuitBoardInserted"),
+            hasItem("note_cabinet")
           ),
-          errorHint: "密码错误，请重新输入。地毯荧光暗号是1-3-7-9！",
+          beforeSubmitMessage: "必须先完成全部探索并插入电路板后才能开启最终大门！",
+          errorHint: "密码错误，请重新输入。提示：档案柜文件——8-5-2-3！",
           onSuccess: {
             triggerEnding: "normal_password",
-            successMessage: "🔓 密码正确！门锁应声而开！",
+            successMessage: "🔓 密码正确！最终大门应声而开！",
           },
           modalHints: [
             {
-              condition: { type: "any", conditions: [
-                { type: "flagFalse", flagId: "drawerUnlocked" },
-                { type: "flagFalse", flagId: "paintingRemoved" },
-                { type: "flagFalse", flagId: "boxOpened" }
-              ]},
-              text: "必须先完成：打开抽屉、取下挂画、撬开箱子，完整探索后才能开启门锁！",
-              type: "warning"
+              condition: any(
+                flagFalse("drawerUnlocked"),
+                flagFalse("paintingRemoved"),
+                flagFalse("boxOpened"),
+                flagFalse("circuitBoardInserted")
+              ),
+              text: "必须先完成：打开抽屉、取下挂画、撬开箱子、插入电路板，完整探索后才能开启最终大门！",
+              type: "warning",
             },
             {
-              condition: { type: "all", conditions: [
-                { type: "flagTrue", flagId: "drawerUnlocked" },
-                { type: "flagTrue", flagId: "paintingRemoved" },
-                { type: "flagTrue", flagId: "boxOpened" },
-                { type: "notHasItem", itemId: "note_carpet" }
-              ]},
-              text: "你还不知道密码。需要先从地毯荧光暗号中找到密码线索。",
-              type: "warning"
+              condition: all(
+                flagTrue("drawerUnlocked"),
+                flagTrue("paintingRemoved"),
+                flagTrue("boxOpened"),
+                flagTrue("circuitBoardInserted"),
+                notHasItem("note_cabinet")
+              ),
+              text: "你还不知道密码。需要先从档案柜的机密文件中找到密码线索。",
+              type: "warning",
             },
             {
-              condition: { type: "all", conditions: [
-                { type: "flagTrue", flagId: "drawerUnlocked" },
-                { type: "flagTrue", flagId: "paintingRemoved" },
-                { type: "flagTrue", flagId: "boxOpened" },
-                { type: "hasItem", itemId: "note_carpet" },
-                { type: "any", conditions: [
-                  { type: "hasItem", itemId: "note_hidden_curtain" },
-                  { type: "hasItem", itemId: "note_hidden_painting" },
-                  { type: "hasItem", itemId: "note_hidden_lamp" }
-                ]},
-                { type: "any", conditions: [
-                  { type: "notHasItem", itemId: "note_hidden_curtain" },
-                  { type: "notHasItem", itemId: "note_hidden_painting" },
-                  { type: "notHasItem", itemId: "note_hidden_lamp" }
-                ]}
-              ]},
-              text: "已发现 1/3 至 2/3 个隐藏线索，集齐后可尝试隐藏密码解锁真结局！",
-              type: "partial"
-            }
+              condition: all(
+                flagTrue("drawerUnlocked"),
+                flagTrue("paintingRemoved"),
+                flagTrue("boxOpened"),
+                flagTrue("circuitBoardInserted"),
+                hasItem("note_cabinet"),
+                any(
+                  hasItem("note_hidden_curtain"),
+                  hasItem("note_hidden_painting"),
+                  hasItem("note_hidden_lamp"),
+                  hasItem("note_hidden_shelf"),
+                  hasItem("note_hidden_workbench")
+                ),
+                any(
+                  notHasItem("note_hidden_curtain"),
+                  notHasItem("note_hidden_painting"),
+                  notHasItem("note_hidden_lamp"),
+                  notHasItem("note_hidden_shelf"),
+                  notHasItem("note_hidden_workbench")
+                )
+              ),
+              text: "已发现部分隐藏线索，集齐全部五处暗码后可尝试隐藏密码解锁真结局！",
+              type: "partial",
+            },
           ],
           keyUnlock: {
             steps: [
-              { condition: flagTrue("drawerUnlocked"), reason: "需要先打开抽屉", sidebarLabel: "先打开抽屉" },
-              { condition: flagTrue("boxOpened"), reason: "需要先撬开箱子", sidebarLabel: "先撬开箱子" },
-              { condition: flagTrue("paintingRemoved"), reason: "需要先取下挂画", sidebarLabel: "先取下挂画" },
-              { condition: hasItem("complete_key"), reason: "需要先集齐3片碎片并组合成完整钥匙", sidebarLabel: "需要完整钥匙" },
-              { condition: flagTrue("curtainChecked"), reason: "需要先查看窗帘", sidebarLabel: "先查看窗帘" },
-              { condition: hasItem("note_curtain"), reason: "需要获得钥匙使用说明纸条", sidebarLabel: "需要钥匙说明" }
+              { condition: flagTrue("circuitBoardInserted"), reason: "需要先插入电路板", sidebarLabel: "先插入电路板" },
+              { condition: hasItem("assembled_key"), reason: "需要先组合成组合钥匙", sidebarLabel: "需要组合钥匙" },
+              { condition: hasItem("note_curtain"), reason: "需要获得钥匙使用说明", sidebarLabel: "需要钥匙说明" },
             ],
-            buttonText: "🔑 使用完整钥匙开锁",
-            keyItemId: "complete_key",
+            buttonText: "🔑 使用组合钥匙开锁",
+            keyItemId: "assembled_key",
             requiredNoteId: "note_curtain",
             defaultButtonText: "🔑 用钥匙开锁",
             unlockEffects: {
               triggerEnding: "normal_key",
-              showMessage: "🔑 你按照窗帘背面刻下的指示——「向左三圈，再向右一圈」——小心翼翼地转动钥匙……",
-              messageType: "collect"
-            }
+              showMessage: "🔑 你按照窗帘背面刻下的指示——「向左三圈，再向右一圈」——小心翼翼地转动组合钥匙……",
+              messageType: "collect",
+            },
           },
           hiddenPassword: {
-            lockId: "hidden",
-            digits: 3,
-            password: "482",
+            lockId: "final_hidden",
+            digits: 5,
+            password: "48256",
             showCondition: all(
               flagTrue("drawerUnlocked"),
-              flagTrue("boxOpened"),
               flagTrue("paintingRemoved"),
+              flagTrue("boxOpened"),
+              flagTrue("circuitBoardInserted"),
               hasItem("note_hidden_curtain"),
               hasItem("note_hidden_painting"),
-              hasItem("note_hidden_lamp")
+              hasItem("note_hidden_lamp"),
+              hasItem("note_hidden_shelf"),
+              hasItem("note_hidden_workbench")
             ),
             buttonText: "✨ 尝试隐藏密码（真结局）",
             hiddenClueItemIds: [
               "note_hidden_curtain",
               "note_hidden_painting",
-              "note_hidden_lamp"
+              "note_hidden_lamp",
+              "note_hidden_shelf",
+              "note_hidden_workbench",
             ],
             partialHintCondition: all(
               flagTrue("drawerUnlocked"),
-              flagTrue("boxOpened"),
               flagTrue("paintingRemoved"),
-              hasItem("note_carpet"),
+              flagTrue("boxOpened"),
+              flagTrue("circuitBoardInserted"),
               any(
                 hasItem("note_hidden_curtain"),
                 hasItem("note_hidden_painting"),
-                hasItem("note_hidden_lamp")
+                hasItem("note_hidden_lamp"),
+                hasItem("note_hidden_shelf"),
+                hasItem("note_hidden_workbench")
               ),
               any(
                 notHasItem("note_hidden_curtain"),
                 notHasItem("note_hidden_painting"),
-                notHasItem("note_hidden_lamp")
+                notHasItem("note_hidden_lamp"),
+                notHasItem("note_hidden_shelf"),
+                notHasItem("note_hidden_workbench")
               )
             ),
             partialHintText: "💡 已发现 {found}/{total} 个隐藏线索，集齐后可尝试隐藏密码解锁真结局！",
             onSuccess: {
               triggerEnding: "true_ending",
               successMessage: "🌟 隐藏密码正确！墙面缓缓移开，一条暗道出现在你眼前……",
-            }
-          }
+            },
+          },
         },
         {
-          id: "hidden",
+          id: "final_hidden",
           label: "隐藏密码锁",
           icon: "🗝️",
-          password: "482",
-          digits: 3,
-          errorHint: "隐藏密码错误。窗帘「4」· 挂画「8」· 台灯「2」，按顺序输入！",
+          password: "48256",
+          digits: 5,
+          errorHint: "隐藏密码错误。窗帘「4」·挂画「8」·台灯「2」·储物架「5」·工作台「6」，按顺序输入！",
           onSuccess: {
             triggerEnding: "true_ending",
             successMessage: "🌟 隐藏密码正确！墙面缓缓移开，一条暗道出现在你眼前……",
           },
           descriptionLines: [
-            "📜 你已集齐三处隐藏暗码：",
-            "窗帘「4」· 挂画「8」· 台灯「2」",
-            "按此顺序输入三位数字，揭开真结局的秘密……"
+            "📜 你已集齐五处隐藏暗码：",
+            "窗帘「4」·挂画「8」·台灯「2」·储物架「5」·工作台「6」",
+            "按此顺序输入五位数字，揭开真结局的秘密……",
           ],
         },
       ],

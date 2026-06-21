@@ -237,6 +237,7 @@ export interface SaveData {
   gameStartTime: number;
   combineCount: number;
   hintUsage: Record<string, number>;
+  currentRoomId: string;
 }
 
 export interface EngineState {
@@ -251,6 +252,7 @@ export interface EngineState {
   hintUsage: Record<string, number>;
   lastHint: string;
   gameStartTime: number;
+  currentRoomId: string;
 }
 
 export interface EngineActions {
@@ -299,6 +301,7 @@ export interface EngineActions {
     errorMessage?: string;
     effects?: InteractionEffect;
   };
+  switchRoom: (roomId: string) => void;
 }
 
 export type PuzzleEngine = EngineState & EngineActions;
