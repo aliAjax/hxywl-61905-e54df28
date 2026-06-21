@@ -808,6 +808,28 @@ button {
   background: linear-gradient(135deg, #06b6d4, #0e7490) !important;
 }
 
+.combine-confirm-btn.combine-confirm-success {
+  background: linear-gradient(135deg, #22d3ee, #0891b2);
+  color: #0f172a;
+  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.4) inset;
+}
+
+.combine-confirm-btn.combine-confirm-success:hover:not(:disabled) {
+  background: linear-gradient(135deg, #06b6d4, #0e7490) !important;
+  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.6) inset;
+}
+
+.combine-confirm-btn.combine-confirm-fail {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #111827;
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.4) inset;
+}
+
+.combine-confirm-btn.combine-confirm-fail:hover:not(:disabled) {
+  background: linear-gradient(135deg, #d97706, #b45309) !important;
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.6) inset;
+}
+
 .combine-cancel-btn {
   background: rgba(148, 163, 184, 0.15);
   color: #cbd5e1;

@@ -893,14 +893,24 @@ function App() {
             ) : (
               <>
                 <button
-                  className="action-btn combine-confirm-btn"
-                  disabled={!canCombine}
-                  onClick={canCombine ? handleCombine : undefined}
+                  className={`action-btn combine-confirm-btn ${
+                    canCombine ? "combine-confirm-success" : "combine-confirm-fail"
+                  }`}
+                  onClick={handleCombine}
+                  disabled={selectedForCombine.length === 0}
                   title={
-                    canCombine ? "确认组合选中的道具" : "选中的道具无法组合，请尝试其他搭配"
+                    canCombine
+                      ? "确认组合选中的道具"
+                      : selectedForCombine.length === 0
+                      ? "请先选择要组合的道具"
+                      : "点击查看当前选择的组合提示"
                   }
                 >
-                  {canCombine ? "✨ 确认组合" : "无法组合"}
+                  {canCombine
+                    ? "✨ 确认组合"
+                    : selectedForCombine.length === 0
+                    ? "请选择道具"
+                    : "❓ 尝试组合"}
                 </button>
                 <button
                   className="action-btn combine-cancel-btn"
