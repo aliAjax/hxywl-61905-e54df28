@@ -274,6 +274,16 @@ function App() {
 
   const canCombine = engine.findMatchingRecipe(selectedForCombine) !== null;
 
+  const combinableItemIds = useMemo(() => {
+    if (!combineMode) return new Set<string>();
+    return engine.getCombinableItems();
+  }, [combineMode, engine]);
+
+  const combineCandidateIds = useMemo(() => {
+    if (!combineMode) return new Set<string>();
+    return engine.getCombineCandidates(selectedForCombine);
+  }, [combineMode, selectedForCombine, engine]);
+
   const toggleCombineSelect = useCallback(
     (itemId: string) => {
       if (selectedForCombine.includes(itemId)) {
@@ -288,7 +298,8 @@ function App() {
   const handleCombine = useCallback(() => {
     const recipe = engine.findMatchingRecipe(selectedForCombine);
     if (!recipe) {
-      showMsg("这几样东西似乎没法组合在一起。", "error");
+      const msg = engine.getCombineFailureMessage(selectedForCombine);
+      showMsg(msg, "error");
       return;
     }
     engine.performCombine(recipe);
@@ -831,12 +842,17 @@ function App() {
                 const isActiveFlashlight =
                   itemId === "powered_flashlight" && engine.flashlightActive;
                 const isSelected = selectedForCombine.includes(itemId);
+                const isCandidate = combineCandidateIds.has(itemId);
+                const isCombinable =
+                  selectedForCombine.length === 0 && combinableItemIds.has(itemId);
                 return (
                   <button
                     className={`inventory-item ${isNew ? "item-pop" : ""} ${
                       isActiveFlashlight ? "item-active" : ""
                     } ${isSelected ? "item-selected" : ""} ${
                       combineMode ? "item-combine-mode" : ""
+                    } ${isCombinable ? "item-combinable" : ""} ${
+                      isCandidate ? "item-combine-candidate" : ""
                     }`}
                     key={itemId}
                     onClick={() => handleItemClick(itemId)}

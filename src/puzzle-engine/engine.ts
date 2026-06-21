@@ -444,6 +444,105 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
     [config.combineRecipes, state.inventory]
   );
 
+  const getCombinableItems = useCallback((): Set<string> => {
+    const result = new Set<string>();
+    for (const recipe of config.combineRecipes) {
+      if (state.inventory.includes(recipe.output)) continue;
+      const haveAny = recipe.inputs.some((id) => state.inventory.includes(id));
+      if (!haveAny) continue;
+      for (const id of recipe.inputs) {
+        if (state.inventory.includes(id)) {
+          result.add(id);
+        }
+      }
+    }
+    return result;
+  }, [config.combineRecipes, state.inventory]);
+
+  const getCombineCandidates = useCallback(
+    (selectedIds: string[]): Set<string> => {
+      const result = new Set<string>();
+      if (selectedIds.length === 0) return getCombinableItems();
+
+      for (const recipe of config.combineRecipes) {
+        if (state.inventory.includes(recipe.output)) continue;
+
+        const allSelectedInRecipe = selectedIds.every((id) =>
+          recipe.inputs.includes(id)
+        );
+        if (!allSelectedInRecipe) continue;
+
+        const needed = recipe.inputs.filter((id) => !selectedIds.includes(id));
+        const haveAllNeeded = needed.every((id) => state.inventory.includes(id));
+        if (!haveAllNeeded) continue;
+
+        for (const id of recipe.inputs) {
+          if (state.inventory.includes(id) && !selectedIds.includes(id)) {
+            result.add(id);
+          }
+        }
+      }
+      return result;
+    },
+    [config.combineRecipes, state.inventory, getCombinableItems]
+  );
+
+  const getCombineFailureMessage = useCallback(
+    (selectedIds: string[]): string => {
+      if (selectedIds.length === 0) return "请先选择要组合的道具。";
+      if (selectedIds.length === 1) {
+        const item = config.items[selectedIds[0]];
+        const name = item?.name ?? "这个道具";
+        const hasPartial = config.combineRecipes.some(
+          (r) =>
+            !state.inventory.includes(r.output) &&
+            r.inputs.includes(selectedIds[0]) &&
+            r.inputs.some((id) => id !== selectedIds[0] && state.inventory.includes(id))
+        );
+        if (hasPartial) {
+          return `${name}似乎能和其他东西组合，但还需要选择更多道具。`;
+        }
+        const couldCombine = config.combineRecipes.some(
+          (r) =>
+            !state.inventory.includes(r.output) &&
+            r.inputs.includes(selectedIds[0])
+        );
+        if (couldCombine) {
+          return `${name}看起来可以组合，但还缺少其他关键道具，继续探索吧。`;
+        }
+        return `${name}暂时找不到可以组合的搭配。`;
+      }
+
+      const hasPartialMatch = config.combineRecipes.some((r) => {
+        if (state.inventory.includes(r.output)) return false;
+        const matchCount = selectedIds.filter((id) => r.inputs.includes(id)).length;
+        return matchCount >= 2 && matchCount < r.inputs.length;
+      });
+
+      const selectedNames = selectedIds
+        .map((id) => config.items[id]?.name)
+        .filter(Boolean) as string[];
+      const namesStr = selectedNames.join("、");
+
+      if (hasPartialMatch) {
+        return `${namesStr}之间似乎能产生联系，但组合的条件还不对——也许数量不够，或者还差了什么？`;
+      }
+
+      const anyPairInRecipe = config.combineRecipes.some((r) => {
+        if (state.inventory.includes(r.output)) return false;
+        const overlap = selectedIds.filter((id) => r.inputs.includes(id));
+        return overlap.length >= 2;
+      });
+
+      if (anyPairInRecipe) {
+        return `选的这些道具里有能配对的，但放在一起的方式不对——试试不同的组合？`;
+      }
+
+      return `${namesStr}似乎完全搭不上边，换其他道具试试吧。`;
+    },
+    [config.combineRecipes, config.items, state.inventory]
+  );
+
   const performCombine = useCallback(
     (recipe: { inputs: string[]; output: string; consumesInputs: boolean; successMessage: string }) => {
       setState((prev) => {
@@ -904,6 +1003,9 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
     interactCell,
     findMatchingRecipe,
     performCombine,
+    getCombinableItems,
+    getCombineCandidates,
+    getCombineFailureMessage,
     submitLock,
     canUseKeyOnLock,
     useKeyOnLock,

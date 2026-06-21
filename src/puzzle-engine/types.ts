@@ -309,6 +309,9 @@ export interface EngineActions {
   };
   findMatchingRecipe: (selectedIds: string[]) => CombineRecipe | null;
   performCombine: (recipe: CombineRecipe) => void;
+  getCombinableItems: () => Set<string>;
+  getCombineCandidates: (selectedIds: string[]) => Set<string>;
+  getCombineFailureMessage: (selectedIds: string[]) => string;
   submitLock: (lockId: string, digits: string[]) => {
     success: boolean;
     errorMessage?: string;
