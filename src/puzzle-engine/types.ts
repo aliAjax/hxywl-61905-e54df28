@@ -65,6 +65,7 @@ export interface CellDef {
   icon: string;
   initialStageId: string;
   stages: Record<string, InteractionStage>;
+  gridArea?: string;
 }
 
 export interface LockResult {
@@ -167,6 +168,10 @@ export interface RoomDef {
   name: string;
   cells: CellDef[];
   locks: LockDef[];
+  gridTemplateColumns?: string;
+  gridTemplateRows?: string;
+  gridTemplateAreas?: string[];
+  boardClassName?: string;
 }
 
 export interface CategoryConfig {

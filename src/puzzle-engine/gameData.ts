@@ -950,11 +950,20 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
     {
       id: "room_study",
       name: "书房",
+      gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+      gridTemplateRows: "repeat(3, minmax(0, 1fr))",
+      gridTemplateAreas: [
+        '"curtain painting bookshelf"',
+        '"vase lamp drawer"',
+        '"box carpet secret_door"',
+      ],
+      boardClassName: "board-study",
       cells: [
         {
           id: "bookshelf",
           label: "书架",
           icon: "📚",
+          gridArea: "bookshelf",
           initialStageId: "has_note",
           stages: {
             has_note: {
@@ -985,6 +994,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           id: "vase",
           label: "花瓶",
           icon: "🏺",
+          gridArea: "vase",
           initialStageId: "has_frag",
           stages: {
             has_frag: {
@@ -1015,6 +1025,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           id: "drawer",
           label: "抽屉",
           icon: "🗄️",
+          gridArea: "drawer",
           initialStageId: "locked",
           stages: {
             locked: {
@@ -1042,6 +1053,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           id: "painting",
           label: "挂画",
           icon: "🖼️",
+          gridArea: "painting",
           initialStageId: "on_wall",
           stages: {
             on_wall: {
@@ -1110,6 +1122,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           id: "carpet",
           label: "地毯",
           icon: "🧶",
+          gridArea: "carpet",
           initialStageId: "need_flashlight",
           stages: {
             need_flashlight: {
@@ -1195,6 +1208,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           id: "lamp",
           label: "台灯",
           icon: "💡",
+          gridArea: "lamp",
           initialStageId: "has_flashlight",
           stages: {
             has_flashlight: {
@@ -1240,6 +1254,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           id: "box",
           label: "箱子",
           icon: "📦",
+          gridArea: "box",
           initialStageId: "sealed",
           stages: {
             sealed: {
@@ -1293,6 +1308,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           id: "curtain",
           label: "窗帘",
           icon: "🪟",
+          gridArea: "curtain",
           initialStageId: "closed",
           stages: {
             closed: {
@@ -1350,6 +1366,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           id: "secret_door",
           label: "暗门",
           icon: "🚪",
+          gridArea: "secret_door",
           initialStageId: "locked",
           stages: {
             locked: {
@@ -1410,11 +1427,20 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
     {
       id: "room_storage",
       name: "储物间",
+      gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+      gridTemplateRows: "repeat(3, minmax(0, 1fr))",
+      gridTemplateAreas: [
+        '"shelf workbench vent"',
+        '"cabinet dark door"',
+        '"empty1 empty2 door"',
+      ],
+      boardClassName: "board-storage",
       cells: [
         {
           id: "storage_shelf",
           label: "储物架",
           icon: "📦",
+          gridArea: "shelf",
           initialStageId: "has_note",
           stages: {
             has_note: {
@@ -1459,6 +1485,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           id: "workbench",
           label: "工作台",
           icon: "🛠️",
+          gridArea: "workbench",
           initialStageId: "locked",
           stages: {
             locked: {
@@ -1526,6 +1553,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           id: "filing_cabinet",
           label: "档案柜",
           icon: "📁",
+          gridArea: "cabinet",
           initialStageId: "locked",
           stages: {
             locked: {
@@ -1551,6 +1579,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           id: "vent",
           label: "通风口",
           icon: "🔲",
+          gridArea: "vent",
           initialStageId: "sealed",
           stages: {
             sealed: {
@@ -1601,6 +1630,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           id: "dark_corner",
           label: "暗角",
           icon: "🌑",
+          gridArea: "dark",
           initialStageId: "dark",
           stages: {
             dark: {
@@ -1664,6 +1694,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
           id: "final_door",
           label: "最终大门",
           icon: "🚪",
+          gridArea: "door",
           initialStageId: "need_circuit",
           stages: {
             need_circuit: {

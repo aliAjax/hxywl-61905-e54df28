@@ -1071,14 +1071,23 @@ function App() {
               );
             })}
           </div>
-          <div className="board">
+          <div
+            className={`board ${currentRoom.boardClassName ?? ""}`}
+            style={{
+              gridTemplateColumns: currentRoom.gridTemplateColumns,
+              gridTemplateRows: currentRoom.gridTemplateRows,
+              gridTemplateAreas: currentRoom.gridTemplateAreas
+                ? currentRoom.gridTemplateAreas.join("\n")
+                : undefined,
+            }}
+          >
             {CELLS.map((cell) => {
               const status = getCellStatus(cell.id);
               const content = getEnrichedCellContent(cell.id);
               const isInvestigated = engine.investigatedCellIds.has(cell.id);
               return (
                 <button
-                  className={`board-cell ${status.alreadyChecked ? "collected" : ""} ${
+                  className={`board-cell cell-${cell.id} ${status.alreadyChecked ? "collected" : ""} ${
                     status.isLit ? "flashlight-lit" : ""
                   } ${isInvestigated ? "investigated" : ""} ${
                     status.isLocked ? "locked-cell" : ""
@@ -1086,6 +1095,9 @@ function App() {
                   key={cell.id}
                   onClick={() => handleCellClick(cell.id)}
                   title={status.isLocked ? content.lockReason : ""}
+                  style={{
+                    gridArea: cell.gridArea,
+                  }}
                 >
                   <span className="cell-icon">{cell.icon}</span>
                   <span className="cell-label">{cell.label}</span>

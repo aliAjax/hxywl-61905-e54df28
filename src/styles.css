@@ -397,6 +397,61 @@ button {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.board-study {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(251, 191, 36, 0.08), transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.08), transparent 50%),
+    linear-gradient(180deg, rgba(41, 37, 36, 0.96), rgba(24, 20, 20, 0.98));
+}
+
+.board-study .board-cell {
+  background: linear-gradient(145deg, rgba(71, 58, 46, 0.75), rgba(41, 37, 36, 0.95));
+  border-color: rgba(200, 160, 100, 0.2);
+}
+
+.board-study .board-cell:hover:not(:disabled) {
+  border-color: rgba(251, 191, 36, 0.4);
+  background: linear-gradient(145deg, rgba(101, 83, 63, 0.8), rgba(51, 44, 40, 0.95));
+}
+
+.board-storage {
+  background:
+    radial-gradient(circle at 30% 70%, rgba(34, 211, 238, 0.06), transparent 50%),
+    radial-gradient(circle at 70% 30%, rgba(148, 163, 184, 0.06), transparent 50%),
+    linear-gradient(180deg, rgba(28, 36, 46, 0.96), rgba(15, 23, 42, 0.98));
+}
+
+.board-storage .board-cell {
+  background: linear-gradient(145deg, rgba(51, 65, 85, 0.75), rgba(30, 41, 59, 0.95));
+  border-color: rgba(100, 116, 139, 0.25);
+}
+
+.board-storage .board-cell:hover:not(:disabled) {
+  border-color: rgba(34, 211, 238, 0.4);
+  background: linear-gradient(145deg, rgba(71, 85, 105, 0.8), rgba(41, 56, 76, 0.95));
+}
+
+.board-storage .board-cell.cell-final_door {
+  font-size: clamp(18px, 3.5vw, 26px);
+  background: linear-gradient(145deg, rgba(168, 85, 247, 0.2), rgba(88, 28, 135, 0.4));
+  border: 2px solid rgba(168, 85, 247, 0.45);
+  box-shadow:
+    0 0 20px rgba(168, 85, 247, 0.15),
+    inset 0 0 16px rgba(168, 85, 247, 0.08);
+}
+
+.board-storage .board-cell.cell-final_door:hover:not(:disabled) {
+  border-color: rgba(217, 70, 239, 0.7);
+  background: linear-gradient(145deg, rgba(192, 132, 252, 0.3), rgba(126, 34, 206, 0.5));
+  box-shadow:
+    0 0 32px rgba(168, 85, 247, 0.3),
+    inset 0 0 20px rgba(168, 85, 247, 0.12);
+}
+
+.board-storage .board-cell.cell-final_door .cell-icon {
+  font-size: clamp(32px, 6vw, 44px);
+}
+
 .board button {
   position: relative;
   min-height: 72px;
