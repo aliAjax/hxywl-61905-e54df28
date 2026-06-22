@@ -120,7 +120,10 @@ function computeEscapeEvaluation(params: {
 
   const sideQuestMaxScore = totalSideQuests > 0 ? totalSideQuests * 10 : 10;
 
-  const total = timeScore + hintScore + hiddenScore + trueEndingScore + combineScore + sideQuestBonus;
+  const total = Math.min(
+    100,
+    timeScore + hintScore + hiddenScore + trueEndingScore + combineScore + sideQuestBonus
+  );
 
   let grade: EvalGrade = "D";
   let title = "顽强逃脱者";
@@ -1054,7 +1057,7 @@ function App() {
         <article>
           <small>支线</small>
           <strong>
-            {completedSideQuestCount > 0 ? `🧩 ${completedSideQuestCount}/${totalSideQuestCount}` : "🧩 0/0"}
+            🧩 {completedSideQuestCount}/{totalSideQuestCount}
           </strong>
         </article>
         <article onClick={() => setHintPanelOpen(true)} style={{ cursor: "pointer" }}>
