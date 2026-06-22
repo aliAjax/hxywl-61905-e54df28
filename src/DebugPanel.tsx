@@ -174,7 +174,7 @@ export function DebugPanel({ engine, config, onResetUI }: DebugPanelProps) {
             workbench: "empty",
             shelf: "empty",
             filing_cabinet: "empty",
-            final_door: "circuit_inserted",
+            final_door: "need_method",
           },
           currentRoomId: "room_storage",
         });
@@ -183,7 +183,7 @@ export function DebugPanel({ engine, config, onResetUI }: DebugPanelProps) {
     {
       id: "normal_ending_key_ready",
       name: "普通结局（钥匙路线）就绪",
-      description: "组合钥匙已完成，可直接开锁逃脱",
+      description: "组合钥匙已完成，可直接用钥匙开锁逃脱",
       icon: "🔑",
       apply: (engine) => {
         engine.debugSetState({
@@ -240,7 +240,7 @@ export function DebugPanel({ engine, config, onResetUI }: DebugPanelProps) {
             filing_cabinet: "empty",
             vent: "empty",
             dark_corner: "empty",
-            final_door: "circuit_inserted",
+            final_door: "ready",
           },
           currentRoomId: "room_storage",
           combineCount: 3,
@@ -250,7 +250,7 @@ export function DebugPanel({ engine, config, onResetUI }: DebugPanelProps) {
     {
       id: "normal_ending_password_ready",
       name: "普通结局（密码路线）就绪",
-      description: "电路板已插入，密码已获得，可直接输入密码逃脱",
+      description: "电路板已插入，密码已获得，可直接输入 8523 逃脱",
       icon: "🔢",
       apply: (engine) => {
         engine.debugSetState({
@@ -305,7 +305,7 @@ export function DebugPanel({ engine, config, onResetUI }: DebugPanelProps) {
             filing_cabinet: "empty",
             vent: "empty",
             dark_corner: "empty",
-            final_door: "circuit_inserted",
+            final_door: "ready",
           },
           currentRoomId: "room_storage",
           combineCount: 2,
@@ -315,7 +315,7 @@ export function DebugPanel({ engine, config, onResetUI }: DebugPanelProps) {
     {
       id: "true_ending_ready",
       name: "真结局就绪",
-      description: "所有隐藏线索已收集，隐藏密码可输入",
+      description: "所有隐藏线索已收集，可输入隐藏密码 48256 解锁真结局",
       icon: "🌟",
       apply: (engine) => {
         engine.debugSetState({
@@ -377,7 +377,7 @@ export function DebugPanel({ engine, config, onResetUI }: DebugPanelProps) {
             filing_cabinet: "empty",
             vent: "empty",
             dark_corner: "empty",
-            final_door: "circuit_inserted",
+            final_door: "ready",
           },
           currentRoomId: "room_storage",
           combineCount: 3,
