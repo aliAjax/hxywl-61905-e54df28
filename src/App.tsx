@@ -16,6 +16,7 @@ import type {
   CellDef,
   RecommendedPuzzle,
 } from "./puzzle-engine/types";
+import { DebugPanel } from "./DebugPanel";
 
 const CONFIG: GameConfig = ESCAPE_ROOM_CONFIG;
 
@@ -321,6 +322,23 @@ function App() {
     setCurrentSlot(null);
     setSaveSlotPanelOpen(false);
   }, [engine]);
+
+  const resetUI = useCallback(() => {
+    setMessage(null);
+    setDetailItemId(null);
+    setJustCollected(null);
+    setLockTargetId(null);
+    setLockDigits([]);
+    setLockError(false);
+    setCombineMode(false);
+    setSelectedForCombine([]);
+    setClueModalCellId(null);
+    setHintPanelOpen(false);
+    setHintDetailId(null);
+    setClueBookOpen(false);
+    setClueBookDetailItemId(null);
+    setRoomProgressModalRoomId(null);
+  }, []);
 
   const handleNewGame = useCallback(
     (slotIndex: number) => {
@@ -2333,6 +2351,9 @@ function App() {
           </div>
         )}
       </section>
+      {import.meta.env.DEV && (
+        <DebugPanel engine={engine} config={CONFIG} onResetUI={resetUI} />
+      )}
     </main>
   );
 }

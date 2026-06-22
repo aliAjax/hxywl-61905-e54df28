@@ -359,6 +359,11 @@ export interface EngineActions {
   setGameStartTime: (time: number) => void;
   setFinalElapsedTime: (ms: number) => void;
   getRecommendedPuzzles: () => RecommendedPuzzle[];
+  debugSetState: (partialState: Partial<EngineState>) => void;
+  debugGiveItem: (itemId: string) => void;
+  debugRemoveItem: (itemId: string) => void;
+  debugSetFlag: (flagId: string, value: boolean) => void;
+  debugSetCellStage: (cellId: string, stageId: string) => void;
 }
 
 export type PuzzleEngine = EngineState & EngineActions;

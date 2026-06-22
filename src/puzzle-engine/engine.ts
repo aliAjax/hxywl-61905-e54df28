@@ -1002,6 +1002,60 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
     return candidates;
   }, [config.hintPuzzles, state, checkCond]);
 
+  const debugSetState = useCallback((partialState: Partial<EngineState>) => {
+    setState((prev) => {
+      const nextState = { ...prev, ...partialState };
+      const advResult = autoAdvanceAllCells(nextState);
+      if (advResult.advanced && advResult.newState) {
+        return { ...nextState, ...advResult.newState };
+      }
+      return nextState;
+    });
+  }, []);
+
+  const debugGiveItem = useCallback((itemId: string) => {
+    setState((prev) => {
+      if (prev.inventory.includes(itemId)) return prev;
+      const nextState = {
+        ...prev,
+        inventory: [...prev.inventory, itemId],
+      };
+      const advResult = autoAdvanceAllCells(nextState);
+      if (advResult.advanced && advResult.newState) {
+        return { ...nextState, ...advResult.newState };
+      }
+      return nextState;
+    });
+  }, []);
+
+  const debugRemoveItem = useCallback((itemId: string) => {
+    setState((prev) => ({
+      ...prev,
+      inventory: prev.inventory.filter((id) => id !== itemId),
+    }));
+  }, []);
+
+  const debugSetFlag = useCallback((flagId: string, value: boolean) => {
+    setState((prev) => {
+      const nextState = {
+        ...prev,
+        flags: { ...prev.flags, [flagId]: value },
+      };
+      const advResult = autoAdvanceAllCells(nextState);
+      if (advResult.advanced && advResult.newState) {
+        return { ...nextState, ...advResult.newState };
+      }
+      return nextState;
+    });
+  }, []);
+
+  const debugSetCellStage = useCallback((cellId: string, stageId: string) => {
+    setState((prev) => ({
+      ...prev,
+      cellStageIds: { ...prev.cellStageIds, [cellId]: stageId },
+    }));
+  }, []);
+
   return {
     ...state,
     hasItem,
@@ -1034,6 +1088,11 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
     setGameStartTime,
     setFinalElapsedTime,
     getRecommendedPuzzles,
+    debugSetState,
+    debugGiveItem,
+    debugRemoveItem,
+    debugSetFlag,
+    debugSetCellStage,
   };
 }
 
