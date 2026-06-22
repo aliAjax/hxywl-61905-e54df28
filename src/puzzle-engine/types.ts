@@ -135,6 +135,34 @@ export interface CombineRecipe {
   failMessage: string;
 }
 
+export interface SideQuestStep {
+  id: string;
+  title: string;
+  description: string;
+  condition: Condition;
+  hintText?: string;
+}
+
+export interface SideQuestDef {
+  id: string;
+  title: string;
+  icon: string;
+  description: string;
+  steps: SideQuestStep[];
+  completionCondition: Condition;
+  rewardItemIds?: string[];
+  ratingBonus: number;
+  ratingLabel: string;
+  storyAddendum?: string[];
+  relatedRoomId?: string;
+  relatedCellId?: string;
+}
+
+export interface SideQuestProgress {
+  completedStepIds: string[];
+  completed: boolean;
+}
+
 export interface EndingDef {
   id: string;
   title: string;
@@ -240,6 +268,7 @@ export interface GameConfig {
   hintPuzzles: HintPuzzleDef[];
   autoAdvanceCellIds: string[];
   clueBook: ClueGroup[];
+  sideQuests: SideQuestDef[];
   intro: {
     title: string;
     description: string;
@@ -274,6 +303,7 @@ export interface SaveData {
   hintUsage: Record<string, number>;
   currentRoomId: string;
   finalElapsedTime: number;
+  sideQuestProgress: Record<string, SideQuestProgress>;
 }
 
 export interface SaveSlotMeta {
@@ -304,6 +334,7 @@ export interface EngineState {
   gameStartTime: number;
   currentRoomId: string;
   finalElapsedTime: number;
+  sideQuestProgress: Record<string, SideQuestProgress>;
 }
 
 export interface EngineActions {
@@ -359,6 +390,11 @@ export interface EngineActions {
   setGameStartTime: (time: number) => void;
   setFinalElapsedTime: (ms: number) => void;
   getRecommendedPuzzles: () => RecommendedPuzzle[];
+  getSideQuestProgress: (questId: string) => SideQuestProgress | null;
+  getAllSideQuestProgress: () => Record<string, SideQuestProgress>;
+  getCompletedSideQuestCount: () => number;
+  getSideQuestRatingBonus: () => number;
+  updateSideQuestProgress: () => void;
   debugSetState: (partialState: Partial<EngineState>) => void;
   debugGiveItem: (itemId: string) => void;
   debugRemoveItem: (itemId: string) => void;

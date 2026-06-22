@@ -1,4 +1,4 @@
-import type { GameConfig, ItemDef, CombineRecipe, Condition, HintPuzzleDef } from "./types";
+import type { GameConfig, ItemDef, CombineRecipe, Condition, HintPuzzleDef, SideQuestDef } from "./types";
 
 export const ITEMS: Record<string, ItemDef> = {
   frag_a: {
@@ -243,6 +243,26 @@ export const ITEMS: Record<string, ItemDef> = {
     description: "完整钥匙与钥匙核心组合而成的超级钥匙，散发着耀眼的光芒。",
     detail:
       "将完整钥匙的握柄与钥匙核心精密嵌合，形成一把散发着淡蓝色光芒的组合钥匙。核心的能量渗透入钥匙的每一道齿纹，使其不仅能开启普通门锁，还能打开最终大门的特殊锁孔。",
+  },
+  note_extra_diary: {
+    id: "note_extra_diary",
+    name: "日记残页·遗忘的实验",
+    category: "note",
+    icon: "📓",
+    description: "从生锈机关深处发现的泛黄日记页，记录着一段被遗忘的往事。",
+    summary: "实验代号「晨光」——关于记忆与时间的秘密研究。",
+    detail:
+      "日记纸页已经泛黄发脆，但字迹依然清晰可辨：\n\n「第 47 天」\n\n「实验终于有了突破性进展。如果这项技术成功，我们就能……不，我不能写得太详细。」\n\n「但我必须留下一些记录，以防万一。窗帘、挂画、台灯、储物架、工作台——这五个地方的暗码，是开启真相的钥匙。」\n\n「润滑油是关键。它不仅能打开生锈的机关，更能打开被尘封的记忆。」\n\n「如果你看到了这页日记，说明你比我想象的更聪明。去寻找全部真相吧。」\n\n——署名已模糊不清",
+  },
+  note_rusty_mechanism: {
+    id: "note_rusty_mechanism",
+    name: "线索·生锈机关",
+    category: "note",
+    icon: "⚙️",
+    description: "关于储物间生锈机关的调查记录。",
+    summary: "储物间角落里有一个被遗忘的生锈机关，需要润滑油才能启动。",
+    detail:
+      "一张皱巴巴的便签纸，上面用铅笔写着：\n\n「储物间角落的那个老机关……已经锈死很多年了。」\n\n「听说里面藏着前任研究员留下的东西，但没人能打开它。」\n\n「也许润滑油能派上用场？工作台的便签上好像提过一句……」",
   },
 };
 
@@ -547,6 +567,67 @@ export const HINT_PUZZLES: HintPuzzleDef[] = [
     relatedRoomId: "room_storage",
     priorityWeight: 88,
   },
+  {
+    id: "sidequest_rusty_mech",
+    title: "生锈机关之谜",
+    icon: "⚙️",
+    hints: [
+      "储物间的角落里似乎藏着一个被遗忘的老机关，上面全是铁锈。它已经被人遗忘很久了。",
+      "润滑油不仅能用来润滑生锈的零件，也许还能打开一些被尘封的秘密。工作台的便签上好像提到过。",
+      "用润滑油给生锈的机关上油，齿轮转动后里面有日记残页。那些纸页上记录着关于「晨光实验」的秘密。",
+    ],
+    completedCondition: hasItem("note_extra_diary"),
+    availableCondition: flagTrue("secretDoorOpened"),
+    relatedRoomId: "room_storage",
+    relatedCellId: "rusty_mech",
+    priorityWeight: 50,
+  },
+];
+
+export const SIDE_QUESTS: SideQuestDef[] = [
+  {
+    id: "sidequest_rusty_mech",
+    title: "生锈机关之谜",
+    icon: "⚙️",
+    description: "储物间角落里被遗忘的生锈机关，据说里面藏着前任研究员留下的秘密。",
+    steps: [
+      {
+        id: "step_find_oil",
+        title: "找到润滑油",
+        description: "需要找到一罐工业润滑油。",
+        condition: hasItem("oil_can"),
+      },
+      {
+        id: "step_find_mech",
+        title: "发现生锈机关",
+        description: "在储物间里找到那个被遗忘的生锈机关。",
+        condition: flagTrue("secretDoorOpened"),
+      },
+      {
+        id: "step_open_mech",
+        title: "开启生锈机关",
+        description: "用润滑油让生锈的齿轮重新转动。",
+        condition: flagTrue("rustyMechOpened"),
+      },
+      {
+        id: "step_get_diary",
+        title: "获取日记残页",
+        description: "从机关深处取出被遗忘的日记残页。",
+        condition: hasItem("note_extra_diary"),
+      },
+    ],
+    completionCondition: hasItem("note_extra_diary"),
+    rewardItemIds: ["note_extra_diary"],
+    ratingBonus: 10,
+    ratingLabel: "支线解谜",
+    storyAddendum: [
+      "日记残页上的文字让你陷入了沉思。「晨光实验」——这个代号听起来如此熟悉，却又如此遥远。",
+      "你隐约觉得，这个密室不仅仅是一个逃脱游戏。它背后隐藏着一段被尘封的往事，而你，也许就是解开一切谜团的关键。",
+      "走出大门时，你紧紧握住那页日记。这不是结束，而是另一段旅程的开始。",
+    ],
+    relatedRoomId: "room_storage",
+    relatedCellId: "rusty_mech",
+  },
 ];
 
 export const ESCAPE_ROOM_CONFIG: GameConfig = {
@@ -624,6 +705,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
     },
   },
   hintPuzzles: HINT_PUZZLES,
+  sideQuests: SIDE_QUESTS,
   autoAdvanceCellIds: ["carpet", "secret_door", "final_door", "dark_corner"],
   clueBook: [
     {
@@ -805,6 +887,29 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
         },
       ],
     },
+    {
+      id: "group_sidequests",
+      name: "支线谜题",
+      icon: "🧩",
+      entries: [
+        {
+          id: "clue_rusty_mech",
+          title: "生锈机关",
+          icon: "⚙️",
+          description: "储物间角落里被遗忘的生锈机械装置",
+          sourceItemId: "note_rusty_mechanism",
+          revealCondition: flagTrue("secretDoorOpened"),
+        },
+        {
+          id: "clue_extra_diary",
+          title: "日记残页·遗忘的实验",
+          icon: "📓",
+          description: "从生锈机关深处发现的泛黄日记页",
+          sourceItemId: "note_extra_diary",
+          revealCondition: hasItem("note_extra_diary"),
+        },
+      ],
+    },
   ],
   progressHints: [
     {
@@ -944,6 +1049,24 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
         hasItem("note_hidden_workbench")
       ),
       text: "🌟 全部隐藏暗码已集齐！去最终大门尝试隐藏密码 48256 解锁真结局！",
+    },
+    {
+      priority: 24,
+      condition: all(
+        flagTrue("secretDoorOpened"),
+        hasItem("oil_can"),
+        notHasItem("note_extra_diary")
+      ),
+      text: "⚙️ 你有润滑油了！储物间的角落里有个生锈的老机关，试试用润滑油打开看看？",
+    },
+    {
+      priority: 25,
+      condition: all(
+        flagTrue("secretDoorOpened"),
+        flagTrue("rustyMechOpened"),
+        notHasItem("note_extra_diary")
+      ),
+      text: "📓 生锈机关的齿轮转起来了！再去看看里面有什么秘密。",
     },
   ],
   rooms: [
@@ -1432,7 +1555,7 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
       gridTemplateAreas: [
         '"shelf workbench vent"',
         '"cabinet dark door"',
-        '"empty1 empty2 door"',
+        '"rusty_mech empty2 door"',
       ],
       boardClassName: "board-storage",
       cells: [
@@ -1748,6 +1871,60 @@ export const ESCAPE_ROOM_CONFIG: GameConfig = {
               nextHint: "一切就绪！可以输入密码或使用组合钥匙！",
               isLocked: true,
               lockTargetId: "final_door",
+            },
+          },
+        },
+        {
+          id: "rusty_mech",
+          label: "生锈机关",
+          icon: "⚙️",
+          gridArea: "rusty_mech",
+          initialStageId: "rusted",
+          stages: {
+            rusted: {
+              id: "rusted",
+              description: "角落里一个被遗忘的生锈机械装置，齿轮完全锈死了。",
+              clueDetail:
+                "这个机关看起来已经被遗忘了很多年，表面覆盖着厚厚的铁锈和灰尘。齿轮完全锈死，徒手根本无法转动。装置中央似乎有一个小隔间，但锈迹封住了开口。",
+              nextHint:
+                "这个生锈的机关看起来打不开……不过，如果你有润滑油的话，也许能让它重新运转起来？",
+              isLocked: true,
+              lockReason: "机关完全锈死了",
+              requires: hasItem("oil_can"),
+              requiresMet: {
+                description: "角落里一个生锈的机械装置，你有润滑油也许能让它动起来。",
+                clueDetail:
+                  "这个古老的机械装置虽然锈迹斑斑，但你手里有润滑油——也许能把它的齿轮润滑开，看看里面藏着什么。",
+                nextHint: "用润滑油试试！说不定能打开这个古老的机关，发现被遗忘的秘密！",
+              },
+              onUnlock: {
+                setFlags: { rustyMechOpened: true },
+                showMessage: "🛢️ 你将润滑油注入生锈的齿轮中……",
+                messageType: "info",
+              },
+              moveToStage: "oiled",
+            },
+            oiled: {
+              id: "oiled",
+              description: "生锈的机械装置被你润滑后，齿轮开始缓缓转动。",
+              clueDetail:
+                "随着一阵吱吱呀呀的响声，齿轮缓缓转动，机关中央的小隔间弹开了。里面放着一叠已经泛黄的纸——是日记的残页！",
+              nextHint:
+                "获得了额外的日记页！上面记录着关于「晨光实验」的秘密……这也许能揭示更多关于这个密室的真相。",
+              onInteract: {
+                giveItems: ["note_extra_diary"],
+                showMessage: "📓 你发现了一叠被遗忘的日记残页！",
+                messageType: "collect",
+              },
+              moveToStage: "empty",
+            },
+            empty: {
+              id: "empty",
+              description: "已被你打开的空润滑油",
+              clueDetail:
+                "这个古老的机械装置已经被你彻底检查过了。你已经取出了里面的日记残页，这里没有更多东西了。",
+              nextHint: "这里的秘密已经被你揭开了。",
+              alreadyChecked: true,
             },
           },
         },

@@ -79,6 +79,7 @@ interface EscapeEvaluation {
     hiddenClues: { score: number; max: number; label: string };
     trueEnding: { score: number; max: number; label: string };
     combines: { score: number; max: number; label: string };
+    sideQuests: { score: number; max: number; label: string };
   };
 }
 
@@ -89,8 +90,10 @@ function computeEscapeEvaluation(params: {
   totalHiddenClues: number;
   isTrueEnding: boolean;
   combineCount: number;
+  sideQuestBonus: number;
+  totalSideQuests: number;
 }): EscapeEvaluation {
-  const { elapsedMs, hintCount, hiddenClueCount, totalHiddenClues, isTrueEnding, combineCount } = params;
+  const { elapsedMs, hintCount, hiddenClueCount, totalHiddenClues, isTrueEnding, combineCount, sideQuestBonus, totalSideQuests } = params;
   const minutes = elapsedMs / 60000;
 
   let timeScore = 4;
@@ -115,7 +118,9 @@ function computeEscapeEvaluation(params: {
   else if (combineCount === 2) combineScore = 7;
   else if (combineCount === 1) combineScore = 4;
 
-  const total = timeScore + hintScore + hiddenScore + trueEndingScore + combineScore;
+  const sideQuestMaxScore = totalSideQuests > 0 ? totalSideQuests * 10 : 10;
+
+  const total = timeScore + hintScore + hiddenScore + trueEndingScore + combineScore + sideQuestBonus;
 
   let grade: EvalGrade = "D";
   let title = "顽强逃脱者";
@@ -149,6 +154,7 @@ function computeEscapeEvaluation(params: {
       hiddenClues: { score: hiddenScore, max: 25, label: "隐藏探索" },
       trueEnding: { score: trueEndingScore, max: 15, label: "真结局" },
       combines: { score: combineScore, max: 10, label: "道具组合" },
+      sideQuests: { score: sideQuestBonus, max: sideQuestMaxScore, label: "支线解谜" },
     },
   };
 }
@@ -425,6 +431,11 @@ function App() {
   const hiddenClueIds = ["note_hidden_curtain", "note_hidden_painting", "note_hidden_lamp", "note_hidden_shelf", "note_hidden_workbench"];
   const hiddenClueCount = hiddenClueIds.filter((id) => engine.hasItem(id)).length;
   const hasAllHiddenClues = hiddenClueCount === 5;
+
+  const totalSideQuestCount = CONFIG.sideQuests?.length ?? 0;
+  const completedSideQuestCount = engine.getCompletedSideQuestCount();
+  const sideQuestRatingBonus = engine.getSideQuestRatingBonus();
+  const allSideQuestProgress = engine.getAllSideQuestProgress();
 
   const drawerUnlocked = !!engine.flags.drawerUnlocked;
   const boxOpened = !!engine.flags.boxOpened;
@@ -802,6 +813,8 @@ function App() {
       totalHiddenClues: 5,
       isTrueEnding,
       combineCount: engine.combineCount,
+      sideQuestBonus: sideQuestRatingBonus,
+      totalSideQuests: totalSideQuestCount,
     });
 
     const gradeColorMap: Record<EvalGrade, string> = {
@@ -848,6 +861,20 @@ function App() {
               <p key={i}>{para}</p>
             ))}
           </div>
+          {completedSideQuestCount > 0 && CONFIG.sideQuests && (
+            <div className="side-quest-stories">
+              {CONFIG.sideQuests.filter((q) => allSideQuestProgress[q.id]?.completed && q.storyAddendum).map((quest) => (
+                <div key={quest.id} className="side-quest-story">
+                  <h4 className="side-quest-story-title">
+                    {quest.icon} {quest.title}·真相补遗
+                  </h4>
+                  {(quest.storyAddendum ?? []).map((para, i) => (
+                    <p key={i}>{para}</p>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
           <div
             className="eval-section"
             style={{
@@ -926,10 +953,8 @@ function App() {
             </div>
             <div className="stat-card">
               <span className="stat-icon">🧩</span>
-              <span className="stat-value">
-                {puzzlesHintedCount}/{CONFIG.hintPuzzles.length}
-              </span>
-              <span className="stat-label">求助谜题</span>
+              <span className="stat-value">{completedSideQuestCount}/{totalSideQuestCount}</span>
+              <span className="stat-label">支线完成</span>
             </div>
           </div>
           {totalHintCount > 0 && (
@@ -1003,7 +1028,7 @@ function App() {
         <h1>{CONFIG.title}</h1>
         <span>书房→暗门→储物间→最终大门 | 两个房间共享物品栏和进度</span>
       </section>
-      <section className="hud hud-6">
+      <section className="hud hud-7">
         <article>
           <small>用时</small>
           <strong>⏱️ {formatTime(elapsedTime)}</strong>
@@ -1024,6 +1049,12 @@ function App() {
           <small>隐藏</small>
           <strong>
             {hiddenClueCount > 0 ? `🗝️ ${hiddenClueCount}/5` : "🔒 0/5"}
+          </strong>
+        </article>
+        <article>
+          <small>支线</small>
+          <strong>
+            {completedSideQuestCount > 0 ? `🧩 ${completedSideQuestCount}/${totalSideQuestCount}` : "🧩 0/0"}
           </strong>
         </article>
         <article onClick={() => setHintPanelOpen(true)} style={{ cursor: "pointer" }}>

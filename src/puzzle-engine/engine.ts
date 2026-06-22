@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import type {
   Condition,
   GameConfig,
@@ -10,6 +10,8 @@ import type {
   InteractionStage,
   LockResult,
   LockUIInfo,
+  SideQuestProgress,
+  SideQuestDef,
 } from "./types";
 
 export function checkCondition(
@@ -88,6 +90,13 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
         cellStageIds[cell.id] = cell.initialStageId;
       }
     }
+    const sideQuestProgress: Record<string, SideQuestProgress> = {};
+    for (const quest of config.sideQuests ?? []) {
+      sideQuestProgress[quest.id] = {
+        completedStepIds: [],
+        completed: false,
+      };
+    }
     return {
       inventory: [],
       investigatedCellIds: new Set(),
@@ -102,10 +111,39 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
       gameStartTime: 0,
       currentRoomId: config.rooms[0]?.id ?? "",
       finalElapsedTime: 0,
+      sideQuestProgress,
     };
   }, [config]);
 
   const [state, setState] = useState<EngineState>(initialState);
+
+  useEffect(() => {
+    if (!config.sideQuests || config.sideQuests.length === 0) return;
+    const ctx = { inventory: state.inventory, flags: state.flags };
+    let needsUpdate = false;
+    const newProgress: Record<string, SideQuestProgress> = { ...state.sideQuestProgress };
+    for (const quest of config.sideQuests) {
+      const oldProgress = state.sideQuestProgress[quest.id];
+      const completedStepIds: string[] = [];
+      for (const step of quest.steps) {
+        if (checkCondition(step.condition, ctx)) {
+          completedStepIds.push(step.id);
+        }
+      }
+      const completed = checkCondition(quest.completionCondition, ctx);
+      if (
+        !oldProgress ||
+        oldProgress.completed !== completed ||
+        oldProgress.completedStepIds.length !== completedStepIds.length
+      ) {
+        newProgress[quest.id] = { completedStepIds, completed };
+        needsUpdate = true;
+      }
+    }
+    if (needsUpdate) {
+      setState((prev) => ({ ...prev, sideQuestProgress: newProgress }));
+    }
+  }, [state.inventory, state.flags, config.sideQuests, state.sideQuestProgress]);
 
   const getCell = useCallback(
     (cellId: string): CellDef | undefined => {
@@ -859,12 +897,24 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
       hintUsage: { ...state.hintUsage },
       currentRoomId: state.currentRoomId,
       finalElapsedTime: state.finalElapsedTime,
+      sideQuestProgress: { ...state.sideQuestProgress },
     };
   }, [config.saveVersion, state]);
 
   const loadSaveData = useCallback(
     (data: SaveData): boolean => {
       if (data.version !== config.saveVersion) return false;
+      const sideQuestProgress: Record<string, SideQuestProgress> = {};
+      for (const quest of config.sideQuests ?? []) {
+        if (data.sideQuestProgress && data.sideQuestProgress[quest.id]) {
+          sideQuestProgress[quest.id] = data.sideQuestProgress[quest.id];
+        } else {
+          sideQuestProgress[quest.id] = {
+            completedStepIds: [],
+            completed: false,
+          };
+        }
+      }
       setState({
         inventory: data.inventory || [],
         investigatedCellIds: new Set(data.investigatedCellIds || []),
@@ -879,10 +929,11 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
         hintUsage: data.hintUsage || {},
         currentRoomId: data.currentRoomId || config.rooms[0]?.id || "",
         finalElapsedTime: data.finalElapsedTime || 0,
+        sideQuestProgress,
       });
       return true;
     },
-    [config.saveVersion, initialState.cellStageIds, config.rooms]
+    [config.saveVersion, initialState.cellStageIds, config.rooms, config.sideQuests]
   );
 
   const autoAdvanceCellPublic = useCallback(
@@ -1002,6 +1053,76 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
     return candidates;
   }, [config.hintPuzzles, state, checkCond]);
 
+  const computeSideQuestProgress = useCallback(
+    (quest: SideQuestDef, ctx: { inventory: string[]; flags: Record<string, boolean> }): SideQuestProgress => {
+      const completedStepIds: string[] = [];
+      for (const step of quest.steps) {
+        if (checkCondition(step.condition, ctx)) {
+          completedStepIds.push(step.id);
+        }
+      }
+      const completed = checkCondition(quest.completionCondition, ctx);
+      return { completedStepIds, completed };
+    },
+    []
+  );
+
+  const updateSideQuestProgress = useCallback(() => {
+    setState((prev) => {
+      const ctx = { inventory: prev.inventory, flags: prev.flags };
+      const newProgress: Record<string, SideQuestProgress> = { ...prev.sideQuestProgress };
+      let changed = false;
+      for (const quest of config.sideQuests ?? []) {
+        const oldProgress = prev.sideQuestProgress[quest.id];
+        const newProg = computeSideQuestProgress(quest, ctx);
+        if (
+          !oldProgress ||
+          oldProgress.completed !== newProg.completed ||
+          oldProgress.completedStepIds.length !== newProg.completedStepIds.length
+        ) {
+          newProgress[quest.id] = newProg;
+          changed = true;
+        }
+      }
+      if (!changed) return prev;
+      return { ...prev, sideQuestProgress: newProgress };
+    });
+  }, [config.sideQuests, computeSideQuestProgress]);
+
+  const getSideQuestProgress = useCallback(
+    (questId: string): SideQuestProgress | null => {
+      return state.sideQuestProgress[questId] ?? null;
+    },
+    [state.sideQuestProgress]
+  );
+
+  const getAllSideQuestProgress = useCallback(
+    (): Record<string, SideQuestProgress> => {
+      return { ...state.sideQuestProgress };
+    },
+    [state.sideQuestProgress]
+  );
+
+  const getCompletedSideQuestCount = useCallback((): number => {
+    let count = 0;
+    for (const quest of config.sideQuests ?? []) {
+      if (state.sideQuestProgress[quest.id]?.completed) {
+        count++;
+      }
+    }
+    return count;
+  }, [config.sideQuests, state.sideQuestProgress]);
+
+  const getSideQuestRatingBonus = useCallback((): number => {
+    let bonus = 0;
+    for (const quest of config.sideQuests ?? []) {
+      if (state.sideQuestProgress[quest.id]?.completed) {
+        bonus += quest.ratingBonus;
+      }
+    }
+    return bonus;
+  }, [config.sideQuests, state.sideQuestProgress]);
+
   const debugSetState = useCallback((partialState: Partial<EngineState>) => {
     setState((prev) => {
       const nextState = { ...prev, ...partialState };
@@ -1088,6 +1209,11 @@ export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
     setGameStartTime,
     setFinalElapsedTime,
     getRecommendedPuzzles,
+    getSideQuestProgress,
+    getAllSideQuestProgress,
+    getCompletedSideQuestCount,
+    getSideQuestRatingBonus,
+    updateSideQuestProgress,
     debugSetState,
     debugGiveItem,
     debugRemoveItem,
