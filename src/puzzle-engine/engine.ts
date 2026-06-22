@@ -43,9 +43,9 @@ export function checkCondition(
   }
 }
 
-function applyEffects(
+export function applyEffects(
   effects: InteractionEffect,
-  state: EngineState,
+  state: { inventory: string[]; flags: Record<string, boolean>; escaped: boolean; endingId: string | null },
   config: GameConfig
 ): {
   newInventory: string[];
@@ -80,6 +80,53 @@ function applyEffects(
   }
 
   return { newInventory, newFlags, newEscaped, newEndingId, collectedItemIds };
+}
+
+export function findMatchingRecipePure(
+  recipes: { inputs: string[]; output: string }[],
+  selectedIds: string[],
+  inventory: string[]
+): { inputs: string[]; output: string } | null {
+  for (const recipe of recipes) {
+    const allInputsSelected = recipe.inputs.every((id) => selectedIds.includes(id));
+    const noExtraSelected = selectedIds.every((id) => recipe.inputs.includes(id));
+    const countsMatch = recipe.inputs.length === selectedIds.length;
+    const notAlreadyHave = !inventory.includes(recipe.output);
+    if (allInputsSelected && noExtraSelected && countsMatch && notAlreadyHave) {
+      return recipe;
+    }
+  }
+  return null;
+}
+
+export function verifyLockPassword(
+  lock: { password: string; digits: number; beforeSubmit?: Condition; beforeSubmitMessage?: string; errorHint?: string },
+  digits: string[],
+  state: { inventory: string[]; flags: Record<string, boolean> }
+): { success: boolean; errorMessage?: string } {
+  const entered = digits.join("");
+
+  if (lock.beforeSubmit && !checkCondition(lock.beforeSubmit, state)) {
+    return { success: false, errorMessage: lock.beforeSubmitMessage ?? "前置条件未满足" };
+  }
+
+  if (entered === lock.password) {
+    return { success: true };
+  }
+
+  return { success: false, errorMessage: lock.errorHint ?? "密码错误" };
+}
+
+export function validateSaveVersion(dataVersion: number, expectedVersion: number): boolean {
+  return dataVersion === expectedVersion;
+}
+
+export function collectItemPure(
+  inventory: string[],
+  itemId: string
+): string[] {
+  if (inventory.includes(itemId)) return inventory;
+  return [...inventory, itemId];
 }
 
 export function usePuzzleEngine(config: GameConfig): PuzzleEngine {
